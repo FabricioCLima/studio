@@ -131,18 +131,21 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
         servicos: values.servicos ? values.servicos.map((s) => s.value).filter(s => s.trim() !== '') : [],
       };
 
-      if (values.dataAgendamento) {
+      if (values.dataAgendamento && values.tecnico) {
         dataToUpdate.status = 'agendado';
       } else {
-        dataToUpdate.dataAgendamento = null;
         if(service.status === 'agendado') {
             dataToUpdate.status = 'engenharia';
         }
       }
 
+      if (!values.dataAgendamento) {
+        dataToUpdate.dataAgendamento = null;
+      }
       if (!values.tecnico) {
         dataToUpdate.tecnico = null;
       }
+
 
       await updateDoc(serviceRef, dataToUpdate);
       toast({
