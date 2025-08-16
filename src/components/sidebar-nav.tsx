@@ -31,7 +31,6 @@ import { useAuth } from '@/context/auth-context';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/cadastro', label: 'Cadastro', icon: FilePlus2 },
   { href: '/engenharia', label: 'Engenharia', icon: Hammer, notificationKey: 'engineering' },
   { href: '/tecnica', label: 'Técnica', icon: Cpu },
   { href: '/digitacao', label: 'Digitação', icon: Keyboard },
@@ -77,7 +76,7 @@ export function SidebarNav() {
                             onClick={() => router.push(item.href)}
                         >
                             <a>
-                                <item.icon className="h-5 w-5" />
+                                <item.icon className="h-6 w-6" />
                                 <span>{item.label}</span>
                                 {count > 0 && <SidebarMenuBadge>{count}</SidebarMenuBadge>}
                             </a>

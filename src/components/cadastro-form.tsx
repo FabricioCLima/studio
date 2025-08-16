@@ -32,7 +32,11 @@ const formSchema = z.object({
   dataServico: z.date({ required_error: 'Data do serviço é obrigatória.' }),
 });
 
-export function CadastroForm() {
+interface CadastroFormProps {
+    onSave?: () => void;
+}
+
+export function CadastroForm({ onSave }: CadastroFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCepLoading, setIsCepLoading] = useState(false);
@@ -97,6 +101,7 @@ export function CadastroForm() {
         className: 'bg-accent text-accent-foreground',
       });
       form.reset();
+      onSave?.();
     } catch (error) {
       console.error('Error adding document: ', error);
       toast({
@@ -111,12 +116,8 @@ export function CadastroForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Informações da Empresa</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             <FormField control={form.control} name="cnpj" render={({ field }) => (
                 <FormItem><FormLabel>CNPJ</FormLabel><FormControl><Input placeholder="00.000.000/0000-00" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
@@ -144,14 +145,9 @@ export function CadastroForm() {
             <FormField control={form.control} name="contato" render={({ field }) => (
                 <FormItem><FormLabel>Contato</FormLabel><FormControl><Input placeholder="Nome do contato" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Detalhes do Serviço</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        </div>
+        
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-4">
               <FormLabel>Serviços</FormLabel>
               {fields.map((field, index) => (
@@ -186,8 +182,7 @@ export function CadastroForm() {
                   <FormMessage />
                 </FormItem>
               )}/>
-          </CardContent>
-        </Card>
+          </div>
 
         <div className="flex justify-end">
           <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90">
