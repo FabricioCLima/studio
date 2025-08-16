@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 import {
-  BarChart3,
   Cpu,
   FilePlus2,
   Hammer,
@@ -36,7 +35,6 @@ const navItems = [
   { href: '/tecnica', label: 'Técnica', icon: Cpu },
   { href: '/digitacao', label: 'Digitação', icon: Keyboard },
   { href: '/medicina', label: 'Medicina', icon: Stethoscope },
-  { href: '/graficos', label: 'Gráficos', icon: BarChart3 },
 ];
 
 export function SidebarNav() {
