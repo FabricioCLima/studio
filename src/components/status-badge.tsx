@@ -21,7 +21,7 @@ const statusConfig: {
     tecnica: { label: "Técnica", variant: "secondary" },
     digitacao: { label: "Digitação", variant: "outline" },
     medicina: { label: "Medicina", variant: "destructive" },
-    atrasado: { label: "Atrasado", variant: "warning" },
+    atrasado: { label: "Atrasado", variant: "destructive" },
 };
 
 
