@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -20,17 +21,38 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  if (authLoading) {
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/');
+    }
+  }, [user, authLoading, router]);
+
+  if (authLoading || user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <p>Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle className="text-2xl">
+                <Skeleton className="h-8 w-24" />
+            </CardTitle>
+            <CardDescription>
+                <Skeleton className="h-4 w-full" />
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="grid gap-2">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="grid gap-2">
+                <Skeleton className="h-5 w-12" />
+                <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
       </div>
     );
-  }
-
-  if (user) {
-    router.push('/');
-    return null;
   }
 
   const handleLogin = async (e: FormEvent) => {
@@ -38,7 +60,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/');
+      // A navegação será tratada pelo useEffect
     } catch (error: any) {
       console.error(error);
       toast({
