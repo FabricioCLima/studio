@@ -89,6 +89,8 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
         dataServico: new Date(service.dataServico.seconds * 1000),
         dataAgendamento: service.dataAgendamento ? new Date(service.dataAgendamento.seconds * 1000) : undefined,
         tecnico: service.tecnico || '',
+        email: service.email || '',
+        complemento: service.complemento || '',
       });
     }
   }, [service, form]);
@@ -129,6 +131,8 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
       const dataToUpdate: { [key: string]: any } = {
         ...values,
         servicos: values.servicos ? values.servicos.map((s) => s.value).filter(s => s.trim() !== '') : [],
+        email: values.email || null,
+        complemento: values.complemento || null,
       };
 
       if (values.dataAgendamento && values.tecnico) {

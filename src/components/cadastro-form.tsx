@@ -94,6 +94,8 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
       await addDoc(collection(db, 'servicos'), {
         ...values,
         servicos: values.servicos ? values.servicos.map(s => s.value).filter(s => s.trim() !== '') : [],
+        email: values.email || null,
+        complemento: values.complemento || null,
         status: 'engenharia',
         createdAt: serverTimestamp(),
       });

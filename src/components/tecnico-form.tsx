@@ -39,7 +39,11 @@ export function TecnicoForm({ onSave, tecnico }: TecnicoFormProps) {
 
   useEffect(() => {
     if (tecnico) {
-      form.reset(tecnico);
+      form.reset({
+        ...tecnico,
+        email: tecnico.email || '',
+        telefone: tecnico.telefone || '',
+      });
     } else {
         form.reset({
             nome: '',
@@ -52,9 +56,15 @@ export function TecnicoForm({ onSave, tecnico }: TecnicoFormProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
+        const dataToSave = {
+            ...values,
+            email: values.email || null,
+            telefone: values.telefone || null,
+        }
+
         if(tecnico) {
             const tecnicoRef = doc(db, 'tecnicos', tecnico.id);
-            await updateDoc(tecnicoRef, values);
+            await updateDoc(tecnicoRef, dataToSave);
             toast({
                 title: 'Sucesso!',
                 description: 'Técnico atualizado com sucesso.',
@@ -62,7 +72,7 @@ export function TecnicoForm({ onSave, tecnico }: TecnicoFormProps) {
             });
         } else {
             await addDoc(collection(db, 'tecnicos'), {
-                ...values,
+                ...dataToSave,
                 createdAt: serverTimestamp(),
             });
             toast({
