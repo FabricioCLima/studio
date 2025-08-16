@@ -15,11 +15,12 @@ import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import type { Tecnico } from '@/app/(main)/tecnicos/page';
 
 const formSchema = z.object({
   cnpj: z.string().min(1, 'CNPJ é obrigatório.'),
@@ -38,13 +39,6 @@ const formSchema = z.object({
   tecnico: z.string().optional(),
 });
 
-const tecnicos = [
-    { id: '1', nome: 'João Silva' },
-    { id: '2', nome: 'Maria Oliveira' },
-    { id: '3', nome: 'Carlos Pereira' },
-    { id: '4', nome: 'Ana Costa' },
-];
-
 interface EditServiceDialogProps {
   service: Service;
   open: boolean;
@@ -55,6 +49,19 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCepLoading, setIsCepLoading] = useState(false);
+  const [tecnicos, setTecnicos] = useState<Tecnico[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'tecnicos'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const tecnicosData: Tecnico[] = [];
+      querySnapshot.forEach((doc) => {
+        tecnicosData.push({ id: doc.id, ...doc.data() } as Tecnico);
+      });
+      setTecnicos(tecnicosData);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   Stethoscope,
   LogOut,
+  Users,
 } from 'lucide-react';
 import { useServiceNotification } from '@/context/service-notification-context';
 import { Button } from './ui/button';
@@ -36,6 +37,7 @@ const navItems = [
   { href: '/tecnica', label: 'Técnica', icon: Cpu },
   { href: '/digitacao', label: 'Digitação', icon: Keyboard },
   { href: '/medicina', label: 'Medicina', icon: Stethoscope },
+  { href: '/tecnicos', label: 'Técnicos', icon: Users },
 ];
 
 export function SidebarNav() {
