@@ -31,6 +31,7 @@ import { useAuth } from '@/context/auth-context';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/cadastro', label: 'Cadastro', icon: FilePlus2 },
   { href: '/engenharia', label: 'Engenharia', icon: Hammer, notificationKey: 'engineering' },
   { href: '/tecnica', label: 'Técnica', icon: Cpu },
   { href: '/digitacao', label: 'Digitação', icon: Keyboard },
