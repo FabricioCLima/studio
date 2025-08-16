@@ -37,8 +37,9 @@ interface EngenhariaTableProps {
   services: Service[];
 }
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "success" } = {
     engenharia: "default",
+    agendado: "success",
     tecnica: "secondary",
     digitacao: "outline",
     medicina: "destructive",
@@ -46,6 +47,7 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 
 const statusLabel: { [key: string]: string } = {
     engenharia: "Aguardando agendamento",
+    agendado: "Agendado",
     tecnica: "Técnica",
     digitacao: "Digitação",
     medicina: "Medicina",
@@ -111,7 +113,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                 </Badge>
               </TableCell>
               <TableCell>
-                {format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })}
+                {service.dataServico ? format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
               </TableCell>
               <TableCell>{service.tecnico || '-'}</TableCell>
               <TableCell>

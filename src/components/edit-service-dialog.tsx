@@ -37,6 +37,7 @@ const formSchema = z.object({
   dataServico: z.date({ required_error: 'Data do serviço é obrigatória.' }),
   dataAgendamento: z.date().optional(),
   tecnico: z.string().optional(),
+  status: z.string().optional(),
 });
 
 interface EditServiceDialogProps {
@@ -130,13 +131,18 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
         servicos: values.servicos ? values.servicos.map((s) => s.value).filter(s => s.trim() !== '') : [],
       };
 
-      if (!values.dataAgendamento) {
+      if (values.dataAgendamento) {
+        dataToUpdate.status = 'agendado';
+      } else {
         dataToUpdate.dataAgendamento = null;
+        if(service.status === 'agendado') {
+            dataToUpdate.status = 'engenharia';
+        }
       }
+
       if (!values.tecnico) {
         dataToUpdate.tecnico = null;
       }
-
 
       await updateDoc(serviceRef, dataToUpdate);
       toast({
@@ -265,7 +271,7 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
                  <FormField control={form.control} name="tecnico" render={({ field }) => (
                     <FormItem>
                         <FormLabel>Técnico Responsável</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecione um técnico" />

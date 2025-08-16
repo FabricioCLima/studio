@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -36,8 +37,9 @@ interface CadastroTableProps {
   services: Service[];
 }
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "success" } = {
     engenharia: "default",
+    agendado: "success",
     tecnica: "secondary",
     digitacao: "outline",
     medicina: "destructive",
@@ -45,6 +47,7 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 
 const statusLabel: { [key: string]: string } = {
     engenharia: "Engenharia",
+    agendado: "Agendado",
     tecnica: "Técnica",
     digitacao: "Digitação",
     medicina: "Medicina",
