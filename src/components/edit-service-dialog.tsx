@@ -278,13 +278,14 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
                  <FormField control={form.control} name="tecnico" render={({ field }) => (
                     <FormItem>
                         <FormLabel>Técnico Responsável</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                             <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecione um técnico" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                                <SelectItem value="">Nenhum</SelectItem>
                                 {tecnicos.map(tecnico => (
                                     <SelectItem key={tecnico.id} value={tecnico.nome}>{tecnico.nome}</SelectItem>
                                 ))}
