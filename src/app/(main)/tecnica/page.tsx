@@ -26,7 +26,7 @@ export default function TecnicaPage() {
       return;
     }
 
-    const q = query(collection(db, 'servicos'), where('status', 'in', ['aguardando_visita', 'em_visita']));
+    const q = query(collection(db, 'servicos'), where('status', 'in', ['aguardando_visita', 'em_visita', 'concluido']));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const servicesData: Service[] = [];
       querySnapshot.forEach((doc) => {
