@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -56,10 +57,8 @@ export function SidebarNav() {
     <>
       <SidebarHeader>
         <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold tracking-tight">Service Flow</h2>
-            <div className="md:hidden">
-              <SidebarTrigger />
-            </div>
+            <h2 className="text-xl font-semibold tracking-tight group-data-[collapsible=icon]:hidden">Service Flow</h2>
+            <SidebarTrigger />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -73,6 +72,7 @@ export function SidebarNav() {
                             asChild
                             isActive={pathname === item.href}
                             onClick={() => router.push(item.href)}
+                            tooltip={item.label}
                         >
                             <a>
                                 <item.icon className="h-6 w-6" />
@@ -89,9 +89,9 @@ export function SidebarNav() {
       <SidebarHeader>
         <SidebarGroup>
             <SidebarGroupLabel>{user?.email}</SidebarGroupLabel>
-            <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
+            <Button variant="ghost" className="w-full justify-start gap-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2" onClick={handleLogout}>
               <LogOut size={20} />
-              <span>Sair</span>
+              <span className="group-data-[collapsible=icon]:hidden">Sair</span>
             </Button>
         </SidebarGroup>
       </SidebarHeader>
