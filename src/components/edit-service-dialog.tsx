@@ -19,6 +19,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const formSchema = z.object({
   cnpj: z.string().min(1, 'CNPJ é obrigatório.'),
@@ -33,7 +34,16 @@ const formSchema = z.object({
   email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
   servicos: z.array(z.object({ value: z.string() })).optional(),
   dataServico: z.date({ required_error: 'Data do serviço é obrigatória.' }),
+  dataAgendamento: z.date().optional(),
+  tecnico: z.string().optional(),
 });
+
+const tecnicos = [
+    { id: '1', nome: 'João Silva' },
+    { id: '2', nome: 'Maria Oliveira' },
+    { id: '3', nome: 'Carlos Pereira' },
+    { id: '4', nome: 'Ana Costa' },
+];
 
 interface EditServiceDialogProps {
   service: Service;
@@ -69,6 +79,8 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
         ...service,
         servicos: service.servicos.map((s) => ({ value: s })),
         dataServico: new Date(service.dataServico.seconds * 1000),
+        dataAgendamento: service.dataAgendamento ? new Date(service.dataAgendamento.seconds * 1000) : undefined,
+        tecnico: service.tecnico || '',
       });
     }
   }, [service, form]);
@@ -105,10 +117,21 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
     setIsSubmitting(true);
     try {
       const serviceRef = doc(db, 'servicos', service.id);
-      await updateDoc(serviceRef, {
+      
+      const dataToUpdate: { [key: string]: any } = {
         ...values,
         servicos: values.servicos ? values.servicos.map((s) => s.value).filter(s => s.trim() !== '') : [],
-      });
+      };
+
+      if (!values.dataAgendamento) {
+        dataToUpdate.dataAgendamento = null;
+      }
+      if (!values.tecnico) {
+        dataToUpdate.tecnico = null;
+      }
+
+
+      await updateDoc(serviceRef, dataToUpdate);
       toast({
         title: 'Sucesso!',
         description: 'Serviço atualizado com sucesso.',
@@ -212,6 +235,43 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
                       <FormMessage />
                     </FormItem>
                   )}/>
+            </div>
+            <div className="grid grid-cols-1 gap-6 border-t pt-6 md:grid-cols-2">
+                 <FormField control={form.control} name="dataAgendamento" render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                        <FormLabel>Data de Agendamento</FormLabel>
+                      <Popover><PopoverTrigger asChild>
+                          <FormControl>
+                            <Button variant={'outline'} className={cn('w-[240px] pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
+                              {field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Agendar visita</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}/>
+                 <FormField control={form.control} name="tecnico" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Técnico Responsável</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione um técnico" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {tecnicos.map(tecnico => (
+                                    <SelectItem key={tecnico.id} value={tecnico.nome}>{tecnico.nome}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormItem>
+                 )}/>
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>

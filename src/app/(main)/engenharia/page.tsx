@@ -26,6 +26,11 @@ export type Service = {
     nanoseconds: number;
   };
   status: string;
+  dataAgendamento?: {
+    seconds: number;
+    nanoseconds: number;
+  };
+  tecnico?: string;
 };
 
 export default function EngenhariaPage() {

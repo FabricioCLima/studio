@@ -93,6 +93,8 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
             <TableHead>Telefone</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Data</TableHead>
+            <TableHead>Técnico</TableHead>
+            <TableHead>Agendamento</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -110,6 +112,10 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
               </TableCell>
               <TableCell>
                 {format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })}
+              </TableCell>
+              <TableCell>{service.tecnico || '-'}</TableCell>
+              <TableCell>
+                {service.dataAgendamento ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
               </TableCell>
               <TableCell className="text-right">
                 <Button variant="ghost" size="icon" onClick={() => setEditingService(service)}>
