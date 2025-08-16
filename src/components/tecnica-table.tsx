@@ -100,8 +100,8 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'em_visita')} disabled={service.status === 'em_visita'}>
-                                <PlayCircle className="h-4 w-4 text-blue-500" />
+                            <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'em_visita')} disabled={service.status === 'em_visita' || service.status === 'concluido'}>
+                                <PlayCircle className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -113,8 +113,8 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'concluido')}>
-                                <CheckCircle2 className="h-4 w-4 text-accent" />
+                            <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'concluido')} disabled={service.status === 'concluido'}>
+                                <CheckCircle2 className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
