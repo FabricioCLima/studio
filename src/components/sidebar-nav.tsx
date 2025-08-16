@@ -77,7 +77,7 @@ export function SidebarNav() {
                             onClick={() => router.push(item.href)}
                         >
                             <a>
-                                <item.icon />
+                                <item.icon className="h-5 w-5" />
                                 <span>{item.label}</span>
                                 {count > 0 && <SidebarMenuBadge>{count}</SidebarMenuBadge>}
                             </a>
@@ -92,7 +92,7 @@ export function SidebarNav() {
         <SidebarGroup>
             <SidebarGroupLabel>{user?.email}</SidebarGroupLabel>
             <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
-              <LogOut size={16} />
+              <LogOut size={20} />
               <span>Sair</span>
             </Button>
         </SidebarGroup>
