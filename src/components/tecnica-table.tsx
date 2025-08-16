@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, PlayCircle, Trash2 } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, PlayCircle, Trash2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -19,12 +19,6 @@ import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
 import { StatusBadge } from './status-badge';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +30,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useState } from 'react';
 
 interface TecnicaTableProps {
   services: Service[];
@@ -43,6 +46,7 @@ interface TecnicaTableProps {
 
 export function TecnicaTable({ services }: TecnicaTableProps) {
     const { toast } = useToast();
+    const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
 
     const handleUpdateStatus = async (id: string, newStatus: string) => {
         try {
@@ -75,6 +79,8 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                 title: 'Erro!',
                 description: 'Não foi possível excluir o serviço.',
             });
+        } finally {
+            setServiceToDelete(null);
         }
     }
 
@@ -89,7 +95,7 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
   }
 
   return (
-    <>
+    <AlertDialog onOpenChange={(open) => !open && setServiceToDelete(null)} open={!!serviceToDelete}>
       <Card>
       <Table>
         <TableHeader>
@@ -122,49 +128,41 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
               <TableCell>
                 {service.dataAgendamento ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
               </TableCell>
-              <TableCell className="text-right space-x-2">
-                
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'em_visita')} disabled={service.status === 'em_visita' || service.status === 'concluido'}>
-                                <PlayCircle />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Iniciar Visita</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'concluido')} disabled={service.status === 'concluido'}>
-                                <CheckCircle2 />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Concluir Serviço</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <Trash2 className="text-destructive" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Excluir Serviço</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                  </AlertDialogTrigger>
+              <TableCell className="text-right">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            onClick={() => handleUpdateStatus(service.id, 'em_visita')}
+                            disabled={service.status === 'em_visita' || service.status === 'concluido'}
+                        >
+                            <PlayCircle className="mr-2 h-4 w-4" />
+                            Iniciar Visita
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => handleUpdateStatus(service.id, 'concluido')}
+                            disabled={service.status === 'concluido'}
+                        >
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Concluir Serviço
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <AlertDialogTrigger asChild>
+                             <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Excluir
+                            </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                {serviceToDelete === service.id && (
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
@@ -177,14 +175,13 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                       <AlertDialogAction onClick={() => handleDelete(service.id)} className="bg-destructive hover:bg-destructive/90">Excluir</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
-                </AlertDialog>
-
+                )}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       </Card>
-    </>
+      </AlertDialog>
   );
 }
