@@ -9,27 +9,27 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { Button } from './ui/button';
-import { Trash2 } from 'lucide-react';
+import { CheckCircle2, PlayCircle, Trash2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
 import { StatusBadge } from './status-badge';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from '@/components/ui/alert-dialog';
 
 interface TecnicaTableProps {
   services: Service[];
@@ -38,18 +38,20 @@ interface TecnicaTableProps {
 export function TecnicaTable({ services }: TecnicaTableProps) {
     const { toast } = useToast();
 
-    const handleDelete = async (id: string) => {
+    const handleUpdateStatus = async (id: string, newStatus: string) => {
         try {
-            await deleteDoc(doc(db, "servicos", id));
+            const serviceRef = doc(db, "servicos", id);
+            await updateDoc(serviceRef, { status: newStatus });
             toast({
                 title: 'Sucesso!',
-                description: 'Serviço excluído com sucesso.',
+                description: 'Status do serviço atualizado.',
+                className: 'bg-accent text-accent-foreground',
             });
         } catch (error) {
             toast({
                 variant: 'destructive',
                 title: 'Erro!',
-                description: 'Não foi possível excluir o serviço.',
+                description: 'Não foi possível atualizar o status do serviço.',
             });
         }
     }
@@ -98,26 +100,34 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
               <TableCell>
                 {service.dataAgendamento ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
               </TableCell>
-              <TableCell className="text-right">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Esta ação não pode ser desfeita. Isso excluirá permanentemente o serviço.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(service.id)} className="bg-destructive hover:bg-destructive/90">Excluir</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+              <TableCell className="text-right space-x-2">
+                
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'em_visita')} disabled={service.status === 'em_visita'}>
+                                <PlayCircle className="h-4 w-4 text-blue-500" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Iniciar Visita</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'concluido')}>
+                                <CheckCircle2 className="h-4 w-4 text-accent" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Concluir Serviço</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
               </TableCell>
             </TableRow>
           ))}
