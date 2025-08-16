@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -42,7 +43,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <SidebarNav />
       </Sidebar>
       <SidebarInset>
-        {children}
+        {user && children}
       </SidebarInset>
     </SidebarProvider>
   );
