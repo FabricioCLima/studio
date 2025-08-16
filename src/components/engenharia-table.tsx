@@ -31,28 +31,10 @@ import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
 import { useState } from 'react';
 import { EditServiceDialog } from './edit-service-dialog';
-import { Badge } from './ui/badge';
+import { StatusBadge } from './status-badge';
 
 interface EngenhariaTableProps {
   services: Service[];
-}
-
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "success" | "info" } = {
-    engenharia: "default",
-    agendado: "success",
-    aguardando_visita: "info",
-    tecnica: "secondary",
-    digitacao: "outline",
-    medicina: "destructive",
-}
-
-const statusLabel: { [key: string]: string } = {
-    engenharia: "Aguardando agendamento",
-    agendado: "Agendado",
-    aguardando_visita: "Aguardando Visita",
-    tecnica: "Técnica",
-    digitacao: "Digitação",
-    medicina: "Medicina",
 }
 
 export function EngenhariaTable({ services }: EngenhariaTableProps) {
@@ -107,12 +89,10 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
             <TableRow key={service.id}>
               <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
               <TableCell>{service.contato}</TableCell>
-              <TableCell className="text-center">{service.email}</TableCell>
+              <TableCell className="text-center">{service.email || '-'}</TableCell>
               <TableCell>{service.telefone}</TableCell>
               <TableCell>
-                <Badge variant={statusVariant[service.status] || 'secondary'}>
-                    {statusLabel[service.status] || service.status}
-                </Badge>
+                <StatusBadge service={service} />
               </TableCell>
               <TableCell>
                 {service.dataServico ? format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}

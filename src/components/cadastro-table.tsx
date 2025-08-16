@@ -31,30 +31,11 @@ import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
 import { useState } from 'react';
 import { EditServiceDialog } from './edit-service-dialog';
-import { Badge } from './ui/badge';
+import { StatusBadge } from './status-badge';
 
 interface CadastroTableProps {
   services: Service[];
 }
-
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "success" | "info" } = {
-    engenharia: "default",
-    agendado: "success",
-    aguardando_visita: "info",
-    tecnica: "secondary",
-    digitacao: "outline",
-    medicina: "destructive",
-}
-
-const statusLabel: { [key: string]: string } = {
-    engenharia: "Engenharia",
-    agendado: "Agendado",
-    aguardando_visita: "Aguardando Visita",
-    tecnica: "Técnica",
-    digitacao: "Digitação",
-    medicina: "Medicina",
-}
-
 
 export function CadastroTable({ services }: CadastroTableProps) {
     const { toast } = useToast();
@@ -108,9 +89,7 @@ export function CadastroTable({ services }: CadastroTableProps) {
                 {service.dataServico ? format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
               </TableCell>
               <TableCell>
-                <Badge variant={statusVariant[service.status] || 'secondary'}>
-                    {statusLabel[service.status] || service.status}
-                </Badge>
+                <StatusBadge service={service} />
               </TableCell>
               <TableCell className="text-right">
                 <Button variant="ghost" size="icon" onClick={() => setEditingService(service)}>
