@@ -10,12 +10,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, PlayCircle } from 'lucide-react';
+import { CheckCircle2, PlayCircle, Trash2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc } from 'firebase/firestore';
+import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
 import { StatusBadge } from './status-badge';
@@ -25,6 +25,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface TecnicaTableProps {
   services: Service[];
@@ -47,6 +58,22 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                 variant: 'destructive',
                 title: 'Erro!',
                 description: 'Não foi possível atualizar o status do serviço.',
+            });
+        }
+    }
+    
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteDoc(doc(db, "servicos", id));
+            toast({
+                title: 'Sucesso!',
+                description: 'Serviço excluído com sucesso.',
+            });
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Erro!',
+                description: 'Não foi possível excluir o serviço.',
             });
         }
     }
@@ -101,7 +128,7 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'em_visita')} disabled={service.status === 'em_visita' || service.status === 'concluido'}>
-                                <PlayCircle className="h-4 w-4" />
+                                <PlayCircle />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -114,7 +141,7 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(service.id, 'concluido')} disabled={service.status === 'concluido'}>
-                                <CheckCircle2 className="h-4 w-4" />
+                                <CheckCircle2 />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -122,6 +149,35 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Trash2 className="text-destructive" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Excluir Serviço</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação não pode ser desfeita. Isso excluirá permanentemente o serviço.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDelete(service.id)} className="bg-destructive hover:bg-destructive/90">Excluir</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
               </TableCell>
             </TableRow>
