@@ -15,7 +15,7 @@ const statusConfig: {
         variant: "default" | "secondary" | "destructive" | "outline" | "success" | "info" | "warning" 
     } 
 } = {
-    engenharia: { label: "Engenharia", variant: "default" },
+    engenharia: { label: "Aguardando Agendamento", variant: "default" },
     agendado: { label: "Agendado", variant: "success" },
     aguardando_visita: { label: "Aguardando Visita", variant: "info" },
     tecnica: { label: "Técnica", variant: "secondary" },
