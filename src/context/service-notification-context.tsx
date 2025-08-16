@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
+import { usePathname } from 'next/navigation';
 
 type ServiceNotificationContextType = {
   engineeringCount: number;
@@ -20,10 +21,10 @@ const ServiceNotificationContext = createContext<ServiceNotificationContextType>
 
 export function ServiceNotificationProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const pathname = usePathname();
   const [engineeringCount, setEngineeringCount] = useState(0);
   const [tecnicaCount, setTecnicaCount] = useState(0);
-  const [hasVisitedTecnica, setHasVisitedTecnica] = useState(false);
-
+  
   useEffect(() => {
     if (user) {
       const engQ = query(collection(db, 'servicos'), where('status', '==', 'engenharia'));
@@ -35,7 +36,7 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
 
       const tecQ = query(collection(db, 'servicos'), where('status', '==', 'aguardando_visita'));
       const tecUnsubscribe = onSnapshot(tecQ, (snapshot) => {
-        if (!hasVisitedTecnica) {
+        if (pathname !== '/tecnica') {
             setTecnicaCount(snapshot.size);
         }
       }, (error) => {
@@ -50,12 +51,13 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
         setEngineeringCount(0);
         setTecnicaCount(0);
     }
-  }, [user, hasVisitedTecnica]);
+  }, [user, pathname]);
   
   const resetTecnicaCount = useCallback(() => {
-      setTecnicaCount(0);
-      setHasVisitedTecnica(true);
-  }, []);
+      if (pathname === '/tecnica') {
+        setTecnicaCount(0);
+      }
+  }, [pathname]);
 
   const value = {
       engineeringCount,
