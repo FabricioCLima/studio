@@ -21,7 +21,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from './ui/button';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -29,8 +29,6 @@ import { useToast } from '@/hooks/use-toast';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
-import { useState } from 'react';
-import { EditServiceDialog } from './edit-service-dialog';
 import { StatusBadge } from './status-badge';
 
 interface TecnicaTableProps {
@@ -39,7 +37,6 @@ interface TecnicaTableProps {
 
 export function TecnicaTable({ services }: TecnicaTableProps) {
     const { toast } = useToast();
-    const [editingService, setEditingService] = useState<Service | null>(null);
 
     const handleDelete = async (id: string) => {
         try {
@@ -102,10 +99,6 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                 {service.dataAgendamento ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
               </TableCell>
               <TableCell className="text-right">
-                <Button variant="ghost" size="icon" onClick={() => setEditingService(service)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon">
@@ -131,17 +124,6 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
         </TableBody>
       </Table>
       </Card>
-      {editingService && (
-        <EditServiceDialog
-          service={editingService}
-          open={!!editingService}
-          onOpenChange={(open) => {
-            if (!open) {
-              setEditingService(null);
-            }
-          }}
-        />
-      )}
     </>
   );
 }
