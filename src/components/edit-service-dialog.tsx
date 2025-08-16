@@ -34,7 +34,7 @@ const formSchema = z.object({
   contato: z.string().min(1, 'Contato é obrigatório.'),
   email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
   servicos: z.array(z.object({ value: z.string() })).optional(),
-  dataServico: z.date({ required_error: 'Data do serviço é obrigatória.' }),
+  dataServico: z.date({ required_error: 'Data de cadastro é obrigatória.' }),
   dataAgendamento: z.date().optional().nullable(),
   tecnico: z.string().optional(),
   status: z.string().optional(),
@@ -240,7 +240,7 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
                   <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Serviço</Button>
                 </div>
                 <FormField control={form.control} name="dataServico" render={({ field }) => (
-                    <FormItem className="flex flex-col"><FormLabel>Data do Serviço</FormLabel>
+                    <FormItem className="flex flex-col"><FormLabel>Data de Cadastro</FormLabel>
                       <Popover><PopoverTrigger asChild>
                           <FormControl>
                             <Button variant={'outline'} className={cn('w-[240px] pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
