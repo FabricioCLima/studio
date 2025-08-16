@@ -19,6 +19,7 @@ export type Service = {
   complemento?: string;
   telefone: string;
   contato: string;
+  email?: string;
   servicos: string[];
   dataServico: {
     seconds: number;

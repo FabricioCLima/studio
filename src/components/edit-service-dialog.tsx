@@ -30,6 +30,7 @@ const formSchema = z.object({
   complemento: z.string().optional(),
   telefone: z.string().min(1, 'Telefone é obrigatório.'),
   contato: z.string().min(1, 'Contato é obrigatório.'),
+  email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
   servicos: z.array(z.object({ value: z.string() })).optional(),
   dataServico: z.date({ required_error: 'Data do serviço é obrigatória.' }),
 });
@@ -57,6 +58,7 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
       complemento: '',
       telefone: '',
       contato: '',
+      email: '',
       servicos: [{ value: '' }],
     },
   });
@@ -170,6 +172,9 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
               <FormField control={form.control} name="contato" render={({ field }) => (
                   <FormItem><FormLabel>Contato</FormLabel><FormControl><Input placeholder="Nome do contato" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
+              <FormField control={form.control} name="email" render={({ field }) => (
+                <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="contato@empresa.com" {...field} /></FormControl><FormMessage /></FormItem>
+              )}/>
             </div>
             
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

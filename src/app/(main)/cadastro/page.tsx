@@ -1,10 +1,11 @@
+
 'use client';
 
 import { CadastroDialog } from '@/components/cadastro-dialog';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { Service } from './engenharia/page';
+import type { Service } from '../engenharia/page';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/auth-context';
@@ -57,6 +58,7 @@ export default function CadastroPage() {
       (service) =>
         service.nomeEmpresa.toLowerCase().includes(lowercasedTerm) ||
         service.cnpj.toLowerCase().includes(lowercasedTerm) ||
+        (service.email && service.email.toLowerCase().includes(lowercasedTerm)) ||
         (service.servicos && service.servicos.some((s) => s.toLowerCase().includes(lowercasedTerm)))
     );
     setFilteredServices(results);
@@ -79,7 +81,7 @@ export default function CadastroPage() {
         <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-                placeholder="Buscar por CNPJ, nome da empresa ou serviço..."
+                placeholder="Buscar por CNPJ, nome da empresa, email ou serviço..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
