@@ -134,8 +134,10 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
         email: values.email || null,
         complemento: values.complemento || null,
       };
+      
+      const tecnicoValue = values.tecnico === 'nenhum' ? null : values.tecnico;
 
-      if (values.dataAgendamento && values.tecnico) {
+      if (values.dataAgendamento && tecnicoValue) {
         dataToUpdate.status = 'aguardando_visita';
       } else if (values.dataAgendamento) {
         dataToUpdate.status = 'agendado';
@@ -146,9 +148,8 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
       if (!values.dataAgendamento) {
         dataToUpdate.dataAgendamento = null;
       }
-      if (!values.tecnico) {
-        dataToUpdate.tecnico = null;
-      }
+      
+      dataToUpdate.tecnico = tecnicoValue;
 
 
       await updateDoc(serviceRef, dataToUpdate);
@@ -285,7 +286,7 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="">Nenhum</SelectItem>
+                                <SelectItem value="nenhum">Nenhum</SelectItem>
                                 {tecnicos.map(tecnico => (
                                     <SelectItem key={tecnico.id} value={tecnico.nome}>{tecnico.nome}</SelectItem>
                                 ))}
