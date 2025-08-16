@@ -43,6 +43,7 @@ interface EditServiceDialogProps {
 export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDialogProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCepLoading, setIsCepLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,6 +75,29 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
     control: form.control,
     name: 'servicos',
   });
+
+  const fetchCep = async () => {
+    const cep = form.getValues('cep').replace(/\D/g, '');
+    if (cep.length !== 8) {
+      return;
+    }
+    setIsCepLoading(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
+      if (data.erro) {
+        toast({ variant: 'destructive', title: 'CEP não encontrado.' });
+      } else {
+        form.setValue('endereco', data.logradouro);
+        form.setValue('bairro', data.bairro);
+        form.setValue('cidade', data.localidade);
+      }
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Erro ao buscar CEP.' });
+    } finally {
+      setIsCepLoading(false);
+    }
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -120,7 +144,13 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
                   <FormItem className="lg:col-span-2"><FormLabel>Nome da Empresa</FormLabel><FormControl><Input placeholder="Nome Fantasia" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
               <FormField control={form.control} name="cep" render={({ field }) => (
-                  <FormItem><FormLabel>CEP</FormLabel><FormControl><Input placeholder="00000-000" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem>
+                    <FormLabel>CEP</FormLabel>
+                    <FormControl>
+                      <Input placeholder="00000-000" {...field} onBlur={fetchCep} disabled={isCepLoading} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}/>
               <FormField control={form.control} name="cidade" render={({ field }) => (
                   <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="Cidade" {...field} /></FormControl><FormMessage /></FormItem>

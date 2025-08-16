@@ -65,7 +65,6 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
   const fetchCep = async () => {
     const cep = form.getValues('cep').replace(/\D/g, '');
     if (cep.length !== 8) {
-      toast({ variant: 'destructive', title: 'CEP inválido.' });
       return;
     }
     setIsCepLoading(true);
@@ -125,7 +124,13 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
                 <FormItem className="lg:col-span-2"><FormLabel>Nome da Empresa</FormLabel><FormControl><Input placeholder="Nome Fantasia" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
             <FormField control={form.control} name="cep" render={({ field }) => (
-                <FormItem><FormLabel>CEP</FormLabel><FormControl><div className="flex gap-2"><Input placeholder="00000-000" {...field} /><Button type="button" onClick={fetchCep} disabled={isCepLoading}><Search className="h-4 w-4" /></Button></div></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel>CEP</FormLabel>
+                  <FormControl>
+                    <Input placeholder="00000-000" {...field} onBlur={fetchCep} disabled={isCepLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}/>
             <FormField control={form.control} name="cidade" render={({ field }) => (
                 <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="Cidade" {...field} /></FormControl><FormMessage /></FormItem>
