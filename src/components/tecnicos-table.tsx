@@ -71,7 +71,7 @@ export function TecnicosTable({ tecnicos }: TecnicosTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Nome</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead className="text-center">Email</TableHead>
             <TableHead>Telefone</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
@@ -80,7 +80,7 @@ export function TecnicosTable({ tecnicos }: TecnicosTableProps) {
           {tecnicos.map((tecnico) => (
             <TableRow key={tecnico.id}>
               <TableCell className="font-medium">{tecnico.nome}</TableCell>
-              <TableCell>{tecnico.email || '-'}</TableCell>
+              <TableCell className="text-center">{tecnico.email || '-'}</TableCell>
               <TableCell>{tecnico.telefone || '-'}</TableCell>
               <TableCell className="text-right">
                 <Button variant="ghost" size="icon" onClick={() => setEditingTecnico(tecnico)}>

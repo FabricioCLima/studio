@@ -93,7 +93,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
           <TableRow>
             <TableHead>Empresa</TableHead>
             <TableHead>Contato</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead className="text-center">Email</TableHead>
             <TableHead>Telefone</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Data</TableHead>
@@ -107,7 +107,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
             <TableRow key={service.id}>
               <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
               <TableCell>{service.contato}</TableCell>
-              <TableCell>{service.email}</TableCell>
+              <TableCell className="text-center">{service.email}</TableCell>
               <TableCell>{service.telefone}</TableCell>
               <TableCell>
                 <Badge variant={statusVariant[service.status] || 'secondary'}>
