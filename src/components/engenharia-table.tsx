@@ -45,7 +45,7 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 }
 
 const statusLabel: { [key: string]: string } = {
-    engenharia: "Engenharia",
+    engenharia: "Aguardando agendamento",
     tecnica: "Técnica",
     digitacao: "Digitação",
     medicina: "Medicina",
