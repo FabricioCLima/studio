@@ -11,6 +11,7 @@ import { useAuth } from '@/context/auth-context';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CadastroTable } from '@/components/cadastro-table';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function CadastroPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function CadastroPage() {
       setLoading(false);
       return;
     }
-
+    setLoading(true);
     const q = query(collection(db, 'servicos'));
     const unsubscribe = onSnapshot(
       q,
@@ -35,7 +36,6 @@ export default function CadastroPage() {
           servicesData.push({ id: doc.id, ...doc.data() } as Service);
         });
         setAllServices(servicesData);
-        setFilteredServices(servicesData); 
         setLoading(false);
       },
       (error) => {
@@ -48,22 +48,28 @@ export default function CadastroPage() {
   }, [user]);
 
   useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredServices([]);
+      return;
+    }
     const lowercasedTerm = searchTerm.toLowerCase();
     const results = allServices.filter(
       (service) =>
         service.nomeEmpresa.toLowerCase().includes(lowercasedTerm) ||
         service.cnpj.toLowerCase().includes(lowercasedTerm) ||
-        service.servicos.some((s) => s.toLowerCase().includes(lowercasedTerm))
+        (service.servicos && service.servicos.some((s) => s.toLowerCase().includes(lowercasedTerm)))
     );
     setFilteredServices(results);
   }, [searchTerm, allServices]);
+
+  const hasSearched = searchTerm.trim() !== '';
 
   return (
     <>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
-            Cadastro de Serviço
+            Cadastro
           </h1>
           <Button onClick={() => setIsModalOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -79,15 +85,24 @@ export default function CadastroPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
         </div>
-        {loading ? (
-            <div className="space-y-4">
+        {loading && (
+            <div className="space-y-4 pt-4">
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-        ) : (
-            <CadastroTable services={filteredServices} />
         )}
+
+        {!loading && hasSearched && <CadastroTable services={filteredServices} />}
+        
+        {!loading && !hasSearched && (
+             <Card className="mt-4">
+                <CardContent className="p-8 text-center text-muted-foreground">
+                    <p>Digite para buscar um serviço.</p>
+                </CardContent>
+            </Card>
+        )}
+
       </div>
       <CadastroDialog open={isModalOpen} onOpenChange={setIsModalOpen} />
     </>
