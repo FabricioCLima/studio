@@ -77,7 +77,7 @@ export function SidebarNav() {
                             <a>
                                 <item.icon className="h-6 w-6" />
                                 <span>{item.label}</span>
-                                {count > 0 && <SidebarMenuBadge>{count}</SidebarMenuBadge>}
+                                {count > 0 && <SidebarMenuBadge />}
                             </a>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
