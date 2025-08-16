@@ -2,6 +2,7 @@
 
 import { EngenhariaTable } from '@/components/engenharia-table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
@@ -28,8 +29,14 @@ export type Service = {
 export default function EngenhariaPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     const q = query(collection(db, 'servicos'), where('status', '==', 'engenharia'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const servicesData: Service[] = [];
@@ -38,10 +45,13 @@ export default function EngenhariaPage() {
       });
       setServices(servicesData);
       setLoading(false);
+    }, (error) => {
+        console.error("Error fetching services:", error);
+        setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
   return (
     <>

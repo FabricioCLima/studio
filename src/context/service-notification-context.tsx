@@ -22,8 +22,13 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
       const q = query(collection(db, 'servicos'), where('status', '==', 'engenharia'));
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         setEngineeringCount(querySnapshot.size);
+      }, (error) => {
+        console.error("Error fetching notification count:", error);
+        setEngineeringCount(0);
       });
       return () => unsubscribe();
+    } else {
+        setEngineeringCount(0);
     }
   }, [user]);
 
