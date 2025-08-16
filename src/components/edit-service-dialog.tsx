@@ -35,7 +35,7 @@ const formSchema = z.object({
   email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
   servicos: z.array(z.object({ value: z.string() })).optional(),
   dataServico: z.date({ required_error: 'Data do serviço é obrigatória.' }),
-  dataAgendamento: z.date().optional(),
+  dataAgendamento: z.date().optional().nullable(),
   tecnico: z.string().optional(),
   status: z.string().optional(),
 });
@@ -87,7 +87,7 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
         ...service,
         servicos: service.servicos.map((s) => ({ value: s })),
         dataServico: new Date(service.dataServico.seconds * 1000),
-        dataAgendamento: service.dataAgendamento ? new Date(service.dataAgendamento.seconds * 1000) : undefined,
+        dataAgendamento: service.dataAgendamento ? new Date(service.dataAgendamento.seconds * 1000) : null,
         tecnico: service.tecnico || '',
         email: service.email || '',
         complemento: service.complemento || '',
@@ -136,11 +136,11 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
       };
 
       if (values.dataAgendamento && values.tecnico) {
+        dataToUpdate.status = 'aguardando_visita';
+      } else if (values.dataAgendamento) {
         dataToUpdate.status = 'agendado';
       } else {
-        if(service.status === 'agendado') {
-            dataToUpdate.status = 'engenharia';
-        }
+        dataToUpdate.status = 'engenharia';
       }
 
       if (!values.dataAgendamento) {

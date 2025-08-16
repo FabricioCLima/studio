@@ -29,7 +29,7 @@ export type Service = {
   dataAgendamento?: {
     seconds: number;
     nanoseconds: number;
-  };
+  } | null;
   tecnico?: string;
 };
 
@@ -44,7 +44,7 @@ export default function EngenhariaPage() {
       return;
     }
 
-    const q = query(collection(db, 'servicos'), where('status', 'in', ['engenharia', 'agendado']));
+    const q = query(collection(db, 'servicos'), where('status', 'in', ['engenharia', 'agendado', 'aguardando_visita']));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const servicesData: Service[] = [];
       querySnapshot.forEach((doc) => {

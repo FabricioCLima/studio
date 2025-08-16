@@ -37,9 +37,10 @@ interface CadastroTableProps {
   services: Service[];
 }
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "success" } = {
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "success" | "info" } = {
     engenharia: "default",
     agendado: "success",
+    aguardando_visita: "info",
     tecnica: "secondary",
     digitacao: "outline",
     medicina: "destructive",
@@ -47,7 +48,8 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 
 const statusLabel: { [key: string]: string } = {
     engenharia: "Engenharia",
-    agendado: "Aguardando Visita",
+    agendado: "Agendado",
+    aguardando_visita: "Aguardando Visita",
     tecnica: "Técnica",
     digitacao: "Digitação",
     medicina: "Medicina",
