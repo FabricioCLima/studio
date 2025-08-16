@@ -31,9 +31,24 @@ import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
 import { useState } from 'react';
 import { EditServiceDialog } from './edit-service-dialog';
+import { Badge } from './ui/badge';
 
 interface EngenhariaTableProps {
   services: Service[];
+}
+
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
+    engenharia: "default",
+    tecnica: "secondary",
+    digitacao: "outline",
+    medicina: "destructive",
+}
+
+const statusLabel: { [key: string]: string } = {
+    engenharia: "Engenharia",
+    tecnica: "Técnica",
+    digitacao: "Digitação",
+    medicina: "Medicina",
 }
 
 export function EngenhariaTable({ services }: EngenhariaTableProps) {
@@ -60,7 +75,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
     return (
         <Card>
             <CardContent className="p-8 text-center text-muted-foreground">
-                <p>Nenhum serviço pendente na fila de engenharia.</p>
+                <p>Nenhum serviço pendente na engenharia.</p>
             </CardContent>
         </Card>
     )
@@ -73,7 +88,10 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Empresa</TableHead>
-            <TableHead>Serviço Principal</TableHead>
+            <TableHead>Contato</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Telefone</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Data</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
@@ -82,7 +100,14 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
           {services.map((service) => (
             <TableRow key={service.id}>
               <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-              <TableCell>{service.servicos[0]}</TableCell>
+              <TableCell>{service.contato}</TableCell>
+              <TableCell>{service.email}</TableCell>
+              <TableCell>{service.telefone}</TableCell>
+              <TableCell>
+                <Badge variant={statusVariant[service.status] || 'secondary'}>
+                    {statusLabel[service.status] || service.status}
+                </Badge>
+              </TableCell>
               <TableCell>
                 {format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })}
               </TableCell>
