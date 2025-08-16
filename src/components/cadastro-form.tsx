@@ -28,7 +28,7 @@ const formSchema = z.object({
   complemento: z.string().optional(),
   telefone: z.string().min(1, 'Telefone é obrigatório.'),
   contato: z.string().min(1, 'Contato é obrigatório.'),
-  servicos: z.array(z.object({ value: z.string().min(1, 'Serviço não pode ser vazio.') })).min(1, 'Adicione pelo menos um serviço.'),
+  servicos: z.array(z.object({ value: z.string() })).optional(),
   dataServico: z.date({ required_error: 'Data do serviço é obrigatória.' }),
 });
 
@@ -91,7 +91,7 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
     try {
       await addDoc(collection(db, 'servicos'), {
         ...values,
-        servicos: values.servicos.map(s => s.value),
+        servicos: values.servicos ? values.servicos.map(s => s.value).filter(s => s.trim() !== '') : [],
         status: 'engenharia',
         createdAt: serverTimestamp(),
       });
@@ -156,7 +156,7 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <Input placeholder={`Serviço ${index + 1}`} {...field} />
-                          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </div>
                       </FormControl>
                       <FormMessage />
