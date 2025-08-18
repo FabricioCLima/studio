@@ -18,7 +18,17 @@ import { CheckCircle, UploadCloud } from 'lucide-react';
 
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"];
+const ACCEPTED_FILE_TYPES = [
+    "image/jpeg", 
+    "image/jpg", 
+    "image/png", 
+    "image/webp", 
+    "application/pdf", 
+    "text/plain",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+];
+const ACCEPTED_FILE_EXTENSIONS = ".jpg, .jpeg, .png, .webp, .pdf, .txt, .doc, .docx";
 
 
 const formSchema = z.object({
@@ -27,8 +37,8 @@ const formSchema = z.object({
     .refine((files) => files?.length > 0, "Selecione pelo menos um arquivo.")
     .refine((files) => Array.from(files).every((file) => file.size <= MAX_FILE_SIZE), `Cada arquivo deve ter no máximo 5MB.`)
     .refine(
-      (files) => Array.from(files).every((file) => ACCEPTED_IMAGE_TYPES.includes(file.type)),
-      "Apenas arquivos .jpg, .jpeg, .png, .webp e .pdf são aceitos."
+      (files) => Array.from(files).every((file) => ACCEPTED_FILE_TYPES.includes(file.type)),
+      `Apenas arquivos ${ACCEPTED_FILE_EXTENSIONS} são aceitos.`
     ),
 });
 
@@ -85,7 +95,7 @@ export function UploadFilesForm({ service, onSave }: UploadFilesFormProps) {
         toast({
             variant: 'destructive',
             title: 'Erro no Upload!',
-            description: error.message || 'Não foi possível enviar os arquivos. Verifique o console para mais detalhes.',
+            description: error.message || 'Não foi possível enviar os arquivos. Verifique se o Storage está ativado no seu projeto Firebase.',
         });
     } finally {
         setIsSubmitting(false);
