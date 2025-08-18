@@ -21,20 +21,22 @@ export default function VencidosPage() {
     }
 
     const today = Timestamp.now();
-    // A ordem dos filtros é importante para o Firestore. 
-    // Primeiro filtramos por status e depois pelo range de data.
     const activeStatuses = ['engenharia', 'agendado', 'aguardando_visita', 'em_visita', 'digitacao', 'medicina'];
     
+    // Query only by status to avoid composite index requirement
     const q = query(
         collection(db, 'servicos'), 
-        where('status', 'in', activeStatuses),
-        where('dataVencimento', '<', today)
+        where('status', 'in', activeStatuses)
     );
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const servicesData: Service[] = [];
       querySnapshot.forEach((doc) => {
-        servicesData.push({ id: doc.id, ...doc.data() } as Service);
+        const service = { id: doc.id, ...doc.data() } as Service;
+        // Client-side filtering for expiration date
+        if (service.dataVencimento && service.dataVencimento.seconds < today.seconds) {
+            servicesData.push(service);
+        }
       });
       setServices(servicesData);
       setLoading(false);
