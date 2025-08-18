@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { AuthProvider } from '@/context/auth-context';
 import { Toaster } from '@/components/ui/toaster';
-import { ServiceNotificationProvider } from '@/context/service-notification-context';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'Service Flow Dashboard',
@@ -29,12 +28,10 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <AuthProvider>
-          <ServiceNotificationProvider>
+        <Providers>
             {children}
             <Toaster />
-          </ServiceNotificationProvider>
-        </AuthProvider>
+        </Providers>
       </body>
     </html>
   );
