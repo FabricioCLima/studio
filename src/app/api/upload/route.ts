@@ -1,13 +1,10 @@
 
 import { NextResponse } from 'next/server';
 import { Storage } from '@google-cloud/storage';
-import { Readable } from 'stream';
 
 // Initialize storage
 const storage = new Storage({
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    // Se estiver rodando localmente, você talvez precise do keyFilename
-    // keyFilename: './path/to/your/serviceAccountKey.json',
 });
 
 const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '';
@@ -15,16 +12,6 @@ if (!bucketName) {
     throw new Error("Firebase Storage bucket name is not configured. Set NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET environment variable.");
 }
 const bucket = storage.bucket(bucketName);
-
-
-async function streamToBuffer(stream: Readable): Promise<Buffer> {
-    const chunks: Buffer[] = [];
-    return new Promise((resolve, reject) => {
-        stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-        stream.on('error', (err) => reject(err));
-        stream.on('end', () => resolve(Buffer.concat(chunks)));
-    });
-}
 
 
 export async function POST(request: Request) {
@@ -50,8 +37,6 @@ export async function POST(request: Request) {
                 metadata: { contentType: file.type },
             });
             
-            // Make the file public to get a downloadable URL
-            // Alternativamente, use signed URLs para acesso privado e temporário
             await blob.makePublic();
 
             return {
@@ -67,8 +52,9 @@ export async function POST(request: Request) {
             fileData,
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Upload failed:', error);
-        return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+        const errorMessage = error.message || 'An unexpected error occurred during upload.';
+        return NextResponse.json({ error: 'Upload failed', details: errorMessage }, { status: 500 });
     }
 }
