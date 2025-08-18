@@ -17,7 +17,9 @@ import { Badge } from './ui/badge';
 import { Label } from './ui/label';
 
 const formSchema = z.object({
-  files: z.custom<FileList>().refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.'),
+  files: z
+    .custom<FileList>()
+    .refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.'),
 });
 
 interface UploadFilesFormProps {
@@ -28,24 +30,11 @@ interface UploadFilesFormProps {
 export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      files: undefined,
-    },
   });
-  
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = form;
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const files = Array.from(event.target.files);
-      setSelectedFiles(prev => [...prev, ...files]);
-      setValue('files', event.target.files, { shouldValidate: true });
-    }
-  };
   
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -71,7 +60,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
         });
         
         form.reset();
-        setSelectedFiles([]);
+        setSelectedFileNames([]);
         onSave?.();
     } catch (error) {
       console.error('Error uploading files: ', error);
@@ -87,32 +76,49 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className='space-y-2'>
-            <Label>Arquivos</Label>
-            <div>
-              <Label htmlFor="file-upload" className="w-full inline-block cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                Escolher arquivos
-              </Label>
-              <Input 
-                id="file-upload"
-                type="file" 
-                multiple 
-                {...register('files')}
-                onChange={handleFileChange}
-                className="sr-only"
-              />
-            </div>
-            {errors.files && <p className="text-sm font-medium text-destructive">{errors.files.message}</p>}
-        </div>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="files"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Arquivos</FormLabel>
+              <FormControl>
+                <div>
+                  <Label htmlFor="file-upload" className="w-full inline-block cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    Escolher arquivos
+                  </Label>
+                  <Input 
+                    id="file-upload"
+                    type="file" 
+                    multiple 
+                    className="sr-only"
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    onChange={(e) => {
+                      field.onChange(e.target.files);
+                      if (e.target.files) {
+                        setSelectedFileNames(Array.from(e.target.files).map(f => f.name));
+                      } else {
+                        setSelectedFileNames([]);
+                      }
+                    }}
+                    ref={field.ref}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
-        {selectedFiles.length > 0 && (
+        {selectedFileNames.length > 0 && (
             <div className="space-y-2">
                 <p className="text-sm font-medium">Arquivos selecionados:</p>
                 <div className="flex flex-wrap gap-2">
-                    {selectedFiles.map((file, index) => (
+                    {selectedFileNames.map((name, index) => (
                         <Badge key={index} variant="secondary" className="flex items-center gap-2">
-                            {file.name}
+                            {name}
                         </Badge>
                     ))}
                 </div>
