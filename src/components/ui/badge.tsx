@@ -30,6 +30,8 @@ const badgeVariants = cva(
             "border-transparent bg-red-600 text-white hover:bg-red-600/80",
         arquivado: 
             "border-transparent bg-slate-400 text-white hover:bg-slate-400/80",
+        vencendo:
+            "border-transparent bg-orange-500 text-white hover:bg-orange-500/80",
       },
     },
     defaultVariants: {

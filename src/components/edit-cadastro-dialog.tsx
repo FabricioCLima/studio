@@ -12,7 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { addYears, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -96,8 +96,11 @@ export function EditCadastroDialog({ service, open, onOpenChange }: EditCadastro
     try {
       const serviceRef = doc(db, 'servicos', service.id);
       
+      const dataVencimento = addYears(values.dataServico, 1);
+
       const dataToUpdate: { [key: string]: any } = {
         ...values,
+        dataVencimento,
         servicos: values.servicos ? values.servicos.map((s) => s.value).filter(s => s.trim() !== '') : [],
         email: values.email || null,
         complemento: values.complemento || null,

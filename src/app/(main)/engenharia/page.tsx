@@ -25,6 +25,10 @@ export type Service = {
     seconds: number;
     nanoseconds: number;
   };
+  dataVencimento: {
+    seconds: number;
+    nanoseconds: number;
+  };
   status: string;
   dataAgendamento?: {
     seconds: number;

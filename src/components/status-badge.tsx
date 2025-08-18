@@ -3,7 +3,7 @@
 
 import type { Service } from "@/app/(main)/engenharia/page";
 import { Badge } from "./ui/badge";
-import { isBefore, startOfDay } from "date-fns";
+import { differenceInDays, isBefore, startOfDay } from "date-fns";
 
 interface StatusBadgeProps {
     service: Service;
@@ -12,7 +12,7 @@ interface StatusBadgeProps {
 const statusConfig: { 
     [key: string]: { 
         label: string; 
-        variant: "default" | "secondary" | "destructive" | "outline" | "success" | "info" | "warning" | "finalizado" | "digitacao" | "medicina" | "arquivado"
+        variant: "default" | "secondary" | "destructive" | "outline" | "success" | "info" | "warning" | "finalizado" | "digitacao" | "medicina" | "arquivado" | "vencendo"
     } 
 } = {
     engenharia: { label: "Aguardando Agendamento", variant: "default" },
@@ -24,6 +24,7 @@ const statusConfig: {
     concluido: { label: "Concluído", variant: "finalizado" },
     atrasado: { label: "Atrasado", variant: "destructive" },
     arquivado: { label: "Arquivado", variant: "arquivado" },
+    vencendo: { label: "Vencendo", variant: "vencendo"},
 };
 
 
@@ -38,6 +39,19 @@ export function StatusBadge({ service }: StatusBadgeProps) {
 
     if (isOverdue) {
         currentStatus = 'atrasado';
+    } else if (
+        service.dataVencimento &&
+        !['concluido', 'arquivado'].includes(service.status)
+    ) {
+        const today = startOfDay(new Date());
+        const expirationDate = startOfDay(new Date(service.dataVencimento.seconds * 1000));
+        const daysUntilExpiration = differenceInDays(expirationDate, today);
+
+        if (daysUntilExpiration <= 30 && daysUntilExpiration >= 0) {
+            currentStatus = 'vencendo';
+        } else if (daysUntilExpiration < 0) {
+            currentStatus = 'atrasado'; // ou um novo status 'vencido'
+        }
     }
     
     const config = statusConfig[currentStatus] || { label: service.status, variant: "secondary" };
