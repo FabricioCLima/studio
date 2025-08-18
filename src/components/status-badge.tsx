@@ -19,9 +19,9 @@ const statusConfig: {
     agendado: { label: "Agendado", variant: "success" },
     aguardando_visita: { label: "Aguardando Visita", variant: "info" },
     em_visita: { label: "Em Visita", variant: "warning" },
+    digitacao: { label: "Digitação", variant: "outline" },
     concluido: { label: "Concluído", variant: "finalizado" },
     tecnica: { label: "Técnica", variant: "secondary" },
-    digitacao: { label: "Digitação", variant: "outline" },
     medicina: { label: "Medicina", variant: "destructive" },
     atrasado: { label: "Atrasado", variant: "destructive" },
 };

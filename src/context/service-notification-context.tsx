@@ -10,13 +10,17 @@ import { usePathname } from 'next/navigation';
 type ServiceNotificationContextType = {
   engineeringCount: number;
   tecnicaCount: number;
+  digitacaoCount: number;
   resetTecnicaCount: () => void;
+  resetDigitacaoCount: () => void;
 };
 
 const ServiceNotificationContext = createContext<ServiceNotificationContextType>({
   engineeringCount: 0,
   tecnicaCount: 0,
+  digitacaoCount: 0,
   resetTecnicaCount: () => {},
+  resetDigitacaoCount: () => {},
 });
 
 export function ServiceNotificationProvider({ children }: { children: React.ReactNode }) {
@@ -24,6 +28,7 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
   const pathname = usePathname();
   const [engineeringCount, setEngineeringCount] = useState(0);
   const [tecnicaCount, setTecnicaCount] = useState(0);
+  const [digitacaoCount, setDigitacaoCount] = useState(0);
   
   useEffect(() => {
     if (user) {
@@ -43,13 +48,25 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
         console.error("Error fetching tecnica count:", error);
       });
 
+      const digQ = query(collection(db, 'servicos'), where('status', '==', 'digitacao'));
+      const digUnsubscribe = onSnapshot(digQ, (snapshot) => {
+        if (pathname !== '/digitacao') {
+            setDigitacaoCount(snapshot.size);
+        }
+      }, (error) => {
+        console.error("Error fetching digitacao count:", error);
+      });
+
+
       return () => {
         engUnsubscribe();
         tecUnsubscribe();
+        digUnsubscribe();
       };
     } else {
         setEngineeringCount(0);
         setTecnicaCount(0);
+        setDigitacaoCount(0);
     }
   }, [user, pathname]);
   
@@ -59,10 +76,18 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
       }
   }, [pathname]);
 
+  const resetDigitacaoCount = useCallback(() => {
+    if (pathname === '/digitacao') {
+      setDigitacaoCount(0);
+    }
+  }, [pathname]);
+
   const value = {
       engineeringCount,
       tecnicaCount,
-      resetTecnicaCount
+      digitacaoCount,
+      resetTecnicaCount,
+      resetDigitacaoCount,
   }
 
   return (

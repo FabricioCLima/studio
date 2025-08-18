@@ -155,15 +155,15 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                                 Iniciar Visita
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleUpdateStatus(service.id, 'concluido')}
-                                disabled={service.status === 'concluido'}
+                                onClick={() => handleUpdateStatus(service.id, 'digitacao')}
+                                disabled={service.status === 'digitacao' || !service.anexos || service.anexos.length === 0}
                             >
                                 <CheckCircle2 className="mr-2 h-4 w-4" />
                                 Concluir Serviço
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <AlertDialogTrigger asChild>
-                                 <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => setServiceToDelete(service.id)}>
+                                 <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Excluir
                                 </DropdownMenuItem>
