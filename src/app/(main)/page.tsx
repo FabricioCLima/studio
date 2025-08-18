@@ -57,22 +57,12 @@ export default function DashboardPage() {
     }, []);
 
     const getResponsible = (service: Service): string => {
-        switch (service.status) {
-            case 'digitacao':
-                return service.digitador || 'Não Atribuído';
-            case 'engenharia':
-            case 'agendado':
-            case 'aguardando_visita':
-            case 'em_visita':
-                return service.tecnico || 'Não Atribuído';
-            default:
-                return 'Não Atribuído';
-        }
+        return service.responsavel || 'Não Atribuído';
     }
 
     const responsibleData = services.reduce((acc, service) => {
         const responsible = getResponsible(service);
-        if (!acc[responsible]) {
+        if (responsible && !acc[responsible]) {
             acc[responsible] = { name: responsible };
         }
         return acc;
@@ -141,7 +131,7 @@ export default function DashboardPage() {
                 <CardHeader>
                     <CardTitle>Visão Geral Detalhada dos Serviços</CardTitle>
                     <CardDescription>
-                        Contagem de serviços por status e responsável na área.
+                        Contagem de serviços por status e responsável pelo cadastro.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
