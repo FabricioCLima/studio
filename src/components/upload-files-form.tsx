@@ -8,18 +8,19 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
+import { db, storage } from '@/lib/firebase';
 import { useState } from 'react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { Badge } from './ui/badge';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const formSchema = z.object({
-    files: z
-      .custom<FileList>()
-      .refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.')
-      .refine((files) => !files || (files.length > 0 && Array.from(files).every((file) => file instanceof File)), 'Ocorreu um problema com os arquivos selecionados.'),
-  });
+  files: z
+    .custom<FileList>()
+    .refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.')
+    .refine((files) => !files || (files.length > 0 && Array.from(files).every((file) => file instanceof File)), 'Ocorreu um problema com os arquivos selecionados.'),
+});
 
 interface UploadFilesFormProps {
   onSave?: () => void;
@@ -33,7 +34,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        files: undefined,
+      files: undefined,
     }
   });
 
@@ -46,31 +47,20 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
     }
     setIsSubmitting(true);
     try {
-        const formData = new FormData();
-        Array.from(values.files).forEach(file => {
-            formData.append('files', file);
-        });
-        formData.append('serviceId', service.id);
-
-        const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
+        const uploadPromises = Array.from(values.files).map(async (file) => {
+            const filePath = `services/${service.id}/${file.name}`;
+            const fileRef = ref(storage, filePath);
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+            return { name: file.name, url: url };
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Falha no upload do arquivo.');
-        }
-
-        const { fileData } = await response.json();
+        const uploadedFiles = await Promise.all(uploadPromises);
 
         const serviceRef = doc(db, 'servicos', service.id);
-        const serviceSnap = await getDoc(serviceRef);
-        const existingAnexos = serviceSnap.data()?.anexos || [];
-        const updatedAnexos = [...existingAnexos, ...fileData];
-
+        
         await updateDoc(serviceRef, {
-            anexos: updatedAnexos
+            anexos: arrayUnion(...uploadedFiles)
         });
 
         toast({
@@ -85,8 +75,10 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
       console.error('Error uploading files: ', error);
       toast({
         variant: 'destructive',
-        title: 'Erro!',
-        description: error.message || 'Não foi possível enviar os arquivos.',
+        title: 'Erro de Upload!',
+        description: error.code === 'storage/unauthorized' 
+            ? 'Permissão negada. Verifique as regras de CORS e segurança do Storage.'
+            : error.message || 'Não foi possível enviar os arquivos.',
       });
     } finally {
       setIsSubmitting(false);

@@ -15,7 +15,7 @@ import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
-import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { arrayUnion, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
 import { StatusBadge } from './status-badge';
@@ -156,7 +156,7 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => handleUpdateStatus(service.id, 'digitacao')}
-                                disabled={service.status === 'digitacao' || !service.anexos || service.anexos.length === 0}
+                                disabled={service.status === 'concluido' || !service.anexos || service.anexos.length === 0}
                             >
                                 <CheckCircle2 className="mr-2 h-4 w-4" />
                                 Concluir Serviço
