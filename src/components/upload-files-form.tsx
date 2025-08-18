@@ -17,7 +17,7 @@ import { Badge } from './ui/badge';
 import { Label } from './ui/label';
 
 const formSchema = z.object({
-  files: z.custom<FileList>().refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.').nullable(),
+  files: z.any().refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.'),
 });
 
 interface UploadFilesFormProps {
@@ -32,19 +32,16 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-        files: null,
-    }
   });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const files = Array.from(event.target.files);
       setSelectedFiles(prev => [...prev, ...files]);
-      form.setValue('files', event.target.files);
+      form.setValue('files', event.target.files); // Ensure react-hook-form is aware of the change
     }
   };
-
+  
   async function onSubmit() {
     if (selectedFiles.length === 0) {
         form.setError("files", { message: "Selecione pelo menos um arquivo." });
@@ -64,7 +61,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
 
         const serviceRef = doc(db, 'servicos', service.id);
         await updateDoc(serviceRef, {
-            anexos: arrayUnion(...fileData)
+            anexos: arrayUnion(...(service.anexos || []), ...fileData)
         });
 
         toast({
@@ -94,7 +91,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
         <FormField
           control={form.control}
           name="files"
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               <FormLabel>Arquivos</FormLabel>
               <FormControl>
@@ -106,6 +103,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
                     id="file-upload"
                     type="file" 
                     multiple 
+                    {...form.register('files')}
                     onChange={handleFileChange}
                     className="sr-only"
                   />
