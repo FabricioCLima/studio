@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, Download, MoreHorizontal, Trash2 } from 'lucide-react';
+import { CheckCircle2, Download, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -36,6 +36,7 @@ import {
 import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { AssignDigitadorDialog } from './assign-digitador-dialog';
 
 interface DigitacaoTableProps {
   services: Service[];
@@ -44,6 +45,7 @@ interface DigitacaoTableProps {
 export function DigitacaoTable({ services }: DigitacaoTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
+    const [assigningDigitadorService, setAssigningDigitadorService] = useState<Service | null>(null);
 
     const handleDownload = (anexo: {name: string, type: string, data: string}) => {
         try {
@@ -104,6 +106,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
           <TableRow>
             <TableHead>Empresa</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Digitador</TableHead>
             <TableHead>Anexos</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
@@ -115,6 +118,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
               <TableCell>
                 <StatusBadge service={service} />
               </TableCell>
+               <TableCell>{service.digitador || '-'}</TableCell>
               <TableCell>
                 {service.anexos && service.anexos.length > 0 ? (
                     <DropdownMenu>
@@ -137,15 +141,27 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                 )}
               </TableCell>
               <TableCell className="text-right">
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setServiceToConclude(service)}
-                    disabled={service.status === 'concluido' || service.status === 'medicina'}
-                >
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Concluir
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Abrir menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Atribuir Digitador
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setServiceToConclude(service)}
+                        disabled={service.status === 'concluido' || service.status === 'medicina'}>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Enviar para Medicina
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
@@ -167,6 +183,15 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {assigningDigitadorService && (
+        <AssignDigitadorDialog
+            open={!!assigningDigitadorService}
+            onOpenChange={(open) => !open && setAssigningDigitadorService(null)}
+            service={assigningDigitadorService}
+            onSuccess={() => setAssigningDigitadorService(null)}
+        />
+      )}
     </>
   );
 }
