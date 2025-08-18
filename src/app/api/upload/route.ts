@@ -36,11 +36,12 @@ export async function POST(request: Request) {
             await blob.save(Buffer.from(fileBuffer), {
                 metadata: { contentType: file.type },
             });
-            
-            await blob.makePublic();
 
+            // Construct the public URL manually instead of calling makePublic()
+            const publicUrl = `https://storage.googleapis.com/${bucketName}/${filePath}`;
+            
             return {
-                url: blob.publicUrl(),
+                url: publicUrl,
                 name: file.name,
             };
         });
