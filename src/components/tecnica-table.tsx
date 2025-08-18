@@ -163,7 +163,7 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <AlertDialogTrigger asChild>
-                                 <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => setServiceToDelete(service.id)}>
+                                 <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Excluir
                                 </DropdownMenuItem>
@@ -179,8 +179,8 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                         </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(service.id)} className="bg-destructive hover:bg-destructive/90">Excluir</AlertDialogAction>
+                        <AlertDialogCancel onClick={() => setServiceToDelete(null)}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => serviceToDelete && handleDelete(serviceToDelete)} className="bg-destructive hover:bg-destructive/90">Excluir</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
