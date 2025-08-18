@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
 import { useState } from 'react';
 import type { Service } from '@/app/(main)/engenharia/page';
@@ -19,7 +19,8 @@ import { Label } from './ui/label';
 const formSchema = z.object({
   files: z
     .custom<FileList>()
-    .refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.'),
+    .refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.')
+    .refine((files) => Array.from(files).every(file => file instanceof File), 'Ocorreu um problema com os arquivos selecionados.'),
 });
 
 interface UploadFilesFormProps {
@@ -34,9 +35,16 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+        files: undefined,
+    }
   });
   
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!values.files || values.files.length === 0) {
+        toast({ variant: 'destructive', title: 'Nenhum arquivo selecionado.' });
+        return;
+    }
     setIsSubmitting(true);
     try {
         const uploadPromises = Array.from(values.files).map(async (file) => {
@@ -46,11 +54,18 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
             return { url: downloadURL, name: file.name };
         });
 
-        const fileData = await Promise.all(uploadPromises);
+        const newFileData = await Promise.all(uploadPromises);
 
         const serviceRef = doc(db, 'servicos', service.id);
+        
+        // Fetch the current document to get existing attachments
+        const serviceSnap = await getDoc(serviceRef);
+        const existingAnexos = serviceSnap.data()?.anexos || [];
+        
+        const updatedAnexos = [...existingAnexos, ...newFileData];
+
         await updateDoc(serviceRef, {
-            anexos: arrayUnion(...fileData)
+            anexos: updatedAnexos
         });
 
         toast({
@@ -74,13 +89,24 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
     }
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      form.setValue('files', files, { shouldValidate: true });
+      setSelectedFileNames(Array.from(files).map(f => f.name));
+    } else {
+      form.setValue('files', undefined, { shouldValidate: true });
+      setSelectedFileNames([]);
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="files"
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               <FormLabel>Arquivos</FormLabel>
               <FormControl>
@@ -93,17 +119,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
                     type="file" 
                     multiple 
                     className="sr-only"
-                    onBlur={field.onBlur}
-                    name={field.name}
-                    onChange={(e) => {
-                      field.onChange(e.target.files);
-                      if (e.target.files) {
-                        setSelectedFileNames(Array.from(e.target.files).map(f => f.name));
-                      } else {
-                        setSelectedFileNames([]);
-                      }
-                    }}
-                    ref={field.ref}
+                    onChange={handleFileChange}
                   />
                 </div>
               </FormControl>
@@ -125,7 +141,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
             </div>
         )}
         <div className="flex justify-end">
-          <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90">
+          <Button type="submit" disabled={isSubmitting || !form.formState.isValid} className="bg-accent hover:bg-accent/90">
             {isSubmitting ? 'Enviando...' : 'Enviar Arquivos'}
           </Button>
         </div>
