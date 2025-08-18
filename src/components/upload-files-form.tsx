@@ -8,12 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
-import { db, storage } from '@/lib/firebase';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useState } from 'react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { Badge } from './ui/badge';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const formSchema = z.object({
   files: z
@@ -46,21 +45,29 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
         return;
     }
     setIsSubmitting(true);
+    
+    const formData = new FormData();
+    Array.from(values.files).forEach(file => {
+        formData.append('files', file);
+    });
+    formData.append('serviceId', service.id);
+
     try {
-        const uploadPromises = Array.from(values.files).map(async (file) => {
-            const filePath = `services/${service.id}/${file.name}`;
-            const fileRef = ref(storage, filePath);
-            await uploadBytes(fileRef, file);
-            const url = await getDownloadURL(fileRef);
-            return { name: file.name, url: url };
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
         });
 
-        const uploadedFiles = await Promise.all(uploadPromises);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.details || errorData.error || 'Falha no upload do arquivo.');
+        }
+
+        const { fileData } = await response.json();
 
         const serviceRef = doc(db, 'servicos', service.id);
-        
         await updateDoc(serviceRef, {
-            anexos: arrayUnion(...uploadedFiles)
+            anexos: arrayUnion(...fileData)
         });
 
         toast({
@@ -76,9 +83,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
       toast({
         variant: 'destructive',
         title: 'Erro de Upload!',
-        description: error.code === 'storage/unauthorized' 
-            ? 'Permissão negada. Verifique as regras de CORS e segurança do Storage.'
-            : error.message || 'Não foi possível enviar os arquivos.',
+        description: error.message || 'Não foi possível enviar os arquivos.',
       });
     } finally {
       setIsSubmitting(false);

@@ -2,12 +2,13 @@
 import { NextResponse } from 'next/server';
 import { Storage } from '@google-cloud/storage';
 
-// Initialize storage
+// Initialize storage.
+// The service account associated with the App Hosting backend will be used automatically.
 const storage = new Storage({
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
 });
 
-const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '';
+const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 if (!bucketName) {
     throw new Error("Firebase Storage bucket name is not configured. Set NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET environment variable.");
 }
@@ -31,13 +32,17 @@ export async function POST(request: Request) {
             const filePath = `services/${serviceId}/${file.name}`;
             const blob = bucket.file(filePath);
             
-            const fileBuffer = await file.arrayBuffer();
+            // Convert file to buffer
+            const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-            await blob.save(Buffer.from(fileBuffer), {
+            // Save the file to GCS
+            await blob.save(fileBuffer, {
                 metadata: { contentType: file.type },
             });
 
-            // Construct the public URL manually
+            // Construct the public URL manually.
+            // This assumes the bucket is public or has public access enabled via signed URLs or other mechanisms.
+            // For simplicity, we construct a simple public URL.
             const publicUrl = `https://storage.googleapis.com/${bucketName}/${filePath}`;
             
             return {
