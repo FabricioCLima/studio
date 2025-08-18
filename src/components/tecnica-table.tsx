@@ -28,7 +28,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
   DropdownMenu,
@@ -102,92 +101,96 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
   return (
     <>
     <Card>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Empresa</TableHead>
-            <TableHead className="hidden lg:table-cell">Contato</TableHead>
-            <TableHead className="hidden md:table-cell">Status</TableHead>
-            <TableHead className="hidden md:table-cell">Técnico</TableHead>
-            <TableHead className="hidden lg:table-cell">Agendamento</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {services.map((service) => (
-            <TableRow key={service.id}>
-              <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-              <TableCell className="hidden lg:table-cell">{service.contato}</TableCell>
-              <TableCell className="hidden md:table-cell">
-                <StatusBadge service={service} />
-              </TableCell>
-              <TableCell className="hidden md:table-cell">{service.tecnico || '-'}</TableCell>
-              <TableCell className="hidden lg:table-cell">
-                {service.dataAgendamento ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
-              </TableCell>
-              <TableCell className="text-right">
-                <AlertDialog open={serviceToDelete === service.id} onOpenChange={(open) => !open && setServiceToDelete(null)}>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Abrir menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                             <DropdownMenuItem onClick={() => setPrintingService(service)}>
-                                <Printer className="mr-2 h-4 w-4" />
-                                Imprimir Ficha
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                             <DropdownMenuItem onClick={() => setUploadingService(service)}>
-                                <Upload className="mr-2 h-4 w-4" />
-                                Adicionar Anexos
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => handleUpdateStatus(service.id, 'em_visita')}
-                                disabled={service.status === 'em_visita' || service.status === 'concluido'}
-                            >
-                                <PlayCircle className="mr-2 h-4 w-4" />
-                                Iniciar Visita
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => handleUpdateStatus(service.id, 'digitacao')}
-                                disabled={service.status !== 'em_visita'}
-                            >
-                                <CheckCircle2 className="mr-2 h-4 w-4" />
-                                Concluir Serviço
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <AlertDialogTrigger asChild>
-                                 <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Excluir
-                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                        <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Esta ação não pode ser desfeita. Isso excluirá permanentemente o serviço.
-                        </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setServiceToDelete(null)}>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => serviceToDelete && handleDelete(serviceToDelete)} className="bg-destructive hover:bg-destructive/90">Excluir</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-              </TableCell>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Empresa</TableHead>
+              <TableHead className="hidden lg:table-cell">Contato</TableHead>
+              <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead className="hidden md:table-cell">Técnico</TableHead>
+              <TableHead className="hidden lg:table-cell">Agendamento</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {services.map((service) => (
+              <TableRow key={service.id}>
+                <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
+                <TableCell className="hidden lg:table-cell">{service.contato}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <StatusBadge service={service} />
+                </TableCell>
+                <TableCell className="hidden md:table-cell">{service.tecnico || '-'}</TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  {service.dataAgendamento ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                           <DropdownMenuItem onClick={() => setPrintingService(service)}>
+                              <Printer className="mr-2 h-4 w-4" />
+                              Imprimir Ficha
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                           <DropdownMenuItem onClick={() => setUploadingService(service)}>
+                              <Upload className="mr-2 h-4 w-4" />
+                              Adicionar Anexos
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                              onClick={() => handleUpdateStatus(service.id, 'em_visita')}
+                              disabled={service.status === 'em_visita' || service.status === 'concluido'}
+                          >
+                              <PlayCircle className="mr-2 h-4 w-4" />
+                              Iniciar Visita
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                              onClick={() => handleUpdateStatus(service.id, 'digitacao')}
+                              disabled={service.status !== 'em_visita'}
+                          >
+                              <CheckCircle2 className="mr-2 h-4 w-4" />
+                              Concluir Serviço
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                           <DropdownMenuItem 
+                              onClick={() => setServiceToDelete(service.id)}
+                              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Excluir
+                          </DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
       </Card>
+      
+      <AlertDialog open={!!serviceToDelete} onOpenChange={(open) => !open && setServiceToDelete(null)}>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+              <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+              <AlertDialogDescription>
+                  Esta ação não pode ser desfeita. Isso excluirá permanentemente o serviço.
+              </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={() => serviceToDelete && handleDelete(serviceToDelete)} className="bg-destructive hover:bg-destructive/90">Excluir</AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
+
       {uploadingService && (
         <UploadFilesDialog
             open={!!uploadingService}

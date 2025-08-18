@@ -105,78 +105,80 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
   return (
     <>
       <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Empresa</TableHead>
-              <TableHead className="hidden md:table-cell">Responsável</TableHead>
-              <TableHead className="hidden lg:table-cell">Contato</TableHead>
-              <TableHead className="hidden lg:table-cell">Telefone</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden md:table-cell">Técnico</TableHead>
-              <TableHead className="hidden md:table-cell">Agendamento</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {services.map((service) => (
-              <TableRow key={service.id}>
-                <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-                <TableCell className="hidden md:table-cell">{service.responsavel || '-'}</TableCell>
-                <TableCell className="hidden lg:table-cell">{service.contato}</TableCell>
-                <TableCell className="hidden lg:table-cell">{service.telefone}</TableCell>
-                <TableCell>
-                  <StatusBadge service={service} />
-                </TableCell>
-                <TableCell className="hidden md:table-cell">{service.tecnico || '-'}</TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {service.dataAgendamento
-                    ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
-                    : '-'}
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setAssigningResponsavelService(service)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Atribuir Responsável
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setEditingService(service)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Editar Agendamento
-                      </DropdownMenuItem>
-                       {service.status === 'concluido' && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => setServiceToDischarge(service)}>
-                                <CheckCircle2 className="mr-2 h-4 w-4" />
-                                Dar Baixa
-                            </DropdownMenuItem>
-                          </>
-                       )}
-                      <DropdownMenuSeparator />
-                       <DropdownMenuItem
-                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                        onClick={() => setServiceToDelete(service.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Excluir
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Empresa</TableHead>
+                <TableHead className="hidden md:table-cell">Responsável</TableHead>
+                <TableHead className="hidden lg:table-cell">Contato</TableHead>
+                <TableHead className="hidden lg:table-cell">Telefone</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden md:table-cell">Técnico</TableHead>
+                <TableHead className="hidden md:table-cell">Agendamento</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {services.map((service) => (
+                <TableRow key={service.id}>
+                  <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
+                  <TableCell className="hidden md:table-cell">{service.responsavel || '-'}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{service.contato}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{service.telefone}</TableCell>
+                  <TableCell>
+                    <StatusBadge service={service} />
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{service.tecnico || '-'}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {service.dataAgendamento
+                      ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
+                      : '-'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setAssigningResponsavelService(service)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Atribuir Responsável
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setEditingService(service)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Editar Agendamento
+                        </DropdownMenuItem>
+                         {service.status === 'concluido' && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => setServiceToDischarge(service)}>
+                                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                                  Dar Baixa
+                              </DropdownMenuItem>
+                            </>
+                         )}
+                        <DropdownMenuSeparator />
+                         <DropdownMenuItem
+                          className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                          onClick={() => setServiceToDelete(service.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </Card>
 
       <AlertDialog open={!!serviceToDelete} onOpenChange={(open) => !open && setServiceToDelete(null)}>
