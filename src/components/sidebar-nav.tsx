@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 import {
+  Archive,
   Cpu,
   FilePlus2,
   Hammer,
@@ -38,6 +39,7 @@ const navItems = [
   { href: '/digitacao', label: 'Digitação', icon: Keyboard, notificationKey: 'digitacao' },
   { href: '/medicina', label: 'Medicina', icon: Stethoscope, notificationKey: 'medicina' },
   { href: '/tecnicos', label: 'Técnicos', icon: Users },
+  { href: '/arquivo-morto', label: 'Arquivo Morto', icon: Archive },
 ];
 
 export function SidebarNav() {

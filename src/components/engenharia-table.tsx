@@ -26,7 +26,7 @@ import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
 import { useState } from 'react';
@@ -73,17 +73,18 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
 
   const handleDischarge = async (id: string) => {
     try {
-        await deleteDoc(doc(db, 'servicos', id));
+        const serviceRef = doc(db, 'servicos', id);
+        await updateDoc(serviceRef, { status: 'arquivado' });
         toast({
             title: 'Sucesso!',
-            description: 'Serviço baixado com sucesso.',
+            description: 'Serviço arquivado com sucesso.',
             className: 'bg-accent text-accent-foreground',
         });
     } catch (error) {
         toast({
             variant: 'destructive',
             title: 'Erro!',
-            description: 'Não foi possível dar baixa no serviço.',
+            description: 'Não foi possível arquivar o serviço.',
         });
     } finally {
         setServiceToDischarge(null);
@@ -201,7 +202,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Baixa de Serviço</AlertDialogTitle>
             <AlertDialogDescription>
-                Tem certeza que deseja dar baixa no serviço da empresa <span className="font-bold">{serviceToDischarge?.nomeEmpresa}</span>? Esta ação removerá o serviço da lista.
+                Tem certeza que deseja dar baixa no serviço da empresa <span className="font-bold">{serviceToDischarge?.nomeEmpresa}</span>? Esta ação moverá o serviço para o Arquivo Morto.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

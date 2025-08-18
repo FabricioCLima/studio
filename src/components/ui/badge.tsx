@@ -28,6 +28,8 @@ const badgeVariants = cva(
             "border-transparent bg-purple-500 text-white hover:bg-purple-500/80",
         medicina:
             "border-transparent bg-red-600 text-white hover:bg-red-600/80",
+        arquivado: 
+            "border-transparent bg-slate-400 text-white hover:bg-slate-400/80",
       },
     },
     defaultVariants: {

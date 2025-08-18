@@ -12,7 +12,7 @@ interface StatusBadgeProps {
 const statusConfig: { 
     [key: string]: { 
         label: string; 
-        variant: "default" | "secondary" | "destructive" | "outline" | "success" | "info" | "warning" | "finalizado" | "digitacao" | "medicina"
+        variant: "default" | "secondary" | "destructive" | "outline" | "success" | "info" | "warning" | "finalizado" | "digitacao" | "medicina" | "arquivado"
     } 
 } = {
     engenharia: { label: "Aguardando Agendamento", variant: "default" },
@@ -23,6 +23,7 @@ const statusConfig: {
     medicina: { label: "Medicina", variant: "medicina" },
     concluido: { label: "Concluído", variant: "finalizado" },
     atrasado: { label: "Atrasado", variant: "destructive" },
+    arquivado: { label: "Arquivado", variant: "arquivado" },
 };
 
 
