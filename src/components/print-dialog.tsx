@@ -14,7 +14,6 @@ import { Button } from './ui/button';
 import { Printer } from 'lucide-react';
 import { PrintableServiceCard } from './printable-service-card';
 import { useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
 
 interface PrintDialogProps {
   open: boolean;
@@ -23,12 +22,39 @@ interface PrintDialogProps {
 }
 
 export function PrintDialog({ open, onOpenChange, service }: PrintDialogProps) {
-  const componentRef = useRef(null);
+  const componentRef = useRef<HTMLDivElement>(null);
   
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-    documentTitle: `Ficha de Servico - ${service.nomeEmpresa}`,
-  });
+  const handlePrint = () => {
+    const printContent = componentRef.current;
+    if (printContent) {
+      const printWindow = window.open('', '', 'height=800,width=800');
+      
+      if (printWindow) {
+        printWindow.document.write('<html><head><title>Imprimir Ficha</title>');
+        // Injeta os estilos da aplicação na janela de impressão
+        Array.from(document.styleSheets).forEach(styleSheet => {
+          try {
+            if (styleSheet.cssRules) {
+              const style = printWindow.document.createElement('style');
+              style.textContent = Array.from(styleSheet.cssRules)
+                .map(rule => rule.cssText)
+                .join('\n');
+              printWindow.document.head.appendChild(style);
+            }
+          } catch (e) {
+            console.warn('Could not read stylesheet for printing:', e);
+          }
+        });
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printContent.innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+      }
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,12 +67,12 @@ export function PrintDialog({ open, onOpenChange, service }: PrintDialogProps) {
         </DialogHeader>
 
         <div className="max-h-[60vh] overflow-y-auto p-1">
-            <PrintableServiceCard ref={componentRef} service={service} />
+          <PrintableServiceCard ref={componentRef} service={service} />
         </div>
 
         <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Fechar</Button>
-            <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Imprimir</Button>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Fechar</Button>
+          <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Imprimir</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
