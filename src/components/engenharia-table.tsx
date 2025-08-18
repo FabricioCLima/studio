@@ -131,10 +131,6 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                         <Pencil className="mr-2 h-4 w-4" />
                         Editar
                       </DropdownMenuItem>
-                       <DropdownMenuItem onClick={() => setPrintingService(service)}>
-                        <Printer className="mr-2 h-4 w-4" />
-                        Imprimir
-                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                        <DropdownMenuItem
                         className="text-destructive focus:text-destructive focus:bg-destructive/10"

@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, PlayCircle, Trash2, Upload } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, PlayCircle, Printer, Trash2, Upload } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { UploadFilesDialog } from './upload-files-dialog';
+import { PrintDialog } from './print-dialog';
 
 interface TecnicaTableProps {
   services: Service[];
@@ -49,6 +50,7 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
     const { toast } = useToast();
     const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
     const [uploadingService, setUploadingService] = useState<Service | null>(null);
+    const [printingService, setPrintingService] = useState<Service | null>(null);
 
 
     const handleUpdateStatus = async (id: string, newStatus: string) => {
@@ -142,6 +144,10 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                             <DropdownMenuItem onClick={() => setPrintingService(service)}>
+                                <Printer className="mr-2 h-4 w-4" />
+                                Imprimir Ficha
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                              <DropdownMenuItem onClick={() => setUploadingService(service)}>
                                 <Upload className="mr-2 h-4 w-4" />
@@ -196,6 +202,17 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
             onOpenChange={(open) => !open && setUploadingService(null)}
             service={uploadingService}
             onSuccess={() => setUploadingService(null)}
+        />
+      )}
+      {printingService && (
+        <PrintDialog
+          service={printingService}
+          open={!!printingService}
+          onOpenChange={(open) => {
+            if (!open) {
+              setPrintingService(null);
+            }
+          }}
         />
       )}
       </>
