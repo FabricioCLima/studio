@@ -41,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { PrintDialog } from './print-dialog';
+import { AssignResponsavelDialog } from './assign-responsavel-dialog';
 
 interface EngenhariaTableProps {
   services: Service[];
@@ -52,6 +53,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
   const [printingService, setPrintingService] = useState<Service | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
   const [serviceToDischarge, setServiceToDischarge] = useState<Service | null>(null);
+  const [assigningResponsavelService, setAssigningResponsavelService] = useState<Service | null>(null);
 
   const handleDelete = async (id: string) => {
     try {
@@ -150,9 +152,13 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setAssigningResponsavelService(service)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Atribuir Responsável
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setEditingService(service)}>
                         <Pencil className="mr-2 h-4 w-4" />
-                        Editar
+                        Editar Agendamento
                       </DropdownMenuItem>
                        {service.status === 'concluido' && (
                           <>
@@ -234,6 +240,14 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
               setPrintingService(null);
             }
           }}
+        />
+      )}
+      {assigningResponsavelService && (
+        <AssignResponsavelDialog
+            open={!!assigningResponsavelService}
+            onOpenChange={(open) => !open && setAssigningResponsavelService(null)}
+            service={assigningResponsavelService}
+            onSuccess={() => setAssigningResponsavelService(null)}
         />
       )}
     </>

@@ -104,7 +104,7 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
         complemento: values.complemento || null,
         status: 'engenharia',
         createdAt: serverTimestamp(),
-        responsavel: user.displayName || user.email,
+        responsavel: null,
       });
       toast({
         title: 'Sucesso!',
