@@ -17,7 +17,7 @@ import { Badge } from './ui/badge';
 import { Label } from './ui/label';
 
 const formSchema = z.object({
-  files: z.any().refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.'),
+  files: z.custom<FileList>().refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.'),
 });
 
 interface UploadFilesFormProps {
@@ -29,28 +29,28 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      files: undefined,
+    },
   });
+  
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = form;
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const files = Array.from(event.target.files);
       setSelectedFiles(prev => [...prev, ...files]);
-      form.setValue('files', event.target.files); // Ensure react-hook-form is aware of the change
+      setValue('files', event.target.files, { shouldValidate: true });
     }
   };
   
-  async function onSubmit() {
-    if (selectedFiles.length === 0) {
-        form.setError("files", { message: "Selecione pelo menos um arquivo." });
-        return;
-    }
-    
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-        const uploadPromises = selectedFiles.map(async (file) => {
+        const uploadPromises = Array.from(values.files).map(async (file) => {
             const storageRef = ref(storage, `services/${service.id}/${file.name}`);
             await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(storageRef);
@@ -61,7 +61,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
 
         const serviceRef = doc(db, 'servicos', service.id);
         await updateDoc(serviceRef, {
-            anexos: arrayUnion(...(service.anexos || []), ...fileData)
+            anexos: arrayUnion(...fileData)
         });
 
         toast({
@@ -87,32 +87,25 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="files"
-          render={() => (
-            <FormItem>
-              <FormLabel>Arquivos</FormLabel>
-              <FormControl>
-                <div>
-                  <Label htmlFor="file-upload" className="w-full inline-block cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                    Escolher arquivos
-                  </Label>
-                  <Input 
-                    id="file-upload"
-                    type="file" 
-                    multiple 
-                    {...form.register('files')}
-                    onChange={handleFileChange}
-                    className="sr-only"
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className='space-y-2'>
+            <Label>Arquivos</Label>
+            <div>
+              <Label htmlFor="file-upload" className="w-full inline-block cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                Escolher arquivos
+              </Label>
+              <Input 
+                id="file-upload"
+                type="file" 
+                multiple 
+                {...register('files')}
+                onChange={handleFileChange}
+                className="sr-only"
+              />
+            </div>
+            {errors.files && <p className="text-sm font-medium text-destructive">{errors.files.message}</p>}
+        </div>
+        
         {selectedFiles.length > 0 && (
             <div className="space-y-2">
                 <p className="text-sm font-medium">Arquivos selecionados:</p>
