@@ -66,19 +66,7 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      cnpj: '',
-      nomeEmpresa: '',
-      cep: '',
-      cidade: '',
-      endereco: '',
-      bairro: '',
-      complemento: '',
-      telefone: '',
-      contato: '',
-      email: '',
-      servicos: [{ value: '' }],
-    },
+    defaultValues: {},
   });
 
   useEffect(() => {
@@ -93,7 +81,7 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
         complemento: service.complemento || '',
       });
     }
-  }, [service, form]);
+  }, [service, form, open]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -142,7 +130,11 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
       } else if (values.dataAgendamento) {
         dataToUpdate.status = 'agendado';
       } else {
-        dataToUpdate.status = 'engenharia';
+        // Se a data for removida, volta para engenharia.
+        // Se já estava em outro status (digitacao, medicina, etc) mantém o status
+        if (['agendado', 'aguardando_visita', 'engenharia'].includes(service.status)) {
+            dataToUpdate.status = 'engenharia';
+        }
       }
 
       if (!values.dataAgendamento) {
@@ -151,7 +143,6 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
       } else {
         dataToUpdate.tecnico = tecnicoValue;
       }
-
 
       await updateDoc(serviceRef, dataToUpdate);
       toast({
@@ -176,13 +167,88 @@ export function EditServiceDialog({ service, open, onOpenChange }: EditServiceDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Editar Agendamento</DialogTitle>
+          <DialogTitle>Editar Serviço</DialogTitle>
           <DialogDescription>
-            Altere as informações de agendamento do serviço abaixo.
+            Altere as informações do serviço abaixo.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <FormField control={form.control} name="cnpj" render={({ field }) => (
+                    <FormItem><FormLabel>CNPJ</FormLabel><FormControl><Input placeholder="00.000.000/0000-00" {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="nomeEmpresa" render={({ field }) => (
+                    <FormItem className="lg:col-span-2"><FormLabel>Nome da Empresa</FormLabel><FormControl><Input placeholder="Nome Fantasia" {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="cep" render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>CEP</FormLabel>
+                    <FormControl>
+                        <Input placeholder="00000-000" {...field} onBlur={fetchCep} disabled={isCepLoading} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}/>
+                <FormField control={form.control} name="cidade" render={({ field }) => (
+                    <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="Cidade" {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="endereco" render={({ field }) => (
+                    <FormItem><FormLabel>Endereço</FormLabel><FormControl><Input placeholder="Rua, Av..." {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="bairro" render={({ field }) => (
+                    <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Bairro" {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="complemento" render={({ field }) => (
+                    <FormItem><FormLabel>Complemento</FormLabel><FormControl><Input placeholder="Apto, Bloco, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="telefone" render={({ field }) => (
+                    <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input placeholder="(00) 00000-0000" {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="contato" render={({ field }) => (
+                    <FormItem><FormLabel>Contato</FormLabel><FormControl><Input placeholder="Nome do contato" {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="email" render={({ field }) => (
+                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="contato@empresa.com" {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
+            </div>
+        
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                <FormLabel>Serviços</FormLabel>
+                {fields.map((field, index) => (
+                    <FormField key={field.id} control={form.control} name={`servicos.${index}.value`} render={({ field }) => (
+                        <FormItem>
+                        <FormControl>
+                            <div className="flex items-center gap-2">
+                            <Input placeholder={`Serviço ${index + 1}`} {...field} />
+                            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                            </div>
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}/>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Serviço</Button>
+                </div>
+                <FormField control={form.control} name="dataServico" render={({ field }) => (
+                    <FormItem className="flex flex-col"><FormLabel>Data de Cadastro</FormLabel>
+                    <Popover><PopoverTrigger asChild>
+                        <FormControl>
+                            <Button variant={'outline'} className={cn('w-[240px] pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
+                            {field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                        </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                        </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                    </FormItem>
+                )}/>
+            </div>
              <div className="grid grid-cols-1 gap-6 border-t pt-6 md:grid-cols-2">
                  <FormField control={form.control} name="dataAgendamento" render={({ field }) => (
                     <FormItem className="flex flex-col">
