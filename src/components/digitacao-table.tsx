@@ -29,13 +29,11 @@ interface DigitacaoTableProps {
 export function DigitacaoTable({ services }: DigitacaoTableProps) {
     const { toast } = useToast();
 
-    const handleDownload = (url: string, filename: string) => {
+    const handleDownload = (anexo: {name: string, type: string, data: string}) => {
         try {
             const link = document.createElement('a');
-            link.href = url;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.download = filename;
+            link.href = anexo.data;
+            link.download = anexo.name;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -88,7 +86,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {service.anexos.map((anexo, index) => (
-                                <DropdownMenuItem key={index} onClick={() => handleDownload(anexo.url, anexo.name)}>
+                                <DropdownMenuItem key={index} onClick={() => handleDownload(anexo)}>
                                     {anexo.name}
                                 </DropdownMenuItem>
                             ))}
