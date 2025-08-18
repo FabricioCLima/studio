@@ -101,6 +101,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
   return (
     <>
     <Card>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -167,6 +168,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
           ))}
         </TableBody>
       </Table>
+      </div>
       </Card>
 
       <AlertDialog open={!!serviceToConclude} onOpenChange={(open) => !open && setServiceToConclude(null)}>

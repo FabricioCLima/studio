@@ -64,6 +64,7 @@ export function VencidosTable({ services }: VencidosTableProps) {
   return (
     <>
       <Card>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -125,6 +126,7 @@ export function VencidosTable({ services }: VencidosTableProps) {
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
         {editingService && (
             <EditCadastroDialog

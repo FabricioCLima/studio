@@ -101,6 +101,7 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
   return (
     <>
     <Card>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -169,6 +170,7 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
           ))}
         </TableBody>
       </Table>
+      </div>
       </Card>
 
       <AlertDialog open={!!serviceToConclude} onOpenChange={(open) => !open && setServiceToConclude(null)}>

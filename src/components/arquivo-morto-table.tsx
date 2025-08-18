@@ -62,6 +62,7 @@ export function ArquivoMortoTable({ services }: ArquivoMortoTableProps) {
   return (
     <>
       <Card>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -116,6 +117,7 @@ export function ArquivoMortoTable({ services }: ArquivoMortoTableProps) {
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
 
       <AlertDialog open={!!serviceToDelete} onOpenChange={(open) => !open && setServiceToDelete(null)}>

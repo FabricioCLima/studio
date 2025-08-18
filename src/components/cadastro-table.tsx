@@ -82,6 +82,7 @@ export function CadastroTable({ services }: CadastroTableProps) {
   return (
     <>
       <Card>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -135,6 +136,7 @@ export function CadastroTable({ services }: CadastroTableProps) {
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
        <AlertDialog open={!!serviceToDelete} onOpenChange={(open) => !open && setServiceToDelete(null)}>
         <AlertDialogContent>
