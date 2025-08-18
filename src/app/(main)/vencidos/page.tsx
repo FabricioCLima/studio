@@ -21,14 +21,14 @@ export default function VencidosPage() {
     }
 
     const today = Timestamp.now();
-    // Firestore não permite filtro de range (<) e desigualdade (!=) na mesma query
-    // A solução é filtrar por todos os status ativos que podem estar vencidos.
+    // A ordem dos filtros é importante para o Firestore. 
+    // Primeiro filtramos por status e depois pelo range de data.
     const activeStatuses = ['engenharia', 'agendado', 'aguardando_visita', 'em_visita', 'digitacao', 'medicina'];
     
     const q = query(
         collection(db, 'servicos'), 
-        where('dataVencimento', '<', today),
-        where('status', 'in', activeStatuses)
+        where('status', 'in', activeStatuses),
+        where('dataVencimento', '<', today)
     );
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
