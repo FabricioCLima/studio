@@ -19,6 +19,10 @@ import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { EditCadastroDialog } from './edit-cadastro-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { deleteDoc, doc } from 'firebase/firestore';
 
 interface VencidosTableProps {
   services: Service[];
@@ -26,6 +30,26 @@ interface VencidosTableProps {
 
 export function VencidosTable({ services }: VencidosTableProps) {
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'servicos', id));
+      toast({
+        title: 'Sucesso!',
+        description: 'Serviço excluído com sucesso.',
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro!',
+        description: 'Não foi possível excluir o serviço.',
+      });
+    } finally {
+        setServiceToDelete(null);
+    }
+  };
 
   if (services.length === 0) {
     return (
@@ -86,6 +110,14 @@ export function VencidosTable({ services }: VencidosTableProps) {
                         <Pencil className="mr-2 h-4 w-4" />
                         Renovar/Editar
                       </DropdownMenuItem>
+                       <DropdownMenuSeparator />
+                       <DropdownMenuItem
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                        onClick={() => setServiceToDelete(service.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Excluir
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -105,6 +137,23 @@ export function VencidosTable({ services }: VencidosTableProps) {
             }}
             />
         )}
+
+      <AlertDialog open={!!serviceToDelete} onOpenChange={(open) => !open && setServiceToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente o serviço.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => serviceToDelete && handleDelete(serviceToDelete)} className="bg-destructive hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
