@@ -17,7 +17,7 @@ import { Badge } from './ui/badge';
 import { Label } from './ui/label';
 
 const formSchema = z.object({
-  files: z.custom<FileList>().refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.'),
+  files: z.custom<FileList>().refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.').nullable(),
 });
 
 interface UploadFilesFormProps {
@@ -32,6 +32,9 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+        files: null,
+    }
   });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +98,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
             <FormItem>
               <FormLabel>Arquivos</FormLabel>
               <FormControl>
-                <>
+                <div>
                   <Label htmlFor="file-upload" className="w-full inline-block cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                     Escolher arquivos
                   </Label>
@@ -106,7 +109,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
                     onChange={handleFileChange}
                     className="sr-only"
                   />
-                </>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
