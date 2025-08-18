@@ -37,7 +37,7 @@ export async function POST(request: Request) {
                 metadata: { contentType: file.type },
             });
 
-            // Construct the public URL manually instead of calling makePublic()
+            // Construct the public URL manually
             const publicUrl = `https://storage.googleapis.com/${bucketName}/${filePath}`;
             
             return {
