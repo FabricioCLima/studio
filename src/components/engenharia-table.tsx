@@ -87,6 +87,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Empresa</TableHead>
+              <TableHead>Responsável</TableHead>
               <TableHead>Contato</TableHead>
               <TableHead>Telefone</TableHead>
               <TableHead>Status</TableHead>
@@ -100,6 +101,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
             {services.map((service) => (
               <TableRow key={service.id}>
                 <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
+                <TableCell>{service.responsavel || '-'}</TableCell>
                 <TableCell>{service.contato}</TableCell>
                 <TableCell>{service.telefone}</TableCell>
                 <TableCell>

@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useState } from 'react';
+import { useAuth } from '@/context/auth-context';
 
 const formSchema = z.object({
   cnpj: z.string().min(1, 'CNPJ é obrigatório.'),
@@ -42,6 +43,7 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCepLoading, setIsCepLoading] = useState(false);
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -89,6 +91,10 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Usuário não autenticado.' });
+        return;
+    }
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, 'servicos'), {
@@ -98,6 +104,7 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
         complemento: values.complemento || null,
         status: 'engenharia',
         createdAt: serverTimestamp(),
+        responsavel: user.displayName || user.email,
       });
       toast({
         title: 'Sucesso!',

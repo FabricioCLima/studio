@@ -33,6 +33,7 @@ export type Service = {
   tecnico?: string;
   anexos?: { name: string; type: string; data: string }[];
   digitador?: string;
+  responsavel?: string;
 };
 
 export default function EngenhariaPage() {
