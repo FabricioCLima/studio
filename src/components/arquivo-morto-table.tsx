@@ -66,7 +66,7 @@ export function ArquivoMortoTable({ services }: ArquivoMortoTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Empresa</TableHead>
-              <TableHead>Responsável Cadastro</TableHead>
+              <TableHead>Responsável Chefe</TableHead>
               <TableHead>Técnico</TableHead>
               <TableHead>Responsável Digitação</TableHead>
               <TableHead>Responsável Medicina</TableHead>
