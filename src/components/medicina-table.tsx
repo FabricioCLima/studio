@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, Download } from 'lucide-react';
+import { CheckCircle2, Download, MoreHorizontal, Pencil } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -19,6 +19,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import {
@@ -34,6 +36,7 @@ import {
 import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { AssignMedicinaDialog } from './assign-medicina-dialog';
 
 interface MedicinaTableProps {
   services: Service[];
@@ -42,6 +45,7 @@ interface MedicinaTableProps {
 export function MedicinaTable({ services }: MedicinaTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
+    const [assigningMedicinaService, setAssigningMedicinaService] = useState<Service | null>(null);
 
     const handleDownload = (anexo: {name: string, type: string, data: string}) => {
         try {
@@ -102,6 +106,7 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
           <TableRow>
             <TableHead>Empresa</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Responsável</TableHead>
             <TableHead>Anexos</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
@@ -113,6 +118,7 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
               <TableCell>
                 <StatusBadge service={service} />
               </TableCell>
+              <TableCell>{service.medicinaResponsavel || '-'}</TableCell>
               <TableCell>
                 {service.anexos && service.anexos.length > 0 ? (
                     <DropdownMenu>
@@ -135,15 +141,29 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
                 )}
               </TableCell>
               <TableCell className="text-right">
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setServiceToConclude(service)}
-                    disabled={service.status === 'concluido'}
-                >
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Concluir
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Abrir menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setAssigningMedicinaService(service)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Atribuir Responsável
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setServiceToConclude(service)}
+                        disabled={service.status === 'concluido'}
+                      >
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Concluir
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
@@ -165,6 +185,15 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {assigningMedicinaService && (
+        <AssignMedicinaDialog
+            open={!!assigningMedicinaService}
+            onOpenChange={(open) => !open && setAssigningMedicinaService(null)}
+            service={assigningMedicinaService}
+            onSuccess={() => setAssigningMedicinaService(null)}
+        />
+      )}
     </>
   );
 }

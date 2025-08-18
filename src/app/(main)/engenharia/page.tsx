@@ -34,6 +34,7 @@ export type Service = {
   anexos?: { name: string; type: string; data: string }[];
   digitador?: string;
   responsavel?: string;
+  medicinaResponsavel?: string;
 };
 
 export default function EngenhariaPage() {
