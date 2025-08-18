@@ -56,13 +56,28 @@ export default function DashboardPage() {
         return () => unsubscribe();
     }, []);
 
-    const technicianData = services.reduce((acc, service) => {
-        const tecnico = service.tecnico || 'Não Atribuído';
-        if (!acc[tecnico]) {
-            acc[tecnico] = { name: tecnico };
+    const getResponsible = (service: Service): string => {
+        switch (service.status) {
+            case 'digitacao':
+                return service.digitador || 'Não Atribuído';
+            case 'engenharia':
+            case 'agendado':
+            case 'aguardando_visita':
+            case 'em_visita':
+                return service.tecnico || 'Não Atribuído';
+            default:
+                return 'Não Atribuído';
+        }
+    }
+
+    const responsibleData = services.reduce((acc, service) => {
+        const responsible = getResponsible(service);
+        if (!acc[responsible]) {
+            acc[responsible] = { name: responsible };
         }
         return acc;
     }, {} as { [key: string]: { name: string } });
+
 
     const chartData = statusOrder.map(statusName => {
         const statusData: { [key: string]: any } = { name: statusName };
@@ -70,17 +85,17 @@ export default function DashboardPage() {
         services.forEach(service => {
             const translatedStatus = statusTranslations[service.status] || service.status;
             if (translatedStatus === statusName) {
-                const tecnico = service.tecnico || 'Não Atribuído';
-                if (!statusData[tecnico]) {
-                    statusData[tecnico] = 0;
+                const responsible = getResponsible(service);
+                if (!statusData[responsible]) {
+                    statusData[responsible] = 0;
                 }
-                statusData[tecnico]++;
+                statusData[responsible]++;
             }
         });
         return statusData;
     });
 
-    const technicians = Object.keys(technicianData);
+    const responsibles = Object.keys(responsibleData);
 
 
   return (
@@ -126,7 +141,7 @@ export default function DashboardPage() {
                 <CardHeader>
                     <CardTitle>Visão Geral Detalhada dos Serviços</CardTitle>
                     <CardDescription>
-                        Contagem de serviços por status e técnico responsável.
+                        Contagem de serviços por status e responsável na área.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -152,10 +167,10 @@ export default function DashboardPage() {
                                         content={<ChartTooltipContent />}
                                     />
                                     <Legend wrapperStyle={{ fontSize: '12px' }} />
-                                    {technicians.map((tecnico, index) => (
+                                    {responsibles.map((responsible, index) => (
                                         <Bar 
-                                            key={tecnico} 
-                                            dataKey={tecnico} 
+                                            key={responsible} 
+                                            dataKey={responsible} 
                                             stackId="a" 
                                             fill={COLORS[index % COLORS.length]} 
                                             radius={[4, 4, 0, 0]}
