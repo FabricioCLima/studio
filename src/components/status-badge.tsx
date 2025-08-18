@@ -41,16 +41,16 @@ export function StatusBadge({ service }: StatusBadgeProps) {
     if (isVisitOverdue) {
         currentStatus = 'atrasado';
     } else if (
-        service.dataVencimento &&
+        service.dataServico &&
         !['concluido', 'arquivado'].includes(service.status)
     ) {
         const today = startOfDay(new Date());
-        const expirationDate = startOfDay(new Date(service.dataVencimento.seconds * 1000));
-        const daysUntilExpiration = differenceInDays(expirationDate, today);
+        const registrationDate = startOfDay(new Date(service.dataServico.seconds * 1000));
+        const daysSinceRegistration = differenceInDays(today, registrationDate);
 
-        if (daysUntilExpiration < 0) {
+        if (daysSinceRegistration > 365) {
             currentStatus = 'vencido';
-        } else if (daysUntilExpiration <= 30) {
+        } else if (daysSinceRegistration > 335) { // 365 - 30 days
             currentStatus = 'vencendo';
         }
     }

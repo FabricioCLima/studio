@@ -6,8 +6,9 @@ import { VencidosTable } from '@/components/vencidos-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { differenceInDays, startOfDay } from 'date-fns';
 
 export default function VencidosPage() {
   const [services, setServices] = useState<Service[]>([]);
@@ -20,10 +21,8 @@ export default function VencidosPage() {
       return;
     }
 
-    const today = Timestamp.now();
     const activeStatuses = ['engenharia', 'agendado', 'aguardando_visita', 'em_visita', 'digitacao', 'medicina'];
     
-    // Query only by status to avoid composite index requirement
     const q = query(
         collection(db, 'servicos'), 
         where('status', 'in', activeStatuses)
@@ -31,11 +30,18 @@ export default function VencidosPage() {
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const servicesData: Service[] = [];
+      const today = startOfDay(new Date());
+
       querySnapshot.forEach((doc) => {
         const service = { id: doc.id, ...doc.data() } as Service;
-        // Client-side filtering for expiration date
-        if (service.dataVencimento && service.dataVencimento.seconds < today.seconds) {
-            servicesData.push(service);
+        
+        if (service.dataServico) {
+            const registrationDate = startOfDay(new Date(service.dataServico.seconds * 1000));
+            const daysSinceRegistration = differenceInDays(today, registrationDate);
+            
+            if (daysSinceRegistration > 365) {
+                servicesData.push(service);
+            }
         }
       });
       setServices(servicesData);
