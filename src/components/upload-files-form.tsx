@@ -14,10 +14,10 @@ import { useState } from 'react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { Badge } from './ui/badge';
-import { X } from 'lucide-react';
+import { Label } from './ui/label';
 
 const formSchema = z.object({
-  files: z.custom<FileList>().refine((files) => files.length > 0, 'Selecione pelo menos um arquivo.'),
+  files: z.custom<FileList>().refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.'),
 });
 
 interface UploadFilesFormProps {
@@ -37,7 +37,7 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const files = Array.from(event.target.files);
-      setSelectedFiles(files);
+      setSelectedFiles(prev => [...prev, ...files]);
       form.setValue('files', event.target.files);
     }
   };
@@ -91,11 +91,22 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
         <FormField
           control={form.control}
           name="files"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Arquivos</FormLabel>
               <FormControl>
-                <Input type="file" multiple onChange={handleFileChange} />
+                <>
+                  <Label htmlFor="file-upload" className="w-full inline-block cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    Escolher arquivos
+                  </Label>
+                  <Input 
+                    id="file-upload"
+                    type="file" 
+                    multiple 
+                    onChange={handleFileChange}
+                    className="sr-only"
+                  />
+                </>
               </FormControl>
               <FormMessage />
             </FormItem>
