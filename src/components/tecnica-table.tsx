@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, PlayCircle, Trash2 } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, PlayCircle, Trash2, Upload } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -39,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
+import { UploadFilesDialog } from './upload-files-dialog';
 
 interface TecnicaTableProps {
   services: Service[];
@@ -47,6 +48,7 @@ interface TecnicaTableProps {
 export function TecnicaTable({ services }: TecnicaTableProps) {
     const { toast } = useToast();
     const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+    const [uploadingService, setUploadingService] = useState<Service | null>(null);
 
     const handleUpdateStatus = async (id: string, newStatus: string) => {
         try {
@@ -149,10 +151,14 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => handleUpdateStatus(service.id, 'digitacao')}
-                                disabled={service.status === 'concluido'}
+                                disabled={service.status !== 'em_visita' && (!service.anexos || service.anexos.length === 0)}
                             >
                                 <CheckCircle2 className="mr-2 h-4 w-4" />
                                 Concluir Serviço
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setUploadingService(service)}>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Adicionar Anexos
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <AlertDialogTrigger asChild>
@@ -183,6 +189,17 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
         </TableBody>
       </Table>
       </Card>
+      {uploadingService && (
+        <UploadFilesDialog
+            service={uploadingService}
+            open={!!uploadingService}
+            onOpenChange={(open) => {
+                if (!open) {
+                    setUploadingService(null);
+                }
+            }}
+        />
+      )}
       </>
   );
 }
