@@ -13,7 +13,6 @@ import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent } from './ui/card';
-import { StatusBadge } from './status-badge';
 import { Button } from './ui/button';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -23,6 +22,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { deleteDoc, doc } from 'firebase/firestore';
+import { Badge } from './ui/badge';
 
 interface VencidosTableProps {
   services: Service[];
@@ -119,7 +119,7 @@ export function VencidosTable({ services }: VencidosTableProps) {
                     : '-'}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge service={service} />
+                  <Badge variant="vencido">Vencido</Badge>
                 </TableCell>
               </TableRow>
             ))}
