@@ -106,7 +106,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
           <TableRow>
             <TableHead>Empresa</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Digitador</TableHead>
+            <TableHead>Responsável</TableHead>
             <TableHead>Anexos</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
@@ -153,7 +153,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
                         <Pencil className="mr-2 h-4 w-4" />
-                        Atribuir Digitador
+                        Atribuir Responsável
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setServiceToConclude(service)}
                         disabled={service.status === 'concluido' || service.status === 'medicina'}>

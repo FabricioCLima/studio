@@ -29,7 +29,7 @@ interface AssignDigitadorDialogProps {
 }
 
 const formSchema = z.object({
-  digitador: z.string().min(1, 'O nome do digitador é obrigatório.'),
+  digitador: z.string().min(1, 'O nome do responsável é obrigatório.'),
 });
 
 
@@ -59,7 +59,7 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
         });
       toast({
         title: 'Sucesso!',
-        description: 'Digitador atribuído com sucesso.',
+        description: 'Responsável atribuído com sucesso.',
         className: 'bg-accent text-accent-foreground',
       });
       onSuccess();
@@ -68,7 +68,7 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
       toast({
         variant: 'destructive',
         title: 'Erro!',
-        description: 'Não foi possível atribuir o digitador.',
+        description: 'Não foi possível atribuir o responsável.',
       });
     } finally {
       setIsSubmitting(false);
@@ -80,9 +80,9 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Atribuir Digitador</DialogTitle>
+          <DialogTitle>Atribuir Responsável</DialogTitle>
           <DialogDescription>
-            Insira o nome do digitador para o serviço da empresa: <span className="font-semibold">{service.nomeEmpresa}</span>
+            Insira o nome do responsável para o serviço da empresa: <span className="font-semibold">{service.nomeEmpresa}</span>
           </DialogDescription>
         </DialogHeader>
         
@@ -93,9 +93,9 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
                     name="digitador"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Nome do Digitador</FormLabel>
+                            <FormLabel>Nome do Responsável</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nome do Digitador" {...field} />
+                                <Input placeholder="Nome do Responsável" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
