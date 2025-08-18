@@ -23,6 +23,7 @@ import {
   Stethoscope,
   LogOut,
   Users,
+  FileWarning,
 } from 'lucide-react';
 import { useServiceNotification } from '@/context/service-notification-context';
 import { Button } from './ui/button';
@@ -39,6 +40,7 @@ const navItems = [
   { href: '/digitacao', label: 'Digitação', icon: Keyboard, notificationKey: 'digitacao' },
   { href: '/medicina', label: 'Medicina', icon: Stethoscope, notificationKey: 'medicina' },
   { href: '/tecnicos', label: 'Técnicos', icon: Users },
+  { href: '/vencidos', label: 'Vencidos', icon: FileWarning },
   { href: '/arquivo-morto', label: 'Arquivo Morto', icon: Archive },
 ];
 

@@ -32,6 +32,8 @@ const badgeVariants = cva(
             "border-transparent bg-slate-400 text-white hover:bg-slate-400/80",
         vencendo:
             "border-transparent bg-orange-500 text-white hover:bg-orange-500/80",
+        vencido:
+            "border-transparent bg-red-700 text-white hover:bg-red-700/80",
       },
     },
     defaultVariants: {
