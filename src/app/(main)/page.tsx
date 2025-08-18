@@ -10,6 +10,7 @@ import { db } from "@/lib/firebase";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const statusTranslations: { [key: string]: string } = {
     engenharia: "Engenharia",
@@ -37,6 +38,7 @@ export default function DashboardPage() {
     const { user } = useAuth();
     const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         setLoading(true);
@@ -118,7 +120,7 @@ export default function DashboardPage() {
                         {loading ? (
                             <Skeleton className="h-8 w-20" />
                         ) : (
-                           <div className="text-2xl font-bold">{services.length}</div>
+                           <div className="text-2xl font-bold">{services.filter(s => s.status !== 'arquivado').length}</div>
                         )}
                         <p className="text-xs text-muted-foreground">
                             Total de serviços em todos os setores
@@ -134,7 +136,7 @@ export default function DashboardPage() {
                         Contagem de serviços por status e responsável pelo cadastro.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pl-2">
                      {loading ? (
                         <div className="h-[350px] w-full">
                            <Skeleton className="h-full w-full" />
@@ -142,7 +144,7 @@ export default function DashboardPage() {
                      ) : chartData.length > 0 ? (
                         <ChartContainer config={{}} className="h-[350px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
+                                <BarChart data={chartData} margin={{ top: 20, right: 20, bottom: isMobile ? 60 : 20, left: 0 }}>
                                     <CartesianGrid vertical={false} />
                                     <XAxis
                                         dataKey="name"
@@ -150,6 +152,9 @@ export default function DashboardPage() {
                                         axisLine={false}
                                         tickMargin={8}
                                         tick={{ fontSize: 12 }}
+                                        angle={isMobile ? -45 : 0}
+                                        textAnchor={isMobile ? 'end' : 'middle'}
+                                        interval={0}
                                         />
                                     <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
                                     <Tooltip
