@@ -21,10 +21,12 @@ export default function VencidosPage() {
     }
 
     const today = Timestamp.now();
+    // Firestore não permite filtro de range (<) e desigualdade (!=) na mesma query
+    // A solução é filtrar por todos os status que NÃO são 'arquivado'
     const q = query(
         collection(db, 'servicos'), 
         where('dataVencimento', '<', today),
-        where('status', '!=', 'arquivado')
+        where('status', 'not-in', ['arquivado', 'concluido'])
     );
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
