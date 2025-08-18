@@ -86,8 +86,8 @@ export function CadastroTable({ services }: CadastroTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Empresa</TableHead>
-              <TableHead>CNPJ</TableHead>
-              <TableHead>Data</TableHead>
+              <TableHead className="hidden md:table-cell">CNPJ</TableHead>
+              <TableHead className="hidden md:table-cell">Data</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
@@ -96,8 +96,8 @@ export function CadastroTable({ services }: CadastroTableProps) {
             {services.map((service) => (
               <TableRow key={service.id}>
                 <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-                <TableCell>{service.cnpj}</TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">{service.cnpj}</TableCell>
+                <TableCell className="hidden md:table-cell">
                   {service.dataServico
                     ? format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
                     : '-'}

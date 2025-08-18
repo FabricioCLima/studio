@@ -106,13 +106,10 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Empresa</TableHead>
-            <TableHead>Contato</TableHead>
-            <TableHead className="text-center">Email</TableHead>
-            <TableHead>Telefone</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Data</TableHead>
-            <TableHead>Técnico</TableHead>
-            <TableHead>Agendamento</TableHead>
+            <TableHead className="hidden lg:table-cell">Contato</TableHead>
+            <TableHead className="hidden md:table-cell">Status</TableHead>
+            <TableHead className="hidden md:table-cell">Técnico</TableHead>
+            <TableHead className="hidden lg:table-cell">Agendamento</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -120,17 +117,12 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
           {services.map((service) => (
             <TableRow key={service.id}>
               <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-              <TableCell>{service.contato}</TableCell>
-              <TableCell className="text-center">{service.email || '-'}</TableCell>
-              <TableCell>{service.telefone}</TableCell>
-              <TableCell>
+              <TableCell className="hidden lg:table-cell">{service.contato}</TableCell>
+              <TableCell className="hidden md:table-cell">
                 <StatusBadge service={service} />
               </TableCell>
-              <TableCell>
-                {service.dataServico ? format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
-              </TableCell>
-              <TableCell>{service.tecnico || '-'}</TableCell>
-              <TableCell>
+              <TableCell className="hidden md:table-cell">{service.tecnico || '-'}</TableCell>
+              <TableCell className="hidden lg:table-cell">
                 {service.dataAgendamento ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
               </TableCell>
               <TableCell className="text-right">

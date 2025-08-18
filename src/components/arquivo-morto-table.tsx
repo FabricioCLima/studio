@@ -66,13 +66,12 @@ export function ArquivoMortoTable({ services }: ArquivoMortoTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Empresa</TableHead>
-              <TableHead>Responsável Chefe</TableHead>
-              <TableHead>Técnico</TableHead>
-              <TableHead>Responsável Digitação</TableHead>
-              <TableHead>Responsável Medicina</TableHead>
-              <TableHead>Data Cadastro</TableHead>
-              <TableHead>Data Agendamento</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="hidden md:table-cell">Responsável Chefe</TableHead>
+              <TableHead className="hidden lg:table-cell">Técnico</TableHead>
+              <TableHead className="hidden lg:table-cell">Responsável Digitação</TableHead>
+              <TableHead className="hidden lg:table-cell">Responsável Medicina</TableHead>
+              <TableHead className="hidden md:table-cell">Data Cadastro</TableHead>
+              <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -80,21 +79,16 @@ export function ArquivoMortoTable({ services }: ArquivoMortoTableProps) {
             {services.map((service) => (
               <TableRow key={service.id}>
                 <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-                <TableCell>{service.responsavel || '-'}</TableCell>
-                <TableCell>{service.tecnico || '-'}</TableCell>
-                <TableCell>{service.digitador || '-'}</TableCell>
-                <TableCell>{service.medicinaResponsavel || '-'}</TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">{service.responsavel || '-'}</TableCell>
+                <TableCell className="hidden lg:table-cell">{service.tecnico || '-'}</TableCell>
+                <TableCell className="hidden lg:table-cell">{service.digitador || '-'}</TableCell>
+                <TableCell className="hidden lg:table-cell">{service.medicinaResponsavel || '-'}</TableCell>
+                <TableCell className="hidden md:table-cell">
                   {service.dataServico
                     ? format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
                     : '-'}
                 </TableCell>
-                <TableCell>
-                  {service.dataAgendamento
-                    ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
-                    : '-'}
-                </TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
                   <StatusBadge service={service} />
                 </TableCell>
                 <TableCell className="text-right">

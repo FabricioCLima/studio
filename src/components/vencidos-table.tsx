@@ -68,9 +68,9 @@ export function VencidosTable({ services }: VencidosTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Empresa</TableHead>
-              <TableHead>Responsável</TableHead>
-              <TableHead>Data Cadastro</TableHead>
-              <TableHead>Data Vencimento</TableHead>
+              <TableHead className="hidden md:table-cell">Responsável</TableHead>
+              <TableHead className="hidden sm:table-cell">Data Cadastro</TableHead>
+              <TableHead className="hidden md:table-cell">Data Vencimento</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
@@ -79,13 +79,13 @@ export function VencidosTable({ services }: VencidosTableProps) {
             {services.map((service) => (
               <TableRow key={service.id}>
                 <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-                <TableCell>{service.responsavel || '-'}</TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">{service.responsavel || '-'}</TableCell>
+                <TableCell className="hidden sm:table-cell">
                   {service.dataServico
                     ? format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
                     : '-'}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
                   {service.dataVencimento
                     ? format(new Date(service.dataVencimento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
                     : '-'}

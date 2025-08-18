@@ -105,9 +105,9 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Empresa</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead className="hidden md:table-cell">Status</TableHead>
             <TableHead>Responsável</TableHead>
-            <TableHead>Anexos</TableHead>
+            <TableHead className="hidden sm:table-cell">Anexos</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -115,17 +115,17 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
           {services.map((service) => (
             <TableRow key={service.id}>
               <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-              <TableCell>
+              <TableCell className="hidden md:table-cell">
                 <StatusBadge service={service} />
               </TableCell>
               <TableCell>{service.medicinaResponsavel || '-'}</TableCell>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 {service.anexos && service.anexos.length > 0 ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm">
                                 <Download className="mr-2 h-4 w-4" />
-                                Baixar Anexos ({service.anexos.length})
+                                Anexos ({service.anexos.length})
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

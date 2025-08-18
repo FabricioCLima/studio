@@ -105,9 +105,9 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Empresa</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead className="hidden md:table-cell">Status</TableHead>
             <TableHead>Responsável</TableHead>
-            <TableHead>Anexos</TableHead>
+            <TableHead className="hidden sm:table-cell">Anexos</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -115,11 +115,11 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
           {services.map((service) => (
             <TableRow key={service.id}>
               <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-              <TableCell>
+              <TableCell className="hidden md:table-cell">
                 <StatusBadge service={service} />
               </TableCell>
                <TableCell>{service.digitador || '-'}</TableCell>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 {service.anexos && service.anexos.length > 0 ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
