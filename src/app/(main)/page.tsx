@@ -145,7 +145,7 @@ export default function DashboardPage() {
                      ) : chartData.length > 0 ? (
                         <ChartContainer config={{}} className="h-[350px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData} margin={{ top: 20, right: 20, bottom: isMobile ? 60 : 20, left: 0 }}>
+                                <BarChart data={chartData} margin={{ top: 20, right: 20, bottom: isMobile ? 60 : 20, left: isMobile ? -10 : 0 }}>
                                     <CartesianGrid vertical={false} />
                                     <XAxis
                                         dataKey="name"
