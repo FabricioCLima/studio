@@ -16,7 +16,6 @@ import { db, storage } from '@/lib/firebase';
 import { Progress } from './ui/progress';
 import { CheckCircle, UploadCloud } from 'lucide-react';
 
-
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
     "image/jpeg", 
@@ -65,8 +64,7 @@ export function UploadFilesForm({ service, onSave }: UploadFilesFormProps) {
     const files = Array.from(values.files);
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (const file of files) {
         setUploadingFileName(file.name);
         setUploadProgress(0);
         
@@ -84,12 +82,17 @@ export function UploadFilesForm({ service, onSave }: UploadFilesFormProps) {
               reject(error);
             },
             async () => {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              const serviceRef = doc(db, 'servicos', service.id);
-              await updateDoc(serviceRef, {
-                anexos: arrayUnion({ name: file.name, url: downloadURL })
-              });
-              resolve();
+              try {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                const serviceRef = doc(db, 'servicos', service.id);
+                await updateDoc(serviceRef, {
+                    anexos: arrayUnion({ name: file.name, url: downloadURL })
+                });
+                resolve();
+              } catch(error) {
+                console.error("Error updating firestore:", error)
+                reject(error);
+              }
             }
           );
         });
@@ -109,7 +112,7 @@ export function UploadFilesForm({ service, onSave }: UploadFilesFormProps) {
         toast({
             variant: 'destructive',
             title: 'Erro no Upload!',
-            description: error.message || 'Não foi possível enviar os arquivos. Verifique as permissões de Storage do seu projeto Firebase.',
+            description: `Ocorreu um erro ao enviar o arquivo: ${error.message}. Verifique a configuração de CORS e as permissões de Storage do seu projeto Firebase.`,
         });
     } finally {
         setIsSubmitting(false);
@@ -134,6 +137,7 @@ export function UploadFilesForm({ service, onSave }: UploadFilesFormProps) {
                     onChange={(e) => onChange(e.target.files)}
                     disabled={isSubmitting}
                     className="pt-2 text-sm text-muted-foreground file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:bg-primary/90"
+                    accept={ACCEPTED_FILE_EXTENSIONS}
                 />
               </FormControl>
               <FormMessage />
