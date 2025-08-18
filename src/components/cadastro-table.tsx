@@ -29,7 +29,7 @@ import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent } from './ui/card';
 import { useState } from 'react';
-import { EditServiceDialog } from './edit-service-dialog';
+import { EditCadastroDialog } from './edit-cadastro-dialog';
 import { StatusBadge } from './status-badge';
 import {
   DropdownMenu,
@@ -153,7 +153,7 @@ export function CadastroTable({ services }: CadastroTableProps) {
         </AlertDialogContent>
       </AlertDialog>
       {editingService && (
-        <EditServiceDialog
+        <EditCadastroDialog
           service={editingService}
           open={!!editingService}
           onOpenChange={(open) => {
