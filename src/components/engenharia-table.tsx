@@ -21,7 +21,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from './ui/button';
-import { MoreHorizontal, Pencil, Printer, Trash2 } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, Pencil, Printer, Trash2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -51,6 +51,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [printingService, setPrintingService] = useState<Service | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+  const [serviceToDischarge, setServiceToDischarge] = useState<Service | null>(null);
 
   const handleDelete = async (id: string) => {
     try {
@@ -69,6 +70,25 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
         setServiceToDelete(null);
     }
   };
+
+  const handleDischarge = async (id: string) => {
+    try {
+        await deleteDoc(doc(db, 'servicos', id));
+        toast({
+            title: 'Sucesso!',
+            description: 'Serviço baixado com sucesso.',
+            className: 'bg-accent text-accent-foreground',
+        });
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Erro!',
+            description: 'Não foi possível dar baixa no serviço.',
+        });
+    } finally {
+        setServiceToDischarge(null);
+    }
+  }
 
   if (services.length === 0) {
     return (
@@ -133,6 +153,15 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                         <Pencil className="mr-2 h-4 w-4" />
                         Editar
                       </DropdownMenuItem>
+                       {service.status === 'concluido' && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setServiceToDischarge(service)}>
+                                <CheckCircle2 className="mr-2 h-4 w-4" />
+                                Dar Baixa
+                            </DropdownMenuItem>
+                          </>
+                       )}
                       <DropdownMenuSeparator />
                        <DropdownMenuItem
                         className="text-destructive focus:text-destructive focus:bg-destructive/10"
@@ -162,6 +191,23 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={() => serviceToDelete && handleDelete(serviceToDelete)} className="bg-destructive hover:bg-destructive/90">
               Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!serviceToDischarge} onOpenChange={(open) => !open && setServiceToDischarge(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Baixa de Serviço</AlertDialogTitle>
+            <AlertDialogDescription>
+                Tem certeza que deseja dar baixa no serviço da empresa <span className="font-bold">{serviceToDischarge?.nomeEmpresa}</span>? Esta ação removerá o serviço da lista.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => serviceToDischarge && handleDischarge(serviceToDischarge.id)} className="bg-accent hover:bg-accent/90">
+              Confirmar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
