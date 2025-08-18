@@ -11,6 +11,9 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import { CadastroTable } from "@/components/cadastro-table";
 
 const statusTranslations: { [key: string]: string } = {
     engenharia: "Engenharia",
@@ -36,9 +39,11 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"
 
 export default function DashboardPage() {
     const { user } = useAuth();
-    const [services, setServices] = useState<Service[]>([]);
+    const [allServices, setAllServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
     const isMobile = useIsMobile();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredServices, setFilteredServices] = useState<Service[]>([]);
 
     useEffect(() => {
         setLoading(true);
@@ -48,7 +53,7 @@ export default function DashboardPage() {
             querySnapshot.forEach((doc) => {
                 servicesData.push({ id: doc.id, ...doc.data() } as Service);
             });
-            setServices(servicesData);
+            setAllServices(servicesData);
             setLoading(false);
         }, (error) => {
             console.error("Error fetching services for dashboard:", error);
@@ -57,6 +62,22 @@ export default function DashboardPage() {
 
         return () => unsubscribe();
     }, []);
+
+    useEffect(() => {
+        if (searchTerm.trim() === '') {
+          setFilteredServices([]);
+          return;
+        }
+        const lowercasedTerm = searchTerm.toLowerCase();
+        const results = allServices.filter(
+          (service) =>
+            service.nomeEmpresa.toLowerCase().includes(lowercasedTerm) ||
+            service.cnpj.toLowerCase().includes(lowercasedTerm) ||
+            (service.email && service.email.toLowerCase().includes(lowercasedTerm)) ||
+            (service.servicos && service.servicos.some((s) => s.toLowerCase().includes(lowercasedTerm)))
+        );
+        setFilteredServices(results);
+    }, [searchTerm, allServices]);
 
     const getIdentifierForService = (service: Service, statusName: string): string => {
         switch (statusName) {
@@ -75,7 +96,7 @@ export default function DashboardPage() {
         }
     }
 
-    const allIdentifiers = services.reduce((acc, service) => {
+    const allIdentifiers = allServices.reduce((acc, service) => {
         const translatedStatus = statusTranslations[service.status] || service.status;
         const identifier = getIdentifierForService(service, translatedStatus);
         if (identifier !== 'Não Atribuído' && !acc.includes(identifier)) {
@@ -88,7 +109,7 @@ export default function DashboardPage() {
     const chartData = statusOrder.map(statusName => {
         const statusData: { [key: string]: any } = { name: statusName };
         
-        services.forEach(service => {
+        allServices.forEach(service => {
             const translatedStatus = statusTranslations[service.status] || service.status;
             if (translatedStatus === statusName) {
                 const identifier = getIdentifierForService(service, statusName);
@@ -133,7 +154,7 @@ export default function DashboardPage() {
                         {loading ? (
                             <Skeleton className="h-8 w-20" />
                         ) : (
-                           <div className="text-2xl font-bold">{services.filter(s => s.status !== 'arquivado').length}</div>
+                           <div className="text-2xl font-bold">{allServices.filter(s => s.status !== 'arquivado').length}</div>
                         )}
                         <p className="text-xs text-muted-foreground">
                             Total de serviços em todos os setores
@@ -142,6 +163,32 @@ export default function DashboardPage() {
                 </Card>
             </div>
             
+             <Card>
+                <CardHeader>
+                    <CardTitle>Busca Rápida de Serviços</CardTitle>
+                    <CardDescription>
+                       Encontre rapidamente um serviço por CNPJ, nome da empresa, email ou tipo.
+                    </CardDescription>
+                </CardHeader>
+                 <CardContent>
+                    <div className="relative">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Buscar por CNPJ, nome da empresa, email ou serviço..."
+                            className="pl-8"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </CardContent>
+             </Card>
+
+            {searchTerm.trim() !== '' && (
+                <div className="mt-4">
+                    <CadastroTable services={filteredServices} />
+                </div>
+            )}
+
             <Card>
                 <CardHeader>
                     <CardTitle>Visão Geral Detalhada dos Serviços</CardTitle>
