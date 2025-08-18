@@ -31,6 +31,7 @@ export type Service = {
     nanoseconds: number;
   } | null;
   tecnico?: string;
+  anexos?: { name: string; url: string }[];
 };
 
 export default function EngenhariaPage() {
