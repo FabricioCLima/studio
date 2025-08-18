@@ -59,16 +59,26 @@ export default function DashboardPage() {
     }, []);
 
     const getIdentifierForService = (service: Service, statusName: string): string => {
-        if (statusName === 'Aguardando Visita' || statusName === 'Em Visita') {
-            return service.tecnico || 'Não Atribuído';
+        switch (statusName) {
+            case 'Aguardando Visita':
+            case 'Em Visita':
+                return service.tecnico || 'Não Atribuído';
+            case 'Digitação':
+                return service.digitador || 'Não Atribuído';
+            case 'Medicina':
+                return service.medicinaResponsavel || 'Não Atribuído';
+            case 'Engenharia':
+            case 'Agendado':
+                 return service.responsavel || 'Não Atribuído';
+            default:
+                return 'Não Atribuído';
         }
-        return service.responsavel || 'Não Atribuído';
     }
 
     const allIdentifiers = services.reduce((acc, service) => {
         const translatedStatus = statusTranslations[service.status] || service.status;
         const identifier = getIdentifierForService(service, translatedStatus);
-        if (!acc.includes(identifier)) {
+        if (identifier !== 'Não Atribuído' && !acc.includes(identifier)) {
             acc.push(identifier);
         }
         return acc;
@@ -82,10 +92,12 @@ export default function DashboardPage() {
             const translatedStatus = statusTranslations[service.status] || service.status;
             if (translatedStatus === statusName) {
                 const identifier = getIdentifierForService(service, statusName);
-                if (!statusData[identifier]) {
-                    statusData[identifier] = 0;
+                if (identifier !== 'Não Atribuído') {
+                    if (!statusData[identifier]) {
+                        statusData[identifier] = 0;
+                    }
+                    statusData[identifier]++;
                 }
-                statusData[identifier]++;
             }
         });
         return statusData;
