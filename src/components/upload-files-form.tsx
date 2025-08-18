@@ -162,7 +162,7 @@ export function UploadFilesForm({ service, onSave }: UploadFilesFormProps) {
             className="bg-accent hover:bg-accent/90"
           >
             {isSubmitting 
-                ? (uploadProgress === 100 ? <><CheckCircle className="mr-2 h-4 w-4" /> Concluído</> : 'Enviando...')
+                ? 'Enviando...'
                 : <><UploadCloud className="mr-2 h-4 w-4" /> Enviar Arquivos</>
             }
           </Button>
