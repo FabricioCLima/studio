@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
 import { useState } from 'react';
 import type { Service } from '@/app/(main)/engenharia/page';
@@ -20,7 +20,10 @@ const formSchema = z.object({
   files: z
     .custom<FileList>()
     .refine((files) => files && files.length > 0, 'Selecione pelo menos um arquivo.')
-    .refine((files) => Array.from(files).every(file => file instanceof File), 'Ocorreu um problema com os arquivos selecionados.'),
+    .refine(
+        (files) => !files || Array.from(files).every((file) => file instanceof File),
+        'Ocorreu um problema com os arquivos selecionados.'
+    ),
 });
 
 interface UploadFilesFormProps {
@@ -31,7 +34,6 @@ interface UploadFilesFormProps {
 export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,6 +41,8 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
         files: undefined,
     }
   });
+
+  const files = form.watch("files");
   
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!values.files || values.files.length === 0) {
@@ -58,7 +62,6 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
 
         const serviceRef = doc(db, 'servicos', service.id);
         
-        // Fetch the current document to get existing attachments
         const serviceSnap = await getDoc(serviceRef);
         const existingAnexos = serviceSnap.data()?.anexos || [];
         
@@ -75,7 +78,6 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
         });
         
         form.reset();
-        setSelectedFileNames([]);
         onSave?.();
     } catch (error) {
       console.error('Error uploading files: ', error);
@@ -89,52 +91,34 @@ export function UploadFilesForm({ onSave, service }: UploadFilesFormProps) {
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      form.setValue('files', files, { shouldValidate: true });
-      setSelectedFileNames(Array.from(files).map(f => f.name));
-    } else {
-      form.setValue('files', undefined, { shouldValidate: true });
-      setSelectedFileNames([]);
-    }
-  };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="files"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Arquivos</FormLabel>
               <FormControl>
-                <div>
-                  <Label htmlFor="file-upload" className="w-full inline-block cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                    Escolher arquivos
-                  </Label>
-                  <Input 
-                    id="file-upload"
+                <Input 
                     type="file" 
                     multiple 
-                    className="sr-only"
-                    onChange={handleFileChange}
-                  />
-                </div>
+                    onChange={(e) => field.onChange(e.target.files)}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         
-        {selectedFileNames.length > 0 && (
+        {files && files.length > 0 && (
             <div className="space-y-2">
                 <p className="text-sm font-medium">Arquivos selecionados:</p>
                 <div className="flex flex-wrap gap-2">
-                    {selectedFileNames.map((name, index) => (
+                    {Array.from(files).map((file, index) => (
                         <Badge key={index} variant="secondary" className="flex items-center gap-2">
-                            {name}
+                            {(file as File).name}
                         </Badge>
                     ))}
                 </div>
