@@ -70,19 +70,16 @@ export function TecnicosTable({ tecnicos }: TecnicosTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[100px]">Ações</TableHead>
             <TableHead>Nome</TableHead>
             <TableHead className="hidden text-center md:table-cell">Email</TableHead>
             <TableHead className="hidden sm:table-cell">Telefone</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {tecnicos.map((tecnico) => (
             <TableRow key={tecnico.id}>
-              <TableCell className="font-medium">{tecnico.nome}</TableCell>
-              <TableCell className="hidden text-center md:table-cell">{tecnico.email || '-'}</TableCell>
-              <TableCell className="hidden sm:table-cell">{tecnico.telefone || '-'}</TableCell>
-              <TableCell className="text-right">
+              <TableCell>
                 <Button variant="ghost" size="icon" onClick={() => setEditingTecnico(tecnico)}>
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -107,6 +104,9 @@ export function TecnicosTable({ tecnicos }: TecnicosTableProps) {
                   </AlertDialogContent>
                 </AlertDialog>
               </TableCell>
+              <TableCell className="font-medium">{tecnico.nome}</TableCell>
+              <TableCell className="hidden text-center md:table-cell">{tecnico.email || '-'}</TableCell>
+              <TableCell className="hidden sm:table-cell">{tecnico.telefone || '-'}</TableCell>
             </TableRow>
           ))}
         </TableBody>

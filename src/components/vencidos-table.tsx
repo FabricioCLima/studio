@@ -67,33 +67,18 @@ export function VencidosTable({ services }: VencidosTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">Ações</TableHead>
               <TableHead>Empresa</TableHead>
               <TableHead className="hidden md:table-cell">Responsável</TableHead>
               <TableHead className="hidden sm:table-cell">Data Cadastro</TableHead>
               <TableHead className="hidden md:table-cell">Data Vencimento</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {services.map((service) => (
               <TableRow key={service.id}>
-                <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-                <TableCell className="hidden md:table-cell">{service.responsavel || '-'}</TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {service.dataServico
-                    ? format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
-                    : '-'}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {service.dataVencimento
-                    ? format(new Date(service.dataVencimento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
-                    : '-'}
-                </TableCell>
                 <TableCell>
-                  <StatusBadge service={service} />
-                </TableCell>
-                <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -101,7 +86,7 @@ export function VencidosTable({ services }: VencidosTableProps) {
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="start">
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                        <DropdownMenuItem
@@ -120,6 +105,21 @@ export function VencidosTable({ services }: VencidosTableProps) {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                </TableCell>
+                <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
+                <TableCell className="hidden md:table-cell">{service.responsavel || '-'}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {service.dataServico
+                    ? format(new Date(service.dataServico.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
+                    : '-'}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {service.dataVencimento
+                    ? format(new Date(service.dataVencimento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
+                    : '-'}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge service={service} />
                 </TableCell>
               </TableRow>
             ))}

@@ -104,16 +104,39 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[50px]">Ações</TableHead>
             <TableHead>Empresa</TableHead>
             <TableHead className="hidden md:table-cell">Status</TableHead>
             <TableHead>Responsável</TableHead>
             <TableHead className="hidden sm:table-cell">Anexos</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {services.map((service) => (
             <TableRow key={service.id}>
+              <TableCell>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Abrir menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Atribuir Responsável
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setServiceToConclude(service)}
+                        disabled={service.status === 'concluido' || service.status === 'medicina'}>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Enviar para Medicina
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+              </TableCell>
               <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
               <TableCell className="hidden md:table-cell">
                 <StatusBadge service={service} />
@@ -139,29 +162,6 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                 ) : (
                     '-'
                 )}
-              </TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Atribuir Responsável
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setServiceToConclude(service)}
-                        disabled={service.status === 'concluido' || service.status === 'medicina'}>
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                        Enviar para Medicina
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}

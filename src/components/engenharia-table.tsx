@@ -109,6 +109,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[50px]">Ações</TableHead>
                 <TableHead>Empresa</TableHead>
                 <TableHead className="hidden md:table-cell">Responsável</TableHead>
                 <TableHead className="hidden lg:table-cell">Contato</TableHead>
@@ -116,26 +117,12 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Técnico</TableHead>
                 <TableHead className="hidden md:table-cell">Agendamento</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {services.map((service) => (
                 <TableRow key={service.id}>
-                  <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-                  <TableCell className="hidden md:table-cell">{service.responsavel || '-'}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{service.contato}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{service.telefone}</TableCell>
                   <TableCell>
-                    <StatusBadge service={service} />
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">{service.tecnico || '-'}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {service.dataAgendamento
-                      ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
-                      : '-'}
-                  </TableCell>
-                  <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -143,7 +130,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="start">
                         <DropdownMenuLabel>Ações</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => setAssigningResponsavelService(service)}>
@@ -173,6 +160,19 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
+                  </TableCell>
+                  <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
+                  <TableCell className="hidden md:table-cell">{service.responsavel || '-'}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{service.contato}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{service.telefone}</TableCell>
+                  <TableCell>
+                    <StatusBadge service={service} />
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{service.tecnico || '-'}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {service.dataAgendamento
+                      ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR })
+                      : '-'}
                   </TableCell>
                 </TableRow>
               ))}

@@ -65,6 +65,7 @@ export function ArquivoMortoTable({ services }: ArquivoMortoTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">Ações</TableHead>
               <TableHead>Empresa</TableHead>
               <TableHead className="hidden md:table-cell">Responsável Chefe</TableHead>
               <TableHead className="hidden lg:table-cell">Técnico</TableHead>
@@ -72,12 +73,32 @@ export function ArquivoMortoTable({ services }: ArquivoMortoTableProps) {
               <TableHead className="hidden lg:table-cell">Responsável Medicina</TableHead>
               <TableHead className="hidden md:table-cell">Data Cadastro</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {services.map((service) => (
               <TableRow key={service.id}>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Abrir menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                       <DropdownMenuItem
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                        onClick={() => setServiceToDelete(service.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Excluir
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
                 <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
                 <TableCell className="hidden md:table-cell">{service.responsavel || '-'}</TableCell>
                 <TableCell className="hidden lg:table-cell">{service.tecnico || '-'}</TableCell>
@@ -90,27 +111,6 @@ export function ArquivoMortoTable({ services }: ArquivoMortoTableProps) {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <StatusBadge service={service} />
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                       <DropdownMenuItem
-                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                        onClick={() => setServiceToDelete(service.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Excluir
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
