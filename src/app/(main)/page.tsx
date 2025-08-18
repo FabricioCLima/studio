@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import type { Service } from "./engenharia/page";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -21,6 +21,17 @@ const statusTranslations: { [key: string]: string } = {
     concluido: "Concluído",
 };
 
+const statusOrder = [
+    'Engenharia',
+    'Agendado',
+    'Aguardando Visita',
+    'Em Visita',
+    'Digitação',
+    'Medicina',
+    'Concluído'
+];
+
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d", "#ffc658"];
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -45,16 +56,32 @@ export default function DashboardPage() {
         return () => unsubscribe();
     }, []);
 
-    const chartData = Object.entries(
-        services.reduce((acc, service) => {
-            const status = statusTranslations[service.status] || service.status;
-            if (!acc[status]) {
-                acc[status] = 0;
+    const technicianData = services.reduce((acc, service) => {
+        const tecnico = service.tecnico || 'Não Atribuído';
+        if (!acc[tecnico]) {
+            acc[tecnico] = { name: tecnico };
+        }
+        return acc;
+    }, {} as { [key: string]: { name: string } });
+
+    const chartData = statusOrder.map(statusName => {
+        const statusData: { [key: string]: any } = { name: statusName };
+        
+        services.forEach(service => {
+            const translatedStatus = statusTranslations[service.status] || service.status;
+            if (translatedStatus === statusName) {
+                const tecnico = service.tecnico || 'Não Atribuído';
+                if (!statusData[tecnico]) {
+                    statusData[tecnico] = 0;
+                }
+                statusData[tecnico]++;
             }
-            acc[status]++;
-            return acc;
-        }, {} as { [key: string]: number })
-    ).map(([name, total]) => ({ name, total }));
+        });
+        return statusData;
+    });
+
+    const technicians = Object.keys(technicianData);
+
 
   return (
     <>
@@ -97,9 +124,9 @@ export default function DashboardPage() {
             
             <Card>
                 <CardHeader>
-                    <CardTitle>Visão Geral dos Serviços</CardTitle>
+                    <CardTitle>Visão Geral Detalhada dos Serviços</CardTitle>
                     <CardDescription>
-                        Contagem de serviços em cada etapa do fluxo de trabalho.
+                        Contagem de serviços por status e técnico responsável.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -117,13 +144,23 @@ export default function DashboardPage() {
                                         tickLine={false}
                                         axisLine={false}
                                         tickMargin={8}
+                                        tick={{ fontSize: 12 }}
                                         />
                                     <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
                                     <Tooltip
                                         cursor={false}
-                                        content={<ChartTooltipContent hideLabel />}
+                                        content={<ChartTooltipContent />}
                                     />
-                                    <Bar dataKey="total" fill="hsl(var(--primary))" radius={8} />
+                                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                                    {technicians.map((tecnico, index) => (
+                                        <Bar 
+                                            key={tecnico} 
+                                            dataKey={tecnico} 
+                                            stackId="a" 
+                                            fill={COLORS[index % COLORS.length]} 
+                                            radius={[4, 4, 0, 0]}
+                                        />
+                                    ))}
                                 </BarChart>
                             </ResponsiveContainer>
                         </ChartContainer>
