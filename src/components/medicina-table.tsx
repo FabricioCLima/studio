@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, Download, MoreHorizontal, Trash2 } from 'lucide-react';
+import { CheckCircle2, Download } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -19,8 +19,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import {
@@ -37,11 +35,11 @@ import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-interface DigitacaoTableProps {
+interface MedicinaTableProps {
   services: Service[];
 }
 
-export function DigitacaoTable({ services }: DigitacaoTableProps) {
+export function MedicinaTable({ services }: MedicinaTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
 
@@ -67,11 +65,11 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
         try {
             const serviceRef = doc(db, 'servicos', serviceId);
             await updateDoc(serviceRef, {
-                status: 'medicina'
+                status: 'concluido'
             });
             toast({
                 title: 'Sucesso!',
-                description: 'Serviço enviado para a Medicina.',
+                description: 'Serviço concluído com sucesso.',
                 className: 'bg-accent text-accent-foreground',
             });
         } catch (error) {
@@ -90,7 +88,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
     return (
         <Card>
             <CardContent className="p-8 text-center text-muted-foreground">
-                <p>Nenhum serviço aguardando na digitação.</p>
+                <p>Nenhum serviço pendente no setor de medicina.</p>
             </CardContent>
         </Card>
     )
@@ -141,7 +139,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                     variant="outline" 
                     size="sm" 
                     onClick={() => setServiceToConclude(service)}
-                    disabled={service.status === 'concluido' || service.status === 'medicina'}
+                    disabled={service.status === 'concluido'}
                 >
                     <CheckCircle2 className="mr-2 h-4 w-4" />
                     Concluir
@@ -156,14 +154,14 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
       <AlertDialog open={!!serviceToConclude} onOpenChange={(open) => !open && setServiceToConclude(null)}>
         <AlertDialogContent>
             <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Ação</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar Conclusão</AlertDialogTitle>
             <AlertDialogDescription>
-                Você tem certeza que deseja concluir a digitação para a empresa <span className='font-bold'>{serviceToConclude?.nomeEmpresa}</span> e enviar para a Medicina?
+                Você tem certeza que deseja marcar o serviço para a empresa <span className='font-bold'>{serviceToConclude?.nomeEmpresa}</span> como concluído?
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => serviceToConclude && handleConclude(serviceToConclude.id)} className="bg-accent hover:bg-accent/90">Confirmar</AlertDialogAction>
+            <AlertDialogAction onClick={() => serviceToConclude && handleConclude(serviceToConclude.id)} className="bg-accent hover:bg-accent/90">Concluir</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

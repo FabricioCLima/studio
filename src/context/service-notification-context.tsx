@@ -11,16 +11,20 @@ type ServiceNotificationContextType = {
   engineeringCount: number;
   tecnicaCount: number;
   digitacaoCount: number;
+  medicinaCount: number;
   resetTecnicaCount: () => void;
   resetDigitacaoCount: () => void;
+  resetMedicinaCount: () => void;
 };
 
 const ServiceNotificationContext = createContext<ServiceNotificationContextType>({
   engineeringCount: 0,
   tecnicaCount: 0,
   digitacaoCount: 0,
+  medicinaCount: 0,
   resetTecnicaCount: () => {},
   resetDigitacaoCount: () => {},
+  resetMedicinaCount: () => {},
 });
 
 export function ServiceNotificationProvider({ children }: { children: React.ReactNode }) {
@@ -29,6 +33,7 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
   const [engineeringCount, setEngineeringCount] = useState(0);
   const [tecnicaCount, setTecnicaCount] = useState(0);
   const [digitacaoCount, setDigitacaoCount] = useState(0);
+  const [medicinaCount, setMedicinaCount] = useState(0);
   
   useEffect(() => {
     if (user) {
@@ -56,17 +61,28 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
       }, (error) => {
         console.error("Error fetching digitacao count:", error);
       });
+      
+      const medQ = query(collection(db, 'servicos'), where('status', '==', 'medicina'));
+      const medUnsubscribe = onSnapshot(medQ, (snapshot) => {
+        if (pathname !== '/medicina') {
+            setMedicinaCount(snapshot.size);
+        }
+      }, (error) => {
+        console.error("Error fetching medicina count:", error);
+      });
 
 
       return () => {
         engUnsubscribe();
         tecUnsubscribe();
         digUnsubscribe();
+        medUnsubscribe();
       };
     } else {
         setEngineeringCount(0);
         setTecnicaCount(0);
         setDigitacaoCount(0);
+        setMedicinaCount(0);
     }
   }, [user, pathname]);
   
@@ -81,13 +97,21 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
       setDigitacaoCount(0);
     }
   }, [pathname]);
+  
+  const resetMedicinaCount = useCallback(() => {
+    if (pathname === '/medicina') {
+      setMedicinaCount(0);
+    }
+  }, [pathname]);
 
   const value = {
       engineeringCount,
       tecnicaCount,
       digitacaoCount,
+      medicinaCount,
       resetTecnicaCount,
       resetDigitacaoCount,
+      resetMedicinaCount,
   }
 
   return (

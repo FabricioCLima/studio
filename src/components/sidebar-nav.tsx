@@ -36,13 +36,13 @@ const navItems = [
   { href: '/engenharia', label: 'Engenharia', icon: Hammer, notificationKey: 'engineering' },
   { href: '/tecnica', label: 'Técnica', icon: Cpu, notificationKey: 'tecnica' },
   { href: '/digitacao', label: 'Digitação', icon: Keyboard, notificationKey: 'digitacao' },
-  { href: '/medicina', label: 'Medicina', icon: Stethoscope },
+  { href: '/medicina', label: 'Medicina', icon: Stethoscope, notificationKey: 'medicina' },
   { href: '/tecnicos', label: 'Técnicos', icon: Users },
 ];
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { engineeringCount, tecnicaCount, digitacaoCount } = useServiceNotification();
+  const { engineeringCount, tecnicaCount, digitacaoCount, medicinaCount } = useServiceNotification();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -55,6 +55,7 @@ export function SidebarNav() {
     engineering: engineeringCount,
     tecnica: tecnicaCount,
     digitacao: digitacaoCount,
+    medicina: medicinaCount,
   };
 
   return (
