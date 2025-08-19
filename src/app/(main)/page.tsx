@@ -16,17 +16,21 @@ import { Search } from "lucide-react";
 import { CadastroTable } from "@/components/cadastro-table";
 
 const statusTranslations: { [key: string]: string } = {
-    engenharia: "Engenharia",
+    engenharia: "Aguardando Agendamento",
     agendado: "Agendado",
     aguardando_visita: "Aguardando Visita",
     em_visita: "Em Visita",
     digitacao: "Digitação",
     medicina: "Medicina",
     concluido: "Concluído",
+    atrasado: "Atrasado",
+    vencendo: "Vencendo",
+    vencido: "Vencido",
 };
 
+
 const statusOrder = [
-    'Engenharia',
+    'Aguardando Agendamento',
     'Agendado',
     'Aguardando Visita',
     'Em Visita',
@@ -69,13 +73,13 @@ export default function DashboardPage() {
           return;
         }
         const lowercasedTerm = searchTerm.toLowerCase();
-        const results = allServices.filter(
-          (service) =>
-            service.nomeEmpresa.toLowerCase().includes(lowercasedTerm) ||
-            service.cnpj.toLowerCase().includes(lowercasedTerm) ||
-            (service.email && service.email.toLowerCase().includes(lowercasedTerm)) ||
-            (service.servicos && service.servicos.some((s) => s.toLowerCase().includes(lowercasedTerm)))
-        );
+        const results = allServices.filter((service) => {
+            const translatedStatus = statusTranslations[service.status] || service.status;
+            return (
+                service.status.toLowerCase().includes(lowercasedTerm) ||
+                translatedStatus.toLowerCase().includes(lowercasedTerm)
+            );
+        });
         setFilteredServices(results);
     }, [searchTerm, allServices]);
 
@@ -88,7 +92,7 @@ export default function DashboardPage() {
                 return service.digitador || 'Não Atribuído';
             case 'Medicina':
                 return service.medicinaResponsavel || 'Não Atribuído';
-            case 'Engenharia':
+            case 'Aguardando Agendamento':
             case 'Agendado':
                  return service.responsavel || 'Não Atribuído';
             default:
@@ -167,14 +171,14 @@ export default function DashboardPage() {
                 <CardHeader>
                     <CardTitle>Busca Rápida de Serviços</CardTitle>
                     <CardDescription>
-                       Encontre rapidamente um serviço por CNPJ, nome da empresa, email ou tipo.
+                       Encontre rapidamente um serviço pelo seu status.
                     </CardDescription>
                 </CardHeader>
                  <CardContent>
                     <div className="relative">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Buscar por CNPJ, nome da empresa, email ou serviço..."
+                            placeholder="Buscar por status..."
                             className="pl-8"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
