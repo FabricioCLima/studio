@@ -34,10 +34,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     );
   }
 
+  // This will be caught by the useEffect and redirected, so we can return null here to avoid a flash of content.
   if (!user) {
     return null;
   }
-
+  
+  // After loading, if the user is authenticated but has no permissions, show the access denied message.
   if (permissions.length === 0) {
      return (
        <div className="flex h-screen w-full flex-col items-center justify-center bg-secondary">
@@ -61,6 +63,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     );
   }
 
+  // If the user is authenticated and has permissions, render the app layout.
   return (
     <SidebarProvider>
       <Sidebar>
