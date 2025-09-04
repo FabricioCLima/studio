@@ -17,17 +17,17 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, loading: authLoading } = useAuth();
+  const { user, permissions, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && permissions.length > 0) {
       router.push('/');
     }
-  }, [user, authLoading, router]);
-
-  if (authLoading || user) {
+  }, [user, permissions, authLoading, router]);
+  
+  if (authLoading || (user && permissions.length > 0)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
         <Card className="w-full max-w-sm">
@@ -66,7 +66,7 @@ export default function LoginPage() {
       toast({
         variant: 'destructive',
         title: 'Erro de Login',
-        description: error.message || 'Ocorreu um erro. Tente novamente.',
+        description: 'Verifique suas credenciais ou se você tem permissão para acessar.',
       });
     } finally {
       setLoading(false);

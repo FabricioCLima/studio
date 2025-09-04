@@ -13,7 +13,7 @@ import { SidebarNav } from '@/components/sidebar-nav';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, permissions } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -35,6 +35,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
       </div>
     );
+  }
+  
+  if (permissions.length === 0 && !loading) {
+      return (
+         <div className="flex h-screen w-full flex-col items-center justify-center bg-background p-4">
+            <h1 className="text-2xl font-bold">Acesso Negado</h1>
+            <p className="text-muted-foreground">Você não tem permissão para acessar este sistema.</p>
+        </div>
+      )
   }
 
   return (
