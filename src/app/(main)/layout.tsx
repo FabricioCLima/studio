@@ -17,26 +17,25 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const router = useRouter();
 
   useEffect(() => {
+    // Se o carregamento terminou e não há usuário, redireciona para o login.
     if (!loading && !user) {
       router.push('/login');
     }
   }, [user, loading, router]);
 
-  if (loading || !user) {
+  // Exibe uma tela de carregamento enquanto o estado de autenticação e permissões são verificados.
+  if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center p-4">
-        <div className="flex w-full">
-            <Skeleton className="hidden h-full w-64 md:block" />
-            <div className="flex-1 space-y-4 p-4">
-                <Skeleton className="h-12 w-1/2" />
-                <Skeleton className="h-64 w-full" />
-                <Skeleton className="h-32 w-full" />
-            </div>
+       <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex items-center space-x-2">
+          <div className="h-5 w-5 animate-spin rounded-full border-t-2 border-b-2 border-primary"></div>
+          <span className="text-muted-foreground">Verificando acesso...</span>
         </div>
       </div>
     );
   }
   
+  // Se o carregamento terminou, há um usuário, mas ele não tem permissões, exibe "Acesso Negado".
   if (!loading && user && permissions.length === 0) {
       return (
          <div className="flex h-screen w-full flex-col items-center justify-center bg-background p-4">
@@ -46,14 +45,20 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       )
   }
 
-  return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarNav />
-      </Sidebar>
-      <SidebarInset>
-        {user && children}
-      </SidebarInset>
-    </SidebarProvider>
-  );
+  // Se o usuário está logado e possui permissões, renderiza o layout principal.
+  if (user && permissions.length > 0) {
+    return (
+      <SidebarProvider>
+        <Sidebar>
+          <SidebarNav />
+        </Sidebar>
+        <SidebarInset>
+          {children}
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
+  // Fallback para o caso de o usuário não estar logado (o useEffect cuidará do redirecionamento).
+  return null;
 }

@@ -40,29 +40,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true); // Inicia o carregamento sempre que o estado do usuário muda
       setUser(user);
+      
       if (user?.email) {
-          const userDocRef = doc(db, 'usuarios', user.email);
-          const userDoc = await getDoc(userDocRef);
-          if (userDoc.exists()) {
-              const userData = userDoc.data();
-              const userPermissions = userData.permissões || [];
-              if (userPermissions.includes('admin')) {
-                setPermissions([
-                    'admin', 'dashboard', 'cadastro', 'engenharia', 'tecnica', 
-                    'digitacao', 'medicina', 'financeiro', 'tecnicos', 'vencidos', 
-                    'arquivo-morto'
-                ]);
-              } else {
-                setPermissions(userPermissions);
-              }
-          } else {
+          try {
+            const userDocRef = doc(db, 'usuarios', user.email);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const userPermissions = userData.permissões || [];
+                if (userPermissions.includes('admin')) {
+                  setPermissions([
+                      'admin', 'dashboard', 'cadastro', 'engenharia', 'tecnica', 
+                      'digitacao', 'medicina', 'financeiro', 'tecnicos', 'vencidos', 
+                      'arquivo-morto'
+                  ]);
+                } else {
+                  setPermissions(userPermissions);
+                }
+            } else {
+                setPermissions([]); // Usuário existe no Auth mas não no Firestore
+            }
+          } catch(error) {
+              console.error("Erro ao buscar permissões do usuário:", error);
               setPermissions([]);
           }
       } else {
-          setPermissions([]);
+          setPermissions([]); // Nenhum usuário logado
       }
-      setLoading(false);
+      
+      setLoading(false); // Finaliza o carregamento após buscar as permissões
     });
 
     return () => unsubscribe();

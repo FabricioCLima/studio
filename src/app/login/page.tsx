@@ -17,55 +17,26 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { user, permissions, loading: authLoading } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Se o usuário já está logado e tem permissões, redirecione para o dashboard.
-    // Isso evita que um usuário logado veja a tela de login novamente.
-    if (!authLoading && user && permissions.length > 0) {
+    // Se um usuário já logado tentar acessar /login, redirecione-o para o dashboard.
+    // Isso evita que a página de login seja exibida para quem já está autenticado.
+    if (!authLoading && user) {
         router.push('/');
     }
-  }, [user, permissions, authLoading, router]);
-  
-  if (authLoading || (!authLoading && user && permissions.length > 0)) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
-        <Card className="w-full max-w-sm">
-          <CardHeader>
-            <CardTitle className="text-2xl">
-                <Skeleton className="h-8 w-24" />
-            </CardTitle>
-            <CardDescription>
-                <Skeleton className="h-4 w-full" />
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid gap-2">
-                <Skeleton className="h-5 w-16" />
-                <Skeleton className="h-10 w-full" />
-            </div>
-            <div className="grid gap-2">
-                <Skeleton className="h-5 w-12" />
-                <Skeleton className="h-10 w-full" />
-            </div>
-            <Skeleton className="h-10 w-full" />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  }, [user, authLoading, router]);
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // A navegação agora será tratada pelo useEffect e pelo AuthProvider
-      // que detecta a mudança no estado de autenticação.
-      // O router.push('/') será chamado pelo useEffect acima quando o auth for resolvido.
+      // O AuthProvider e o MainLayout cuidarão do redirecionamento após o login bem-sucedido.
+      // router.push('/'); // Removido para evitar redirecionamento prematuro
     } catch (error: any) {
       console.error(error);
       toast({
@@ -74,9 +45,22 @@ export default function LoginPage() {
         description: 'Verifique suas credenciais ou se você tem permissão para acessar.',
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
+  
+  // Exibe um loader em tela cheia se o estado de autenticação ainda estiver carregando
+  // ou se o usuário já estiver logado e o redirecionamento estiver em andamento.
+  if (authLoading || user) {
+     return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex items-center space-x-2">
+          <div className="h-5 w-5 animate-spin rounded-full border-t-2 border-b-2 border-primary"></div>
+          <span className="text-muted-foreground">Carregando...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-secondary p-4">
@@ -98,7 +82,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
+                disabled={isSubmitting}
               />
             </div>
             <div className="grid gap-2">
@@ -109,11 +93,11 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
+                disabled={isSubmitting}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading || authLoading}>
-              {loading || authLoading ? 'Entrando...' : <> <LogIn className="mr-2 h-4 w-4" /> Entrar </>}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Entrando...' : <> <LogIn className="mr-2 h-4 w-4" /> Entrar </>}
             </Button>
           </form>
         </CardContent>
