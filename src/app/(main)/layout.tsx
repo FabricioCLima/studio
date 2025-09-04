@@ -10,7 +10,6 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, permissions } = useAuth();
@@ -23,7 +22,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }
   }, [user, loading, router]);
 
-  // Exibe uma tela de carregamento enquanto o estado de autenticação e permissões são verificados.
+  // Durante o carregamento, exibe uma tela de espera.
   if (loading) {
     return (
        <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -35,8 +34,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     );
   }
   
-  // Se o carregamento terminou, há um usuário, mas ele não tem permissões, exibe "Acesso Negado".
-  if (!loading && user && permissions.length === 0) {
+  // Se o carregamento terminou, mas o usuário não está logado, retorna null 
+  // enquanto o useEffect redireciona. Isso evita renderizações indesejadas.
+  if (!user) {
+    return null;
+  }
+
+  // Se o usuário está logado mas não tem permissões, exibe "Acesso Negado".
+  if (permissions.length === 0) {
       return (
          <div className="flex h-screen w-full flex-col items-center justify-center bg-background p-4">
             <h1 className="text-2xl font-bold">Acesso Negado</h1>
@@ -46,19 +51,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }
 
   // Se o usuário está logado e possui permissões, renderiza o layout principal.
-  if (user && permissions.length > 0) {
-    return (
-      <SidebarProvider>
-        <Sidebar>
-          <SidebarNav />
-        </Sidebar>
-        <SidebarInset>
-          {children}
-        </SidebarInset>
-      </SidebarProvider>
-    );
-  }
-
-  // Fallback para o caso de o usuário não estar logado (o useEffect cuidará do redirecionamento).
-  return null;
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarNav />
+      </Sidebar>
+      <SidebarInset>
+        {children}
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
