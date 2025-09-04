@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      // Start loading whenever auth state changes
       setLoading(true);
       
       if (currentUser && currentUser.email) {
@@ -63,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setPermissions(userPermissions);
             }
           } else {
-            // User exists in Auth, but not in Firestore permissions table
+            // User is authenticated but has no permissions doc
             setPermissions([]);
           }
         } catch (error) {
@@ -71,13 +72,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setPermissions([]); // Set no permissions on error
         }
       } else {
+        // No user is logged in
         setUser(null);
         setPermissions([]);
       }
 
+      // Finish loading only after all checks are done
       setLoading(false);
     });
 
+    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
