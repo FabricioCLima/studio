@@ -49,25 +49,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (currentUser) {
         setUser(currentUser);
         
-        try {
-          const userDocRef = doc(db, 'usuarios', currentUser.email!);
-          const userDoc = await getDoc(userDocRef);
+        // Ensure email is not null before proceeding
+        if (currentUser.email) {
+            try {
+                const userDocRef = doc(db, 'usuarios', currentUser.email);
+                const userDoc = await getDoc(userDocRef);
 
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const userPermissions = userData.permissões || [];
-            
-            if (userPermissions.includes('admin')) {
-              setPermissions(ALL_PERMISSIONS);
-            } else {
-              setPermissions(userPermissions);
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const userPermissions = userData.permissões || [];
+                    
+                    if (userPermissions.includes('admin')) {
+                        setPermissions(ALL_PERMISSIONS);
+                    } else {
+                        setPermissions(userPermissions);
+                    }
+                } else {
+                    // User is authenticated but has no permissions document
+                    setPermissions([]);
+                }
+            } catch (error) {
+                console.error("Error fetching user permissions:", error);
+                // Set empty permissions on error to prevent app crash
+                setPermissions([]);
             }
-          } else {
+        } else {
+            // Handle case where user is authenticated but email is null
+            console.warn("Authenticated user has no email address.");
             setPermissions([]);
-          }
-        } catch (error) {
-          console.error("Error fetching user permissions:", error);
-          setPermissions([]);
         }
 
       } else {
