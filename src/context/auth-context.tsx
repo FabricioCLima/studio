@@ -21,7 +21,7 @@ export type Permission =
     | 'arquivo-morto';
 
 const ALL_PERMISSIONS: Permission[] = [
-    'dashboard', 'cadastro', 'engenharia', 'tecnica', 'digitacao', 'medicina', 
+    'admin', 'dashboard', 'cadastro', 'engenharia', 'tecnica', 'digitacao', 'medicina', 
     'financeiro', 'tecnicos', 'vencidos', 'arquivo-morto'
 ];
 
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            const userPermissions = userData.permissions || [];
+            const userPermissions = userData.permissões || [];
             
             if (userPermissions.includes('admin')) {
               setPermissions(ALL_PERMISSIONS);
