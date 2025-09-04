@@ -40,7 +40,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(true); // Inicia o carregamento sempre que o estado do usuário muda
       setUser(user);
       
       if (user?.email) {
@@ -49,15 +48,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const userDoc = await getDoc(userDocRef);
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                const userPermissions = userData.permissões || [];
-                if (userPermissions.includes('admin')) {
+                // Corrigido: Verifica se o campo 'admin' é true, ou pega as permissões do array.
+                if (userData.admin === true) {
                   setPermissions([
                       'admin', 'dashboard', 'cadastro', 'engenharia', 'tecnica', 
                       'digitacao', 'medicina', 'financeiro', 'tecnicos', 'vencidos', 
                       'arquivo-morto'
                   ]);
                 } else {
-                  setPermissions(userPermissions);
+                  setPermissions(userData.permissões || []);
                 }
             } else {
                 setPermissions([]); // Usuário existe no Auth mas não no Firestore
@@ -70,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setPermissions([]); // Nenhum usuário logado
       }
       
-      setLoading(false); // Finaliza o carregamento após buscar as permissões
+      setLoading(false);
     });
 
     return () => unsubscribe();
