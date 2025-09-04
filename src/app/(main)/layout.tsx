@@ -10,7 +10,6 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
-import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/firebase';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -39,24 +38,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }
   
   if (permissions.length === 0) {
-      return (
-            <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-center">
-                <div className="rounded-lg border bg-card p-8 shadow-sm">
-                    <h1 className="text-2xl font-bold text-destructive">Acesso Negado</h1>
-                    <p className="mt-2 text-muted-foreground">
-                        Você não tem permissão para acessar esta área.
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                         Seu email: <span className="font-semibold">{user.email}</span>
-                    </p>
-                   <Button variant="outline" className="mt-4" onClick={() => auth.signOut()}>
-                       Fazer login com outra conta
-                   </Button>
-               </div>
-           </div>
-      )
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-background">
+        <div className="text-center">
+            <h1 className="text-4xl font-bold text-destructive">Acesso Negado</h1>
+            <p className="mt-2 text-muted-foreground">
+                Você não tem permissão para acessar esta página.
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+                Entre em contato com o administrador do sistema.
+            </p>
+        </div>
+      </div>
+    )
   }
-  
+
   return (
     <SidebarProvider>
       <Sidebar>
