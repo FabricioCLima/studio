@@ -55,9 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            // Corrigido para buscar 'permissoes' (sem til) como no Firestore
             let userPermissions = userData.permissoes || [];
             
-            // Handle if 'permissoes' is a string instead of an array for robustness
             if (typeof userPermissions === 'string') {
               userPermissions = [userPermissions];
             }
@@ -68,11 +68,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setPermissions(userPermissions);
             }
           } else {
-            setPermissions([]); // User document doesn't exist, no permissions
+            setPermissions([]); 
           }
         } catch (error) {
           console.error("Error fetching user permissions:", error);
-          setPermissions([]); // On error, default to no permissions
+          setPermissions([]);
         }
       } else {
         setUser(null);
