@@ -45,12 +45,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
-      setUser(currentUser);
-        
-      // For now, give all permissions if logged in.
+      
       if (currentUser) {
-        setPermissions(ALL_PERMISSIONS);
+        setUser(currentUser);
+        
+        try {
+          const userDocRef = doc(db, 'usuarios', currentUser.email!);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const userPermissions = userData.permissions || [];
+            
+            if (userPermissions.includes('admin')) {
+              setPermissions(ALL_PERMISSIONS);
+            } else {
+              setPermissions(userPermissions);
+            }
+          } else {
+            setPermissions([]);
+          }
+        } catch (error) {
+          console.error("Error fetching user permissions:", error);
+          setPermissions([]);
+        }
+
       } else {
+        setUser(null);
         setPermissions([]);
       }
 
