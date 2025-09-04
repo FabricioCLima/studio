@@ -10,11 +10,11 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
-import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
+import { auth } from '@/lib/firebase';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, permissions } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -34,12 +34,32 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     );
   }
 
-  // This will be caught by the useEffect and redirected, so we can return null here to avoid a flash of content.
+  // User is loaded, but is not logged in, redirect will happen.
   if (!user) {
     return null;
   }
   
-  // If the user is authenticated, render the app layout.
+  // User is logged in, but has no permissions at all.
+  if (permissions.length === 0) {
+      return (
+            <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-center">
+                <div className="rounded-lg border bg-card p-8 shadow-sm">
+                    <h1 className="text-2xl font-bold text-destructive">Acesso Negado</h1>
+                    <p className="mt-2 text-muted-foreground">
+                        Você não tem permissão para acessar esta área.
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                         Seu email: <span className="font-semibold">{user.email}</span>
+                    </p>
+                   <Button variant="outline" className="mt-4" onClick={() => auth.signOut()}>
+                       Fazer login com outra conta
+                   </Button>
+               </div>
+           </div>
+      )
+  }
+  
+  // If the user is authenticated and has permissions, render the app layout.
   return (
     <SidebarProvider>
       <Sidebar>
