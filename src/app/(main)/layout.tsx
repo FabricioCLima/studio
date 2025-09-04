@@ -14,7 +14,7 @@ import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, permissions } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -39,31 +39,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     return null;
   }
   
-  // After loading, if the user is authenticated but has no permissions, show the access denied message.
-  if (permissions.length === 0) {
-     return (
-       <div className="flex h-screen w-full flex-col items-center justify-center bg-secondary">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold">Acesso Negado</h1>
-            <p className="mt-2 text-muted-foreground">
-                Você não tem permissão para acessar este sistema.
-            </p>
-             <p className="mt-1 text-sm text-muted-foreground">
-                Seu email: <span className="font-semibold">{user.email}</span>
-            </p>
-            <Button
-                variant="outline"
-                className="mt-6"
-                onClick={() => auth.signOut()}
-            >
-                Fazer login com outra conta
-            </Button>
-          </div>
-       </div>
-    );
-  }
-
-  // If the user is authenticated and has permissions, render the app layout.
+  // If the user is authenticated, render the app layout.
   return (
     <SidebarProvider>
       <Sidebar>
