@@ -1,10 +1,25 @@
+
 'use client';
 
 import type { User } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { getUserPermissions, type Permission } from '@/lib/permissions';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
+export type Permission = 
+    | 'admin'
+    | 'dashboard'
+    | 'cadastro'
+    | 'engenharia'
+    | 'tecnica'
+    | 'digitacao'
+    | 'medicina'
+    | 'financeiro'
+    | 'tecnicos'
+    | 'vencidos'
+    | 'arquivo-morto';
+
 
 type AuthContextType = {
   user: User | null;
@@ -24,11 +39,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [permissions, setPermissions] = useState<Permission[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
       if (user?.email) {
-          const userPermissions = getUserPermissions(user.email);
-          setPermissions(userPermissions);
+          const userDocRef = doc(db, 'usuarios', user.email);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+              const userData = userDoc.data();
+              const userPermissions = userData.permissions || [];
+              if (userPermissions.includes('admin')) {
+                setPermissions([
+                    'admin', 'dashboard', 'cadastro', 'engenharia', 'tecnica', 
+                    'digitacao', 'medicina', 'financeiro', 'tecnicos', 'vencidos', 
+                    'arquivo-morto'
+                ]);
+              } else {
+                setPermissions(userPermissions);
+              }
+          } else {
+              setPermissions([]);
+          }
       } else {
           setPermissions([]);
       }
