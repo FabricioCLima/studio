@@ -41,6 +41,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }
 
   // Se o usuário está logado mas não tem permissões, exibe "Acesso Negado".
+  // Isso só acontece depois que o 'loading' é 'false'.
   if (permissions.length === 0) {
       return (
          <div className="flex h-screen w-full flex-col items-center justify-center bg-background p-4">
