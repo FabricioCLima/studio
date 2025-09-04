@@ -25,14 +25,12 @@ export default function LoginPage() {
   useEffect(() => {
     // Se o usuário já está logado e tem permissões, redirecione para o dashboard.
     // Isso evita que um usuário logado veja a tela de login novamente.
-    if (!authLoading && user) {
-        if (permissions.length > 0 || permissions.includes('admin')) {
-             router.push('/');
-        }
+    if (!authLoading && user && permissions.length > 0) {
+        router.push('/');
     }
   }, [user, permissions, authLoading, router]);
   
-  if (authLoading || (user && (permissions.length > 0 || permissions.includes('admin')))) {
+  if (authLoading || (!authLoading && user && permissions.length > 0)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
         <Card className="w-full max-w-sm">
@@ -67,6 +65,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       // A navegação agora será tratada pelo useEffect e pelo AuthProvider
       // que detecta a mudança no estado de autenticação.
+      // O router.push('/') será chamado pelo useEffect acima quando o auth for resolvido.
     } catch (error: any) {
       console.error(error);
       toast({
@@ -113,8 +112,8 @@ export default function LoginPage() {
                 disabled={loading}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Entrando...' : <> <LogIn className="mr-2 h-4 w-4" /> Entrar </>}
+            <Button type="submit" className="w-full" disabled={loading || authLoading}>
+              {loading || authLoading ? 'Entrando...' : <> <LogIn className="mr-2 h-4 w-4" /> Entrar </>}
             </Button>
           </form>
         </CardContent>

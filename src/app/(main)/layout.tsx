@@ -37,7 +37,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     );
   }
   
-  if (permissions.length === 0 && !loading) {
+  if (!loading && user && permissions.length === 0) {
       return (
          <div className="flex h-screen w-full flex-col items-center justify-center bg-background p-4">
             <h1 className="text-2xl font-bold">Acesso Negado</h1>
