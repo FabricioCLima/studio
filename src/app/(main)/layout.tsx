@@ -8,6 +8,7 @@ import {
   Sidebar,
   SidebarInset,
   SidebarProvider,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,7 +38,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
      return null;
   }
   
-  if (permissions.length === 0) {
+  if (!permissions.includes('admin') && permissions.length === 0) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-secondary p-4">
             <Card className="w-full max-w-md">
@@ -63,6 +64,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <SidebarNav />
       </Sidebar>
       <SidebarInset>
+         <div className="flex items-center justify-between p-4 pt-6 md:hidden">
+              <SidebarTrigger />
+         </div>
         {children}
       </SidebarInset>
     </SidebarProvider>
