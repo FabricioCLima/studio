@@ -32,35 +32,33 @@ import { Button } from './ui/button';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useAuth, type Permission } from '@/context/auth-context';
-import { useMemo } from 'react';
+import { useAuth } from '@/context/auth-context';
 
 type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
-  permission: Permission;
   notificationKey?: 'engineering' | 'tecnica' | 'digitacao' | 'medicina' | 'financeiro';
 };
 
 const navItems: NavItem[] = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard, permission: 'dashboard' },
-  { href: '/cadastro', label: 'Cadastro', icon: FilePlus2, permission: 'cadastro' },
-  { href: '/engenharia', label: 'Engenharia', icon: Hammer, permission: 'engenharia', notificationKey: 'engineering' },
-  { href: '/tecnica', label: 'Técnica', icon: Cpu, permission: 'tecnica', notificationKey: 'tecnica' },
-  { href: '/digitacao', label: 'Digitação', icon: Keyboard, permission: 'digitacao', notificationKey: 'digitacao' },
-  { href: '/medicina', label: 'Medicina', icon: Stethoscope, permission: 'medicina', notificationKey: 'medicina' },
-  { href: '/financeiro', label: 'Financeiro', icon: DollarSign, permission: 'financeiro', notificationKey: 'financeiro' },
-  { href: '/tecnicos', label: 'Técnicos', icon: Users, permission: 'tecnicos' },
-  { href: '/vencidos', label: 'Vencidos', icon: FileWarning, permission: 'vencidos' },
-  { href: '/arquivo-morto', label: 'Arquivo Morto', icon: Archive, permission: 'arquivo-morto' },
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/cadastro', label: 'Cadastro', icon: FilePlus2 },
+  { href: '/engenharia', label: 'Engenharia', icon: Hammer, notificationKey: 'engineering' },
+  { href: '/tecnica', label: 'Técnica', icon: Cpu, notificationKey: 'tecnica' },
+  { href: '/digitacao', label: 'Digitação', icon: Keyboard, notificationKey: 'digitacao' },
+  { href: '/medicina', label: 'Medicina', icon: Stethoscope, notificationKey: 'medicina' },
+  { href: '/financeiro', label: 'Financeiro', icon: DollarSign, notificationKey: 'financeiro' },
+  { href: '/tecnicos', label: 'Técnicos', icon: Users },
+  { href: '/vencidos', label: 'Vencidos', icon: FileWarning },
+  { href: '/arquivo-morto', label: 'Arquivo Morto', icon: Archive },
 ];
 
 export function SidebarNav() {
   const pathname = usePathname();
   const { engineeringCount, tecnicaCount, digitacaoCount, medicinaCount, financeiroCount } = useServiceNotification();
   const router = useRouter();
-  const { user, permissions } = useAuth();
+  const { user } = useAuth();
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -75,10 +73,6 @@ export function SidebarNav() {
     financeiro: financeiroCount,
   };
 
-  const accessibleNavItems = useMemo(() => {
-    return navItems.filter(item => permissions.includes(item.permission));
-  }, [permissions]);
-
   return (
     <>
       <SidebarHeader>
@@ -90,7 +84,7 @@ export function SidebarNav() {
       <SidebarContent>
         <SidebarGroup>
             <SidebarMenu>
-                {accessibleNavItems.map((item) => {
+                {navItems.map((item) => {
                 const count = item.notificationKey ? notificationCounts[item.notificationKey] : 0;
                 return (
                     <SidebarMenuItem key={item.href}>

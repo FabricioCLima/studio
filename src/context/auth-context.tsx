@@ -46,33 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
       setUser(currentUser);
-
-      if (currentUser && currentUser.email) {
-        try {
-          const userDocRef = doc(db, 'usuarios', currentUser.email);
-          const userDoc = await getDoc(userDocRef);
-
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            const userPermissions = data.permissões || [];
-            
-            if (userPermissions.includes('admin')) {
-              setPermissions(['admin', ...ALL_PERMISSIONS]);
-            } else {
-              setPermissions(userPermissions);
-            }
-          } else {
-            console.warn(`Usuário ${currentUser.email} não encontrado no Firestore. Sem permissões atribuídas.`);
-            setPermissions([]);
-          }
-        } catch (error) {
-          console.error("Erro ao buscar permissões do usuário:", error);
-          setPermissions([]);
-        }
+        
+      // For now, give all permissions if logged in.
+      if (currentUser) {
+        setPermissions(ALL_PERMISSIONS);
       } else {
         setPermissions([]);
       }
-      
+
       setLoading(false);
     });
 
