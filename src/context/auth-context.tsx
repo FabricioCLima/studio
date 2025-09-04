@@ -43,13 +43,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [permissions, setPermissions] = useState<Permission[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
-      setUser(user);
+      setUser(currentUser);
 
-      if (user && user.email) {
+      if (currentUser && currentUser.email) {
         try {
-          const userDocRef = doc(db, 'usuarios', user.email);
+          const userDocRef = doc(db, 'usuarios', currentUser.email);
           const userDoc = await getDoc(userDocRef);
 
           if (userDoc.exists()) {
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setPermissions(userPermissions);
             }
           } else {
-            console.warn(`Usuário ${user.email} não encontrado no Firestore. Sem permissões atribuídas.`);
+            console.warn(`Usuário ${currentUser.email} não encontrado no Firestore. Sem permissões atribuídas.`);
             setPermissions([]);
           }
         } catch (error) {
