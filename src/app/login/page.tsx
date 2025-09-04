@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
@@ -22,12 +23,16 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!authLoading && user && permissions.length > 0) {
-      router.push('/');
+    // Se o usuário já está logado e tem permissões, redirecione para o dashboard.
+    // Isso evita que um usuário logado veja a tela de login novamente.
+    if (!authLoading && user) {
+        if (permissions.length > 0 || permissions.includes('admin')) {
+             router.push('/');
+        }
     }
   }, [user, permissions, authLoading, router]);
   
-  if (authLoading || (user && permissions.length > 0)) {
+  if (authLoading || (user && (permissions.length > 0 || permissions.includes('admin')))) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
         <Card className="w-full max-w-sm">
@@ -60,7 +65,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // A navegação será tratada pelo useEffect
+      // A navegação agora será tratada pelo useEffect e pelo AuthProvider
+      // que detecta a mudança no estado de autenticação.
     } catch (error: any) {
       console.error(error);
       toast({
