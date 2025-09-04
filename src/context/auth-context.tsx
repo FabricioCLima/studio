@@ -44,12 +44,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      // Start loading whenever auth state changes
       setLoading(true);
       
       if (currentUser && currentUser.email) {
         setUser(currentUser);
-        
         try {
           const userDocRef = doc(db, 'usuarios', currentUser.email);
           const userDoc = await getDoc(userDocRef);
@@ -64,24 +62,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setPermissions(userPermissions);
             }
           } else {
-            // User is authenticated but has no permissions doc
             setPermissions([]);
           }
         } catch (error) {
           console.error("Error fetching user permissions:", error);
-          setPermissions([]); // Set no permissions on error
+          setPermissions([]);
         }
       } else {
-        // No user is logged in
         setUser(null);
         setPermissions([]);
       }
 
-      // Finish loading only after all checks are done
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
