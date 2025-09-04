@@ -64,9 +64,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <SidebarNav />
       </Sidebar>
       <SidebarInset>
-         <div className="flex items-center justify-between p-4 pt-6 md:hidden">
-              <SidebarTrigger />
-         </div>
+        <SidebarTrigger />
         {children}
       </SidebarInset>
     </SidebarProvider>
