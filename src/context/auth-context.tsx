@@ -20,6 +20,10 @@ export type Permission =
     | 'vencidos'
     | 'arquivo-morto';
 
+const ALL_PERMISSIONS: Permission[] = [
+    'dashboard', 'cadastro', 'engenharia', 'tecnica', 'digitacao', 'medicina', 
+    'financeiro', 'tecnicos', 'vencidos', 'arquivo-morto'
+];
 
 type AuthContextType = {
   user: User | null;
@@ -36,11 +40,39 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [permissions, setPermissions] = useState<Permission[]>(['admin', 'dashboard', 'cadastro', 'engenharia', 'tecnica', 'digitacao', 'medicina', 'financeiro', 'tecnicos', 'vencidos', 'arquivo-morto']);
+  const [permissions, setPermissions] = useState<Permission[]>([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
       setUser(user);
+
+      if (user && user.email) {
+        try {
+          const userDocRef = doc(db, 'usuarios', user.email);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            const userPermissions = data.permissoes || [];
+            
+            if (userPermissions.includes('admin')) {
+              setPermissions(['admin', ...ALL_PERMISSIONS]);
+            } else {
+              setPermissions(userPermissions);
+            }
+          } else {
+            console.warn(`Usuário ${user.email} não encontrado no Firestore. Sem permissões atribuídas.`);
+            setPermissions([]);
+          }
+        } catch (error) {
+          console.error("Erro ao buscar permissões do usuário:", error);
+          setPermissions([]);
+        }
+      } else {
+        setPermissions([]);
+      }
+      
       setLoading(false);
     });
 
