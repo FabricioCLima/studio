@@ -35,7 +35,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }
 
   if (!user) {
-      return null;
+    return null;
   }
   
   if (permissions.length === 0) {
@@ -54,7 +54,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
       )
   }
-
 
   return (
     <SidebarProvider>
