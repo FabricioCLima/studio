@@ -12,9 +12,11 @@ type ServiceNotificationContextType = {
   tecnicaCount: number;
   digitacaoCount: number;
   medicinaCount: number;
+  financeiroCount: number;
   resetTecnicaCount: () => void;
   resetDigitacaoCount: () => void;
   resetMedicinaCount: () => void;
+  resetFinanceiroCount: () => void;
 };
 
 const ServiceNotificationContext = createContext<ServiceNotificationContextType>({
@@ -22,9 +24,11 @@ const ServiceNotificationContext = createContext<ServiceNotificationContextType>
   tecnicaCount: 0,
   digitacaoCount: 0,
   medicinaCount: 0,
+  financeiroCount: 0,
   resetTecnicaCount: () => {},
   resetDigitacaoCount: () => {},
   resetMedicinaCount: () => {},
+  resetFinanceiroCount: () => {},
 });
 
 export function ServiceNotificationProvider({ children }: { children: React.ReactNode }) {
@@ -34,6 +38,7 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
   const [tecnicaCount, setTecnicaCount] = useState(0);
   const [digitacaoCount, setDigitacaoCount] = useState(0);
   const [medicinaCount, setMedicinaCount] = useState(0);
+  const [financeiroCount, setFinanceiroCount] = useState(0);
   
   useEffect(() => {
     if (user) {
@@ -71,18 +76,29 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
         console.error("Error fetching medicina count:", error);
       });
 
+      const finQ = query(collection(db, 'servicos'), where('status', '==', 'financeiro'));
+      const finUnsubscribe = onSnapshot(finQ, (snapshot) => {
+        if (pathname !== '/financeiro') {
+            setFinanceiroCount(snapshot.size);
+        }
+      }, (error) => {
+        console.error("Error fetching financeiro count:", error);
+      });
+
 
       return () => {
         engUnsubscribe();
         tecUnsubscribe();
         digUnsubscribe();
         medUnsubscribe();
+        finUnsubscribe();
       };
     } else {
         setEngineeringCount(0);
         setTecnicaCount(0);
         setDigitacaoCount(0);
         setMedicinaCount(0);
+        setFinanceiroCount(0);
     }
   }, [user, pathname]);
   
@@ -104,14 +120,22 @@ export function ServiceNotificationProvider({ children }: { children: React.Reac
     }
   }, [pathname]);
 
+  const resetFinanceiroCount = useCallback(() => {
+    if (pathname === '/financeiro') {
+      setFinanceiroCount(0);
+    }
+  }, [pathname]);
+
   const value = {
       engineeringCount,
       tecnicaCount,
       digitacaoCount,
       medicinaCount,
+      financeiroCount,
       resetTecnicaCount,
       resetDigitacaoCount,
       resetMedicinaCount,
+      resetFinanceiroCount,
   }
 
   return (

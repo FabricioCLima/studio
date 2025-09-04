@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, Download, MoreHorizontal, Pencil } from 'lucide-react';
+import { CheckCircle2, Download, MoreHorizontal } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -36,16 +36,14 @@ import {
 import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { AssignMedicinaDialog } from './assign-medicina-dialog';
 
-interface MedicinaTableProps {
+interface FinanceiroTableProps {
   services: Service[];
 }
 
-export function MedicinaTable({ services }: MedicinaTableProps) {
+export function FinanceiroTable({ services }: FinanceiroTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
-    const [assigningMedicinaService, setAssigningMedicinaService] = useState<Service | null>(null);
 
     const handleDownload = (anexo: {name: string, type: string, data: string}) => {
         try {
@@ -69,11 +67,11 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
         try {
             const serviceRef = doc(db, 'servicos', serviceId);
             await updateDoc(serviceRef, {
-                status: 'financeiro'
+                status: 'concluido'
             });
             toast({
                 title: 'Sucesso!',
-                description: 'Serviço enviado para o Financeiro.',
+                description: 'Serviço concluído com sucesso (pago).',
                 className: 'bg-accent text-accent-foreground',
             });
         } catch (error) {
@@ -92,7 +90,7 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
     return (
         <Card>
             <CardContent className="p-8 text-center text-muted-foreground">
-                <p>Nenhum serviço pendente no setor de medicina.</p>
+                <p>Nenhum serviço pendente no setor financeiro.</p>
             </CardContent>
         </Card>
     )
@@ -108,7 +106,7 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
             <TableHead className="w-[50px]">Ações</TableHead>
             <TableHead>Empresa</TableHead>
             <TableHead className="hidden md:table-cell">Status</TableHead>
-            <TableHead>Responsável</TableHead>
+            <TableHead>Responsável Medicina</TableHead>
             <TableHead className="hidden sm:table-cell">Anexos</TableHead>
           </TableRow>
         </TableHeader>
@@ -126,16 +124,12 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
                     <DropdownMenuContent align="start">
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setAssigningMedicinaService(service)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Atribuir Responsável
-                      </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => setServiceToConclude(service)}
-                        disabled={service.status === 'concluido' || service.status === 'financeiro'}
+                        disabled={service.status === 'concluido'}
                       >
                         <CheckCircle2 className="mr-2 h-4 w-4" />
-                        Enviar p/ Financeiro
+                        Marcar como Pago
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -176,9 +170,9 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
       <AlertDialog open={!!serviceToConclude} onOpenChange={(open) => !open && setServiceToConclude(null)}>
         <AlertDialogContent>
             <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Envio</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar Pagamento</AlertDialogTitle>
             <AlertDialogDescription>
-                Você tem certeza que deseja enviar o serviço para a empresa <span className='font-bold'>{serviceToConclude?.nomeEmpresa}</span> para o Financeiro?
+                Você tem certeza que deseja marcar o serviço para a empresa <span className='font-bold'>{serviceToConclude?.nomeEmpresa}</span> como pago e concluído?
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -187,15 +181,6 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {assigningMedicinaService && (
-        <AssignMedicinaDialog
-            open={!!assigningMedicinaService}
-            onOpenChange={(open) => !open && setAssigningMedicinaService(null)}
-            service={assigningMedicinaService}
-            onSuccess={() => setAssigningMedicinaService(null)}
-        />
-      )}
     </>
   );
 }

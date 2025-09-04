@@ -24,6 +24,7 @@ import {
   LogOut,
   Users,
   FileWarning,
+  DollarSign,
 } from 'lucide-react';
 import { useServiceNotification } from '@/context/service-notification-context';
 import { Button } from './ui/button';
@@ -39,6 +40,7 @@ const navItems = [
   { href: '/tecnica', label: 'Técnica', icon: Cpu, notificationKey: 'tecnica' },
   { href: '/digitacao', label: 'Digitação', icon: Keyboard, notificationKey: 'digitacao' },
   { href: '/medicina', label: 'Medicina', icon: Stethoscope, notificationKey: 'medicina' },
+  { href: '/financeiro', label: 'Financeiro', icon: DollarSign, notificationKey: 'financeiro' },
   { href: '/tecnicos', label: 'Técnicos', icon: Users },
   { href: '/vencidos', label: 'Vencidos', icon: FileWarning },
   { href: '/arquivo-morto', label: 'Arquivo Morto', icon: Archive },
@@ -46,7 +48,7 @@ const navItems = [
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { engineeringCount, tecnicaCount, digitacaoCount, medicinaCount } = useServiceNotification();
+  const { engineeringCount, tecnicaCount, digitacaoCount, medicinaCount, financeiroCount } = useServiceNotification();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -60,6 +62,7 @@ export function SidebarNav() {
     tecnica: tecnicaCount,
     digitacao: digitacaoCount,
     medicina: medicinaCount,
+    financeiro: financeiroCount,
   };
 
   return (

@@ -1,50 +1,24 @@
 
 'use client';
 
-import { EngenhariaTable } from '@/components/engenharia-table';
+import { FinanceiroTable } from '@/components/financeiro-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/context/auth-context';
+import { useServiceNotification } from '@/context/service-notification-context';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import type { Service } from '../engenharia/page';
 
-export type Service = {
-  id: string;
-  cnpj: string;
-  nomeEmpresa: string;
-  cep: string;
-  cidade: string;
-  endereco: string;
-  bairro: string;
-  complemento?: string;
-  telefone: string;
-  contato: string;
-  email?: string;
-  servicos: string[];
-  dataServico: {
-    seconds: number;
-    nanoseconds: number;
-  };
-  dataVencimento: {
-    seconds: number;
-    nanoseconds: number;
-  };
-  status: string;
-  dataAgendamento?: {
-    seconds: number;
-    nanoseconds: number;
-  } | null;
-  tecnico?: string;
-  anexos?: { name: string; type: string; data: string }[];
-  digitador?: string;
-  responsavel?: string;
-  medicinaResponsavel?: string;
-};
-
-export default function EngenhariaPage() {
+export default function FinanceiroPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { resetFinanceiroCount } = useServiceNotification();
+  
+  useEffect(() => {
+    resetFinanceiroCount();
+  }, [resetFinanceiroCount]);
   
   useEffect(() => {
     if (!user) {
@@ -52,7 +26,7 @@ export default function EngenhariaPage() {
       return;
     }
 
-    const q = query(collection(db, 'servicos'), where('status', 'in', ['engenharia', 'agendado', 'aguardando_visita', 'em_visita', 'digitacao', 'medicina', 'financeiro', 'concluido']));
+    const q = query(collection(db, 'servicos'), where('status', '==', 'financeiro'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const servicesData: Service[] = [];
       querySnapshot.forEach((doc) => {
@@ -61,7 +35,7 @@ export default function EngenhariaPage() {
       setServices(servicesData);
       setLoading(false);
     }, (error) => {
-        console.error("Error fetching services:", error);
+        console.error("Error fetching services for financeiro:", error);
         setLoading(false);
     });
 
@@ -72,7 +46,7 @@ export default function EngenhariaPage() {
     <>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Engenharia</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Financeiro</h1>
         </div>
         {loading ? (
           <div className="space-y-4">
@@ -81,7 +55,7 @@ export default function EngenhariaPage() {
               <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <EngenhariaTable services={services} />
+          <FinanceiroTable services={services} />
         )}
       </div>
     </>
