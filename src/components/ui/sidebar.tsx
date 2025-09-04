@@ -225,10 +225,10 @@ const Sidebar = React.forwardRef<
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
-            "group-data-[side=right]:rotate-180",
+            "duration-200 relative h-svh bg-transparent transition-[width] ease-linear",
+            variant === 'sidebar' && "w-[--sidebar-width] group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
             variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
+              ? "w-[calc(var(--sidebar-width)_+_theme(spacing.4))] group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
           )}
         />
