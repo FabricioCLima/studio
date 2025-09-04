@@ -10,6 +10,8 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
+import { auth } from '@/lib/firebase';
+import { Button } from '@/components/ui/button';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, permissions } = useAuth();
