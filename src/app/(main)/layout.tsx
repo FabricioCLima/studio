@@ -34,12 +34,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     );
   }
 
-  // User is loaded, but is not logged in, redirect will happen.
   if (!user) {
     return null;
   }
   
-  // User is logged in, but has no permissions at all.
   if (permissions.length === 0) {
       return (
             <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-center">
@@ -59,7 +57,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       )
   }
   
-  // If the user is authenticated and has permissions, render the app layout.
   return (
     <SidebarProvider>
       <Sidebar>
