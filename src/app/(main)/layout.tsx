@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
 import { auth } from '@/lib/firebase';
+import { Button } from '@/components/ui/button';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, permissions } = useAuth();
@@ -33,7 +34,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     );
   }
 
-  if (user && permissions.length === 0) {
+  if (!user) {
+    return null;
+  }
+
+  if (permissions.length === 0) {
      return (
        <div className="flex h-screen w-full flex-col items-center justify-center bg-secondary">
           <div className="text-center">
@@ -44,19 +49,16 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
              <p className="mt-1 text-sm text-muted-foreground">
                 Seu email: <span className="font-semibold">{user.email}</span>
             </p>
-            <button
-                className="mt-6 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            <Button
+                variant="outline"
+                className="mt-6"
                 onClick={() => auth.signOut()}
             >
                 Fazer login com outra conta
-            </button>
+            </Button>
           </div>
        </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (
