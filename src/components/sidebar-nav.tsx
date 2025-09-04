@@ -34,23 +34,23 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard, permission: 'dashboard' },
-  { href: '/cadastro', label: 'Cadastro', icon: FilePlus2, permission: 'cadastro' },
-  { href: '/engenharia', label: 'Engenharia', icon: Hammer, notificationKey: 'engineering', permission: 'engenharia' },
-  { href: '/tecnica', label: 'Técnica', icon: Cpu, notificationKey: 'tecnica', permission: 'tecnica' },
-  { href: '/digitacao', label: 'Digitação', icon: Keyboard, notificationKey: 'digitacao', permission: 'digitacao' },
-  { href: '/medicina', label: 'Medicina', icon: Stethoscope, notificationKey: 'medicina', permission: 'medicina' },
-  { href: '/financeiro', label: 'Financeiro', icon: DollarSign, notificationKey: 'financeiro', permission: 'financeiro' },
-  { href: '/tecnicos', label: 'Técnicos', icon: Users, permission: 'tecnicos' },
-  { href: '/vencidos', label: 'Vencidos', icon: FileWarning, permission: 'vencidos' },
-  { href: '/arquivo-morto', label: 'Arquivo Morto', icon: Archive, permission: 'arquivo-morto' },
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/cadastro', label: 'Cadastro', icon: FilePlus2 },
+  { href: '/engenharia', label: 'Engenharia', icon: Hammer, notificationKey: 'engineering' },
+  { href: '/tecnica', label: 'Técnica', icon: Cpu, notificationKey: 'tecnica' },
+  { href: '/digitacao', label: 'Digitação', icon: Keyboard, notificationKey: 'digitacao' },
+  { href: '/medicina', label: 'Medicina', icon: Stethoscope, notificationKey: 'medicina' },
+  { href: '/financeiro', label: 'Financeiro', icon: DollarSign, notificationKey: 'financeiro' },
+  { href: '/tecnicos', label: 'Técnicos', icon: Users },
+  { href: '/vencidos', label: 'Vencidos', icon: FileWarning },
+  { href: '/arquivo-morto', label: 'Arquivo Morto', icon: Archive },
 ];
 
 export function SidebarNav() {
   const pathname = usePathname();
   const { engineeringCount, tecnicaCount, digitacaoCount, medicinaCount, financeiroCount } = useServiceNotification();
   const router = useRouter();
-  const { user, permissions } = useAuth();
+  const { user } = useAuth();
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -65,13 +65,6 @@ export function SidebarNav() {
     financeiro: financeiroCount,
   };
 
-  const hasAccess = (permission: string) => {
-    return permissions.includes('admin') || permissions.includes(permission);
-  }
-
-  const filteredNavItems = navItems.filter(item => hasAccess(item.permission));
-
-
   return (
     <>
       <SidebarHeader>
@@ -83,7 +76,7 @@ export function SidebarNav() {
       <SidebarContent>
         <SidebarGroup>
             <SidebarMenu>
-                {filteredNavItems.map((item) => {
+                {navItems.map((item) => {
                 const count = item.notificationKey ? notificationCounts[item.notificationKey] : 0;
                 return (
                     <SidebarMenuItem key={item.href}>

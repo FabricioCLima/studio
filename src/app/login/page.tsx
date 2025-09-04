@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -23,8 +22,6 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Se um usuário já logado tentar acessar /login, redirecione-o para o dashboard.
-    // Isso evita que a página de login seja exibida para quem já está autenticado.
     if (!authLoading && user) {
         router.push('/');
     }
@@ -35,22 +32,19 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // O AuthProvider e o MainLayout cuidarão do redirecionamento após o login bem-sucedido.
-      // router.push('/'); // Removido para evitar redirecionamento prematuro
+      router.push('/');
     } catch (error: any) {
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'Erro de Login',
-        description: 'Verifique suas credenciais ou se você tem permissão para acessar.',
+        description: 'Verifique suas credenciais e tente novamente.',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // Exibe um loader em tela cheia se o estado de autenticação ainda estiver carregando
-  // ou se o usuário já estiver logado e o redirecionamento estiver em andamento.
   if (authLoading || user) {
      return (
       <div className="flex h-screen w-full items-center justify-center bg-background">

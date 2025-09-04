@@ -36,39 +36,11 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [permissions, setPermissions] = useState<Permission[]>(['admin', 'dashboard', 'cadastro', 'engenharia', 'tecnica', 'digitacao', 'medicina', 'financeiro', 'tecnicos', 'vencidos', 'arquivo-morto']);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
-      
-      if (user?.email) {
-          try {
-            const userDocRef = doc(db, 'usuarios', user.email);
-            const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                // Corrigido: Verifica se o campo 'admin' é true, ou pega as permissões do array.
-                if (userData.admin === true) {
-                  setPermissions([
-                      'admin', 'dashboard', 'cadastro', 'engenharia', 'tecnica', 
-                      'digitacao', 'medicina', 'financeiro', 'tecnicos', 'vencidos', 
-                      'arquivo-morto'
-                  ]);
-                } else {
-                  setPermissions(userData.permissões || []);
-                }
-            } else {
-                setPermissions([]); // Usuário existe no Auth mas não no Firestore
-            }
-          } catch(error) {
-              console.error("Erro ao buscar permissões do usuário:", error);
-              setPermissions([]);
-          }
-      } else {
-          setPermissions([]); // Nenhum usuário logado
-      }
-      
       setLoading(false);
     });
 
