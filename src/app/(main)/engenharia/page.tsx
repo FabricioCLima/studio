@@ -8,6 +8,18 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
+export type FichaVisita = {
+  observacoes?: string;
+  checklist: {
+    [key: string]: boolean;
+  };
+  dataPreenchimento: {
+    seconds: number;
+    nanoseconds: number;
+  };
+  tecnico?: string;
+};
+
 export type Service = {
   id: string;
   cnpj: string;
@@ -39,6 +51,7 @@ export type Service = {
   digitador?: string;
   responsavel?: string;
   medicinaResponsavel?: string;
+  fichasVisita?: FichaVisita[];
 };
 
 export default function EngenhariaPage() {

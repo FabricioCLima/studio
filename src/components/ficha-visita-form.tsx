@@ -7,21 +7,21 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc } from 'firebase/firestore';
+import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useState } from 'react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { Textarea } from './ui/textarea';
 import { Checkbox } from './ui/checkbox';
-import { Label } from './ui/label';
+import { useAuth } from '@/context/auth-context';
 
 const formSchema = z.object({
   observacoes: z.string().optional(),
   checklist: z.object({
-    item1: z.boolean().default(false),
-    item2: z.boolean().default(false),
-    item3: z.boolean().default(false),
-    item4: z.boolean().default(false),
+    'Verificação de Equipamentos': z.boolean().default(false),
+    'Análise de Ambiente': z.boolean().default(false),
+    'Coleta de Dados': z.boolean().default(false),
+    'Entrevista com Responsável': z.boolean().default(false),
   }).default({}),
 });
 
@@ -34,17 +34,17 @@ interface FichaVisitaFormProps {
 export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    // TODO: Pré-popular com dados existentes se houver
     defaultValues: {
       observacoes: '',
       checklist: {
-        item1: false,
-        item2: false,
-        item3: false,
-        item4: false,
+        'Verificação de Equipamentos': false,
+        'Análise de Ambiente': false,
+        'Coleta de Dados': false,
+        'Entrevista com Responsável': false,
       },
     },
   });
@@ -54,12 +54,15 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
     setIsSubmitting(true);
     try {
         const serviceRef = doc(db, 'servicos', service.id);
+        
+        const newFicha = {
+            ...values,
+            dataPreenchimento: new Date(),
+            tecnico: service.tecnico || user?.displayName || 'Não identificado',
+        }
+
         await updateDoc(serviceRef, {
-            fichaVisita: {
-                ...values,
-                dataPreenchimento: new Date(),
-                tecnico: service.tecnico,
-            }
+            fichasVisita: arrayUnion(newFicha)
         });
 
         toast({
@@ -68,6 +71,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
             className: 'bg-accent text-accent-foreground',
         });
         
+        form.reset();
         onSave?.();
 
     } catch (error) {
@@ -83,10 +87,10 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   }
 
   const checklistItems = [
-    { id: 'item1', label: 'Verificação de Equipamentos' },
-    { id: 'item2', label: 'Análise de Ambiente' },
-    { id: 'item3', label: 'Coleta de Dados' },
-    { id: 'item4', label: 'Entrevista com Responsável' },
+    'Verificação de Equipamentos',
+    'Análise de Ambiente',
+    'Coleta de Dados',
+    'Entrevista com Responsável',
   ] as const;
 
   return (
@@ -97,9 +101,9 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
             <div className="space-y-2 mt-4">
                  {checklistItems.map((item) => (
                     <FormField
-                    key={item.id}
+                    key={item}
                     control={form.control}
-                    name={`checklist.${item.id}`}
+                    name={`checklist.${item}`}
                     render={({ field }) => (
                         <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                             <FormControl>
@@ -109,7 +113,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                                 />
                             </FormControl>
                             <div className="space-y-1 leading-none">
-                                <FormLabel>{item.label}</FormLabel>
+                                <FormLabel>{item}</FormLabel>
                             </div>
                         </FormItem>
                     )}

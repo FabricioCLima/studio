@@ -38,8 +38,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
-import { FichaVisitaDialog } from './ficha-visita-dialog';
 import { PrintDialog } from './print-dialog';
+import Link from 'next/link';
 
 interface TecnicaTableProps {
   services: Service[];
@@ -48,7 +48,6 @@ interface TecnicaTableProps {
 export function TecnicaTable({ services }: TecnicaTableProps) {
     const { toast } = useToast();
     const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
-    const [fichaVisitaService, setFichaVisitaService] = useState<Service | null>(null);
     const [printingService, setPrintingService] = useState<Service | null>(null);
 
 
@@ -131,9 +130,11 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                               Imprimir Ficha
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                           <DropdownMenuItem onClick={() => setFichaVisitaService(service)}>
-                              <ClipboardList className="mr-2 h-4 w-4" />
-                              Ficha de Visita
+                           <DropdownMenuItem asChild>
+                               <Link href={`/ficha-visita/${service.id}`} target="_blank">
+                                <ClipboardList className="mr-2 h-4 w-4" />
+                                Ficha de Visita
+                               </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem
                               onClick={() => handleUpdateStatus(service.id, 'em_visita')}
@@ -191,14 +192,6 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
           </AlertDialogContent>
       </AlertDialog>
 
-      {fichaVisitaService && (
-        <FichaVisitaDialog
-            open={!!fichaVisitaService}
-            onOpenChange={(open) => !open && setFichaVisitaService(null)}
-            service={fichaVisitaService}
-            onSuccess={() => setFichaVisitaService(null)}
-        />
-      )}
       {printingService && (
         <PrintDialog
           service={printingService}
