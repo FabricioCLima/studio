@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, PlayCircle, Printer, Trash2, Upload } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, PlayCircle, Printer, Trash2, ClipboardList } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -38,7 +38,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
-import { UploadFilesDialog } from './upload-files-dialog';
+import { FichaVisitaDialog } from './ficha-visita-dialog';
 import { PrintDialog } from './print-dialog';
 
 interface TecnicaTableProps {
@@ -48,7 +48,7 @@ interface TecnicaTableProps {
 export function TecnicaTable({ services }: TecnicaTableProps) {
     const { toast } = useToast();
     const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
-    const [uploadingService, setUploadingService] = useState<Service | null>(null);
+    const [fichaVisitaService, setFichaVisitaService] = useState<Service | null>(null);
     const [printingService, setPrintingService] = useState<Service | null>(null);
 
 
@@ -131,9 +131,9 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                               Imprimir Ficha
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                           <DropdownMenuItem onClick={() => setUploadingService(service)}>
-                              <Upload className="mr-2 h-4 w-4" />
-                              Adicionar Anexos
+                           <DropdownMenuItem onClick={() => setFichaVisitaService(service)}>
+                              <ClipboardList className="mr-2 h-4 w-4" />
+                              Ficha de Visita
                           </DropdownMenuItem>
                           <DropdownMenuItem
                               onClick={() => handleUpdateStatus(service.id, 'em_visita')}
@@ -191,12 +191,12 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
           </AlertDialogContent>
       </AlertDialog>
 
-      {uploadingService && (
-        <UploadFilesDialog
-            open={!!uploadingService}
-            onOpenChange={(open) => !open && setUploadingService(null)}
-            service={uploadingService}
-            onSuccess={() => setUploadingService(null)}
+      {fichaVisitaService && (
+        <FichaVisitaDialog
+            open={!!fichaVisitaService}
+            onOpenChange={(open) => !open && setFichaVisitaService(null)}
+            service={fichaVisitaService}
+            onSuccess={() => setFichaVisitaService(null)}
         />
       )}
       {printingService && (
