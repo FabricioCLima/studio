@@ -39,13 +39,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { PrintDialog } from './print-dialog';
-import Link from 'next/link';
 
 interface TecnicaTableProps {
   services: Service[];
+  onSelectService: (service: Service) => void;
 }
 
-export function TecnicaTable({ services }: TecnicaTableProps) {
+export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
     const { toast } = useToast();
     const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
     const [printingService, setPrintingService] = useState<Service | null>(null);
@@ -130,11 +130,9 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                               Imprimir Ficha
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                           <DropdownMenuItem asChild>
-                               <Link href={`/ficha-visita/${service.id}`} target="_blank">
+                           <DropdownMenuItem onClick={() => onSelectService(service)}>
                                 <ClipboardList className="mr-2 h-4 w-4" />
                                 Ficha de Visita
-                               </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem
                               onClick={() => handleUpdateStatus(service.id, 'em_visita')}

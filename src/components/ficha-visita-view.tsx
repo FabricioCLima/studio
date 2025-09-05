@@ -12,25 +12,27 @@ import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { PlusCircle } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { ArrowLeft, PlusCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export default function FichaVisitaPage() {
-  const params = useParams();
-  const id = params.id as string;
+interface FichaVisitaViewProps {
+    serviceId: string;
+    onBack: () => void;
+}
+
+export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const { user } = useAuth();
   
   useEffect(() => {
-    if (!user || !id) {
+    if (!user || !serviceId) {
       setLoading(false);
       return;
     }
 
-    const serviceRef = doc(db, 'servicos', id);
+    const serviceRef = doc(db, 'servicos', serviceId);
     const unsubscribe = onSnapshot(serviceRef, (doc) => {
       if (doc.exists()) {
         setService({ id: doc.id, ...doc.data() } as Service);
@@ -45,11 +47,12 @@ export default function FichaVisitaPage() {
     });
 
     return () => unsubscribe();
-  }, [user, id]);
+  }, [user, serviceId]);
 
   if (loading) {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <Skeleton className="h-8 w-1/4" />
         <Skeleton className="h-8 w-1/2" />
         <Skeleton className="h-4 w-1/3" />
         <div className="space-y-4 pt-4">
@@ -63,6 +66,10 @@ export default function FichaVisitaPage() {
   if (!service) {
      return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <Button variant="outline" onClick={onBack} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar
+        </Button>
         <Card>
             <CardContent className="p-8 text-center text-muted-foreground">
                 <p>Serviço não encontrado.</p>
@@ -77,8 +84,11 @@ export default function FichaVisitaPage() {
     : [];
 
   return (
-    <>
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <Button variant="outline" onClick={onBack} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar para Técnica
+        </Button>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
             <div>
                  <h1 className="text-3xl font-bold tracking-tight">Fichas de Visita</h1>
@@ -149,8 +159,6 @@ export default function FichaVisitaPage() {
                 </Card>
             )}
         </div>
-
       </div>
-    </>
   );
 }

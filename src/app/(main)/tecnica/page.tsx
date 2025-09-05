@@ -9,10 +9,12 @@ import { useEffect, useState } from 'react';
 import type { Service } from '../engenharia/page';
 import { TecnicaTable } from '@/components/tecnica-table';
 import { useServiceNotification } from '@/context/service-notification-context';
+import { FichaVisitaView } from '@/components/ficha-visita-view';
 
 export default function TecnicaPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const { user } = useAuth();
   const { resetTecnicaCount } = useServiceNotification();
   
@@ -42,6 +44,10 @@ export default function TecnicaPage() {
     return () => unsubscribe();
   }, [user]);
 
+  if (selectedService) {
+    return <FichaVisitaView serviceId={selectedService.id} onBack={() => setSelectedService(null)} />;
+  }
+
   return (
     <>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -55,7 +61,7 @@ export default function TecnicaPage() {
               <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <TecnicaTable services={services} />
+          <TecnicaTable services={services} onSelectService={setSelectedService} />
         )}
       </div>
     </>
