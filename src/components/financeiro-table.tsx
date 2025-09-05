@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, Download, MoreHorizontal } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, Printer } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -36,6 +36,7 @@ import {
 import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { PrintDialog } from './print-dialog';
 
 interface FinanceiroTableProps {
   services: Service[];
@@ -44,24 +45,7 @@ interface FinanceiroTableProps {
 export function FinanceiroTable({ services }: FinanceiroTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
-
-    const handleDownload = (anexo: {name: string, type: string, data: string}) => {
-        try {
-            const link = document.createElement('a');
-            link.href = anexo.data;
-            link.download = anexo.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            toast({
-                variant: 'destructive',
-                title: 'Erro!',
-                description: 'Não foi possível baixar o arquivo.',
-            });
-            console.error('Error downloading file:', error)
-        }
-    }
+    const [printingService, setPrintingService] = useState<Service | null>(null);
 
     const handleConclude = async (serviceId: string) => {
         try {
@@ -107,7 +91,7 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
             <TableHead>Empresa</TableHead>
             <TableHead className="hidden md:table-cell">Status</TableHead>
             <TableHead>Responsável Medicina</TableHead>
-            <TableHead className="hidden sm:table-cell">Anexos</TableHead>
+            <TableHead className="hidden sm:table-cell">Ficha de Visita</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -140,22 +124,11 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
               </TableCell>
               <TableCell>{service.medicinaResponsavel || '-'}</TableCell>
               <TableCell className="hidden sm:table-cell">
-                {service.anexos && service.anexos.length > 0 ? (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                                <Download className="mr-2 h-4 w-4" />
-                                Anexos ({service.anexos.length})
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            {service.anexos.map((anexo, index) => (
-                                <DropdownMenuItem key={index} onClick={() => handleDownload(anexo)}>
-                                    {anexo.name}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                {service.fichasVisita && service.fichasVisita.length > 0 ? (
+                    <Button variant="outline" size="sm" onClick={() => setPrintingService(service)}>
+                        <Printer className="mr-2 h-4 w-4" />
+                        Visualizar Ficha
+                    </Button>
                 ) : (
                     '-'
                 )}
@@ -181,6 +154,18 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {printingService && (
+        <PrintDialog
+          service={printingService}
+          open={!!printingService}
+          onOpenChange={(open) => {
+            if (!open) {
+              setPrintingService(null);
+            }
+          }}
+        />
+      )}
     </>
   );
 }
