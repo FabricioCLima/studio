@@ -127,12 +127,12 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
                 </p>
             </div>
             <div className="flex items-center gap-2">
-                <Button onClick={() => setShowForm(!showForm)}>
+                <Button onClick={() => setShowForm(!showForm)} variant={showForm ? 'secondary' : 'default'}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     {showForm ? 'Cancelar Nova Ficha' : 'Adicionar Nova Ficha'}
                 </Button>
                 {canFinish && (
-                    <Button onClick={() => setIsConfirmingFinish(true)} variant="success">
+                    <Button onClick={() => setIsConfirmingFinish(true)} className="bg-accent hover:bg-accent/90">
                         <CheckCircle2 className="mr-2 h-4 w-4" />
                         Finalizar e Enviar p/ Digitação
                     </Button>
@@ -143,8 +143,8 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
         {showForm && (
             <Card className="mt-4">
                 <CardHeader>
-                    <CardTitle>Nova Ficha de Visita</CardTitle>
-                    <CardDescription>Preencha os detalhes da visita.</CardDescription>
+                    <CardTitle>Nova Ficha de Inspeção</CardTitle>
+                    <CardDescription>Preencha os detalhes da inspeção de segurança.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <FichaVisitaForm service={service} onSave={() => setShowForm(false)} />
@@ -171,19 +171,18 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
                         </CardHeader>
                         <CardContent className="space-y-4">
                            <div>
-                                <h4 className="font-semibold mb-2">Checklist:</h4>
+                                <h4 className="font-semibold mb-2">Detalhes da Inspeção:</h4>
+                               <p className="text-sm"><span className="font-medium">Setor:</span> {ficha.setorInspecionado}</p>
+                               <p className="text-sm"><span className="font-medium">Acompanhante:</span> {ficha.acompanhante}</p>
+                           </div>
+                           {ficha.naoConformidades && ficha.naoConformidades.length > 0 && (
+                             <div>
+                                <h4 className="font-semibold mb-2 mt-4">Não Conformidades:</h4>
                                 <ul className="list-disc list-inside space-y-1">
-                                    {Object.entries(ficha.checklist).map(([key, value]) => (
-                                        <li key={key} className={value ? 'text-primary' : 'text-muted-foreground'}>
-                                            <span className="font-medium">{key.replace('item', 'Item ')}:</span> {value ? 'Verificado' : 'Não Verificado'}
-                                        </li>
+                                    {ficha.naoConformidades.map((nc, i) => (
+                                        <li key={i} className="text-sm">{nc.descricao}</li>
                                     ))}
                                 </ul>
-                           </div>
-                           {ficha.observacoes && (
-                             <div>
-                                <h4 className="font-semibold mb-2">Observações:</h4>
-                                <p className="text-muted-foreground whitespace-pre-wrap">{ficha.observacoes}</p>
                             </div>
                            )}
                         </CardContent>

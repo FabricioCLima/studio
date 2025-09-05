@@ -8,17 +8,39 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
+export type NaoConformidade = {
+  descricao: string;
+  riscoAssociado: string;
+  recomendacao: string;
+  prazo: Date;
+  responsavelAcao: string;
+};
+
+export type ItemVerificacao = {
+  status: 'c' | 'nc' | 'na';
+  observacoes: string;
+};
+
 export type FichaVisita = {
-  observacoes?: string;
-  checklist: {
-    [key: string]: boolean;
+  setorInspecionado: string;
+  dataVistoria: {
+    seconds: number;
+    nanoseconds: number;
   };
+  horario: string;
+  acompanhante: string;
+  tipoInspecao: 'rotina' | 'denuncia' | 'especifica' | 'oficial';
+  itensVerificacao: {
+    [key: string]: ItemVerificacao;
+  };
+  naoConformidades: NaoConformidade[];
   dataPreenchimento: {
     seconds: number;
     nanoseconds: number;
   };
   tecnico?: string;
 };
+
 
 export type Service = {
   id: string;
