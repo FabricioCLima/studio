@@ -9,7 +9,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useEffect, useState } from 'react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { Textarea } from './ui/textarea';
 import { useAuth } from '@/context/auth-context';
@@ -81,6 +80,25 @@ const checklistItems = {
     ],
 };
 
+const generateInitialItensVerificacao = () => {
+    return Object.values(checklistItems)
+        .flat()
+        .reduce((acc, item) => {
+            acc[item] = { status: 'na', observacoes: '' };
+            return acc;
+        }, {} as z.infer<typeof formSchema>['itensVerificacao']);
+}
+
+const generateDefaultValues = () => ({
+    dataVistoria: new Date(),
+    horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    acompanhante: '',
+    setorInspecionado: '',
+    tipoInspecao: 'rotina' as 'rotina',
+    itensVerificacao: generateInitialItensVerificacao(),
+    naoConformidades: [],
+});
+
 
 interface FichaVisitaFormProps {
     service: Service;
@@ -92,23 +110,9 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
 
-  const initialItensVerificacao = Object.values(checklistItems)
-    .flat()
-    .reduce((acc, item) => {
-        acc[item] = { status: 'na', observacoes: '' };
-        return acc;
-    }, {} as z.infer<typeof formSchema>['itensVerificacao']);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      dataVistoria: new Date(),
-      horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      acompanhante: '',
-      setorInspecionado: '',
-      itensVerificacao: initialItensVerificacao,
-      naoConformidades: [],
-    },
+    defaultValues: generateDefaultValues(),
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -138,7 +142,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
             className: 'bg-accent text-accent-foreground',
         });
         
-        form.reset();
+        form.reset(generateDefaultValues());
         onSave?.();
 
     } catch (error) {
@@ -265,8 +269,8 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <FormControl>
                                                     <RadioGroup
-                                                        onValueChange={(value) => field.onChange({ ...field.value, status: value })}
-                                                        value={field.value.status}
+                                                        onValueChange={(value) => field.onChange({ ...(field.value || {}), status: value })}
+                                                        value={field.value?.status}
                                                         className="flex space-x-4"
                                                     >
                                                         <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="c" /></FormControl><FormLabel className="font-normal text-sm">C</FormLabel></FormItem>
@@ -277,8 +281,8 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                                                 <FormControl>
                                                     <Input 
                                                         placeholder="Observações / Ações Corretivas" 
-                                                        value={field.value.observacoes}
-                                                        onChange={(e) => field.onChange({ ...field.value, observacoes: e.target.value })}
+                                                        value={field.value?.observacoes || ''}
+                                                        onChange={(e) => field.onChange({ ...(field.value || {}), observacoes: e.target.value })}
                                                     />
                                                 </FormControl>
                                              </div>
@@ -389,3 +393,5 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
     </Form>
   );
 }
+
+    
