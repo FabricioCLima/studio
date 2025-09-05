@@ -9,11 +9,13 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, PlusCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, PlusCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface FichaVisitaViewProps {
     serviceId: string;
@@ -24,7 +26,9 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [isConfirmingFinish, setIsConfirmingFinish] = useState(false);
   const { user } = useAuth();
+  const { toast } = useToast();
   
   useEffect(() => {
     if (!user || !serviceId) {
@@ -48,6 +52,29 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
 
     return () => unsubscribe();
   }, [user, serviceId]);
+  
+  const handleFinishVisit = async () => {
+    if (!service) return;
+    try {
+        const serviceRef = doc(db, 'servicos', service.id);
+        await updateDoc(serviceRef, { status: 'digitacao' });
+        toast({
+            title: 'Sucesso!',
+            description: 'Serviço enviado para a Digitação.',
+            className: 'bg-accent text-accent-foreground',
+        });
+        onBack();
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Erro!',
+            description: 'Não foi possível finalizar a visita.',
+        });
+    } finally {
+        setIsConfirmingFinish(false);
+    }
+  }
+
 
   if (loading) {
     return (
@@ -83,7 +110,10 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
     ? [...service.fichasVisita].sort((a, b) => b.dataPreenchimento.seconds - a.dataPreenchimento.seconds) 
     : [];
 
+  const canFinish = service.status === 'aguardando_visita' || service.status === 'em_visita';
+
   return (
+    <>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <Button variant="outline" onClick={onBack} className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -96,10 +126,18 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
                     Empresa: <span className="font-semibold">{service.nomeEmpresa}</span>
                 </p>
             </div>
-            <Button onClick={() => setShowForm(!showForm)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                {showForm ? 'Cancelar Nova Ficha' : 'Adicionar Nova Ficha'}
-            </Button>
+            <div className="flex items-center gap-2">
+                <Button onClick={() => setShowForm(!showForm)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    {showForm ? 'Cancelar Nova Ficha' : 'Adicionar Nova Ficha'}
+                </Button>
+                {canFinish && (
+                    <Button onClick={() => setIsConfirmingFinish(true)} variant="success">
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Finalizar e Enviar p/ Digitação
+                    </Button>
+                )}
+            </div>
         </div>
 
         {showForm && (
@@ -160,5 +198,20 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
             )}
         </div>
       </div>
+      <AlertDialog open={isConfirmingFinish} onOpenChange={setIsConfirmingFinish}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Finalização</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja finalizar a visita para a empresa <span className="font-bold">{service.nomeEmpresa}</span> e enviar para a Digitação?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleFinishVisit} className="bg-accent hover:bg-accent/90">Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

@@ -132,11 +132,11 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                           <DropdownMenuSeparator />
                            <DropdownMenuItem onClick={() => onSelectService(service)}>
                                 <ClipboardList className="mr-2 h-4 w-4" />
-                                Ficha de Visita
+                                Preencher Ficha de Visita
                           </DropdownMenuItem>
                           <DropdownMenuItem
                               onClick={() => handleUpdateStatus(service.id, 'em_visita')}
-                              disabled={service.status === 'em_visita' || service.status === 'concluido'}
+                              disabled={service.status === 'em_visita' || service.status === 'digitacao'}
                           >
                               <PlayCircle className="mr-2 h-4 w-4" />
                               Iniciar Visita
@@ -146,7 +146,7 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                               disabled={service.status !== 'em_visita'}
                           >
                               <CheckCircle2 className="mr-2 h-4 w-4" />
-                              Concluir Serviço
+                              Concluir (Enviar p/ Digitação)
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                            <DropdownMenuItem 
