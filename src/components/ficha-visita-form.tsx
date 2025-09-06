@@ -253,6 +253,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
         <Card>
             <CardHeader>
                 <CardTitle>2. Itens de Verificação</CardTitle>
+                <CardDescription>Legenda: C (Conforme), NC (Não Conforme), NA (Não se Aplica)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 {Object.entries(checklistItems).map(([category, items]) => (
@@ -271,7 +272,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                                                 <FormControl>
                                                     <RadioGroup
                                                         onValueChange={(value) => field.onChange({ ...(field.value || {}), status: value })}
-                                                        value={field.value?.status}
+                                                        value={field.value?.status || 'na'}
                                                         className="flex space-x-4"
                                                     >
                                                         <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="c" /></FormControl><FormLabel className="font-normal text-sm">C</FormLabel></FormItem>
