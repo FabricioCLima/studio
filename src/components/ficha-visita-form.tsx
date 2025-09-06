@@ -22,6 +22,7 @@ import { Calendar } from './ui/calendar';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
+import { useState } from 'react';
 
 const itemVerificacaoSchema = z.object({
     status: z.enum(['c', 'nc', 'na'], { required_error: 'Selecione uma opção.' }),
@@ -393,5 +394,3 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
     </Form>
   );
 }
-
-    
