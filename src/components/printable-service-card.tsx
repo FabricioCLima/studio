@@ -75,9 +75,9 @@ const renderItensVerificacao = (ficha: FichaVisita) => {
                              return (
                                 <tr key={index}>
                                     <td className="border p-2">{item}</td>
-                                    <td className="border p-2 text-center">{verificacao?.status === 'c' ? 'X' : ''}</td>
-                                    <td className="border p-2 text-center">{verificacao?.status === 'nc' ? 'X' : ''}</td>
-                                    <td className="border p-2 text-center">{verificacao?.status === 'na' ? 'X' : ''}</td>
+                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'c' ? 'X' : ''}</td>
+                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'nc' ? 'X' : ''}</td>
+                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'na' ? 'X' : ''}</td>
                                     <td className="border p-2">{verificacao?.observacoes || ''}</td>
                                 </tr>
                              )
