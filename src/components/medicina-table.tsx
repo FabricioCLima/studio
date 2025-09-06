@@ -93,7 +93,6 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
             <TableHead>Empresa</TableHead>
             <TableHead className="hidden md:table-cell">Status</TableHead>
             <TableHead>Responsável</TableHead>
-            <TableHead className="hidden sm:table-cell">Ficha de Visita</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -114,6 +113,14 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
                         <Pencil className="mr-2 h-4 w-4" />
                         Atribuir Responsável
                       </DropdownMenuItem>
+                       <DropdownMenuItem 
+                        onClick={() => setPrintingService(service)} 
+                        disabled={!service.fichasVisita || service.fichasVisita.length === 0}
+                      >
+                        <Printer className="mr-2 h-4 w-4" />
+                        Visualizar Ficha
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={() => setServiceToConclude(service)}
                         disabled={service.status === 'concluido' || service.status === 'financeiro'}
@@ -129,16 +136,6 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
                 <StatusBadge service={service} />
               </TableCell>
               <TableCell>{service.medicinaResponsavel || '-'}</TableCell>
-              <TableCell className="hidden sm:table-cell">
-                {service.fichasVisita && service.fichasVisita.length > 0 ? (
-                    <Button variant="outline" size="sm" onClick={() => setPrintingService(service)}>
-                        <Printer className="mr-2 h-4 w-4" />
-                        Visualizar Ficha
-                    </Button>
-                ) : (
-                    '-'
-                )}
-              </TableCell>
             </TableRow>
           ))}
         </TableBody>
