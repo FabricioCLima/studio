@@ -149,9 +149,9 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                               Imprimir Ficha
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                           <DropdownMenuItem onClick={() => onSelectService(service, 'ficha_visita')}>
+                           <DropdownMenuItem onClick={() => onSelectService(service, 'pgr')}>
                                 <ClipboardList className="mr-2 h-4 w-4" />
-                                Gerenciar Fichas Visita
+                                Gerenciar Fichas PGR
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onSelectService(service, 'ltcat')}>
                                 <FileText className="mr-2 h-4 w-4" />
