@@ -8,70 +8,7 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-export type NaoConformidade = {
-  descricao: string;
-  riscoAssociado: string;
-  recomendacao: string;
-  prazo: Date;
-  responsavelAcao: string;
-};
-
-export type ItemVerificacao = {
-  status: 'c' | 'nc' | 'na';
-  observacoes: string;
-};
-
-export type Assinatura = {
-    nome: string;
-    data: { seconds: number; nanoseconds: number; } | Date;
-}
-
-export type FichaVisita = {
-  setorInspecionado: string;
-  dataVistoria: {
-    seconds: number;
-    nanoseconds: number;
-  };
-  horario: string;
-  acompanhante: string;
-  tipoInspecao: 'rotina' | 'denuncia' | 'especifica' | 'oficial';
-  itensVerificacao: {
-    [key: string]: ItemVerificacao;
-  };
-  naoConformidades: NaoConformidade[];
-  dataPreenchimento: {
-    seconds: number;
-    nanoseconds: number;
-  };
-  tecnico?: string;
-  assinaturaResponsavelArea?: Assinatura | null;
-};
-
-export type PgrAcaoCorretiva = {
-    descricaoNaoConformidade: string;
-    registroFotografico?: string;
-    nivelRisco: 'baixo' | 'medio' | 'alto' | 'critico';
-    acaoCorretiva: string;
-    responsavel: string;
-    prazo: Date;
-};
-
-export type FichaPGR = {
-    numeroVistoria: string;
-    dataVistoria: { seconds: number; nanoseconds: number };
-    horario: string;
-    setor: string;
-    atividade: string;
-    responsavelVistoria: string;
-    acompanhantes: string;
-    checklist: {
-        [key: string]: { status: 'c' | 'nc' | 'na' };
-    };
-    planoAcao: PgrAcaoCorretiva[];
-    dataPreenchimento: { seconds: number; nanoseconds: number };
-    assinaturaResponsavelArea?: Assinatura | null;
-};
-
+// Tipos para LTCAT
 export type AgenteFisico = {
     agente: string;
     fonteGeradora: string;
@@ -100,12 +37,64 @@ export type AgenteBiologico = {
     enquadramento: boolean;
 };
 
-export type FichaLTCAT = {
-    cnae: string;
-    dataVistoria: { seconds: number; nanoseconds: number };
-    horario: string;
+// Tipos para PGR
+export type PgrAcaoCorretiva = {
+    descricaoNaoConformidade: string;
+    registroFotografico?: string;
+    nivelRisco: 'baixo' | 'medio' | 'alto' | 'critico';
+    acaoCorretiva: string;
+    responsavel: string;
+    prazo: Date;
+};
+
+// Tipos para Ficha de Visita base
+export type NaoConformidade = {
+  descricao: string;
+  riscoAssociado: string;
+  recomendacao: string;
+  prazo: Date;
+  responsavelAcao: string;
+};
+
+export type ItemVerificacao = {
+  status: 'c' | 'nc' | 'na';
+  observacoes: string;
+};
+
+export type Assinatura = {
+    nome: string;
+    data: { seconds: number; nanoseconds: number; } | Date;
+}
+
+// Tipo FichaVisita Unificado
+export type FichaVisita = {
+  // Campos Originais da Ficha de Visita
+  setorInspecionado: string;
+  dataVistoria: { seconds: number; nanoseconds: number; };
+  horario: string;
+  acompanhante: string;
+  tipoInspecao: 'rotina' | 'denuncia' | 'especifica' | 'oficial';
+  itensVerificacao: { [key: string]: ItemVerificacao; };
+  naoConformidades: NaoConformidade[];
+  dataPreenchimento: { seconds: number; nanoseconds: number; };
+  tecnico?: string;
+  assinaturaResponsavelArea?: Assinatura | null;
+
+  // Campos do PGR
+  pgr?: {
+    numeroVistoria: string;
+    atividade: string;
     responsavelVistoria: string;
-    acompanhante: string;
+    acompanhantes?: string;
+    checklist: { [key: string]: { status: 'c' | 'nc' | 'na' }; };
+    planoAcao?: PgrAcaoCorretiva[];
+    assinaturaResponsavelArea?: Assinatura | null;
+  };
+  
+  // Campos do LTCAT
+  ltcat?: {
+    cnae: string;
+    responsavelVistoria: string;
     setor: string;
     ghe: string;
     funcoes: string;
@@ -128,8 +117,8 @@ export type FichaLTCAT = {
     episEficaz: 'sim' | 'nao' | 'na';
     observacoes: string;
     fotos: string[];
-    dataPreenchimento: { seconds: number; nanoseconds: number };
     assinaturaResponsavelArea?: Assinatura | null;
+  };
 };
 
 export type Service = {
@@ -164,8 +153,6 @@ export type Service = {
   responsavel?: string;
   medicinaResponsavel?: string;
   fichasVisita?: FichaVisita[];
-  fichasPGR?: FichaPGR[];
-  fichasLTCAT?: FichaLTCAT[];
 };
 
 export default function EngenhariaPage() {

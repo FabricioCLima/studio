@@ -10,10 +10,8 @@ import type { Service } from '../engenharia/page';
 import { TecnicaTable } from '@/components/tecnica-table';
 import { useServiceNotification } from '@/context/service-notification-context';
 import { FichaVisitaView } from '@/components/ficha-visita-view';
-import { PgrView } from '@/components/pgr-view';
-import { LtcatView } from '@/components/ltcat-view';
 
-type ViewMode = 'table' | 'ficha_visita' | 'pgr' | 'ltcat';
+type ViewMode = 'table' | 'ficha_visita';
 
 export default function TecnicaPage() {
   const [services, setServices] = useState<Service[]>([]);
@@ -54,10 +52,6 @@ export default function TecnicaPage() {
       setSelectedService(service);
       setViewMode('ficha_visita');
   }
-  
-  const handleSwitchView = (mode: ViewMode) => {
-      setViewMode(mode);
-  }
 
   const handleBackToTable = () => {
       setSelectedService(null);
@@ -79,26 +73,11 @@ export default function TecnicaPage() {
      )
   }
 
-  if (selectedService) {
-    if (viewMode === 'ficha_visita') {
-        return <FichaVisitaView 
-                    serviceId={selectedService.id} 
-                    onBack={handleBackToTable} 
-                    onSwitchView={handleSwitchView}
-                />;
-    }
-    if (viewMode === 'pgr') {
-        return <PgrView 
-                    serviceId={selectedService.id} 
-                    onBack={() => handleSwitchView('ficha_visita')} 
-                />;
-    }
-    if (viewMode === 'ltcat') {
-        return <LtcatView 
-                    serviceId={selectedService.id} 
-                    onBack={() => handleSwitchView('ficha_visita')} 
-                />;
-    }
+  if (viewMode === 'ficha_visita' && selectedService) {
+    return <FichaVisitaView 
+                serviceId={selectedService.id} 
+                onBack={handleBackToTable} 
+            />;
   }
 
 

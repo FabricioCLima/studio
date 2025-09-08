@@ -74,9 +74,7 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
     }
     
     const hasAnyFicha = (service: Service) => {
-      return (service.fichasVisita && service.fichasVisita.length > 0) ||
-             (service.fichasPGR && service.fichasPGR.length > 0) ||
-             (service.fichasLTCAT && service.fichasLTCAT.length > 0);
+      return (service.fichasVisita && service.fichasVisita.length > 0);
     }
 
 

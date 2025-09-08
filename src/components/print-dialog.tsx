@@ -30,9 +30,7 @@ export function PrintDialog({ open, onOpenChange, service }: PrintDialogProps) {
     documentTitle: `Ficha-Visita-${service.nomeEmpresa.replace(/\s/g, '-')}`,
   });
 
-  const hasAnyFicha = (service.fichasVisita && service.fichasVisita.length > 0) ||
-                      (service.fichasPGR && service.fichasPGR.length > 0) ||
-                      (service.fichasLTCAT && service.fichasLTCAT.length > 0);
+  const hasAnyFicha = (service.fichasVisita && service.fichasVisita.length > 0);
 
 
   return (

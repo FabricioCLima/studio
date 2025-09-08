@@ -1,8 +1,8 @@
 
 'use client';
 
-import type { Assinatura, FichaLTCAT, FichaPGR, FichaVisita, Service } from '@/app/(main)/engenharia/page';
-import { format, parse } from 'date-fns';
+import type { Assinatura, FichaVisita, Service } from '@/app/(main)/engenharia/page';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React from 'react';
 import { Separator } from './ui/separator';
@@ -128,9 +128,54 @@ const renderItensVerificacao = (ficha: FichaVisita) => {
     );
 };
 
-const FichaVisitaPrint = ({ ficha }: { ficha: FichaVisita }) => (
-    <section className="mb-6 no-break">
-        <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Inspeção de Segurança - {formatFichaDate(ficha.dataPreenchimento)}</h2>
+const renderChecklistPgr = (fichaPgr: FichaVisita['pgr']) => {
+    if (!fichaPgr || !fichaPgr.checklist) return null;
+    const checklistItems = {
+        'Riscos Físicos': [ 'Ruído: Fontes de ruído identificadas? Proteção auditiva disponível e em uso?', 'Calor/Frio: Ambiente com temperatura controlada? EPIs para condições térmicas extremas?', 'Vibrações: Equipamentos que geram vibração (mãos/braços, corpo inteiro) estão com manutenção em dia?', 'Radiações (Ionizantes/Não Ionizantes): Fontes de radiação isoladas? Sinalização adequada?'],
+        'Riscos Químicos': [ 'Produtos Químicos: Armazenamento correto (longe de calor, ventilado)?', 'FISPQ/FDS: Ficha de Informação de Segurança de Produtos Químicos disponível e acessível a todos?', 'EPIs: Trabalhadores usam luvas, máscaras e óculos adequados para os produtos manuseados?', 'Ventilação: Sistema de exaustão/ventilação funcionando corretamente?'],
+        'Riscos Biológicos': [ 'Materiais Contaminados: Descarte de resíduos (lixo hospitalar, etc.) feito em local apropriado?', 'Limpeza e Higienização: Procedimentos de limpeza sendo seguidos?', 'Controle de Pragas: Existe evidência de vetores (insetos, roedores)?'],
+        'Riscos Ergonômicos': [ 'Postura: Mobiliário (cadeiras, mesas) ajustado ao trabalhador?', 'Levantamento de Peso: Técnicas corretas sendo aplicadas? Há auxílio de equipamentos?', 'Ritmo de Trabalho: Pausas para descanso estão sendo cumpridas?', 'Iluminação: Iluminação do posto de trabalho é adequada (nem fraca, nem ofuscante)?'],
+        'Riscos de Acidentes (Mecânicos)': [ 'Máquinas e Equipamentos: Proteções de partes móveis (correias, polias) estão instaladas e intactas?', 'Instalações Elétricas: Fios expostos? Quadros elétricos sinalizados e desobstruídos?', 'Prevenção de Incêndio: Extintores dentro da validade, sinalizados e desobstruídos? Saídas de emergência livres?', 'Arranjo Físico (Layout): Corredores de circulação estão livres de obstáculos?', 'Trabalho em Altura: Uso de cinto de segurança, andaimes seguros, linha de vida?'],
+    };
+
+    return (
+        <table className="w-full border-collapse text-xs">
+            <thead>
+                <tr className="bg-gray-100">
+                    <th className="border p-2 text-left">Item de Verificação de Riscos</th>
+                    <th className="border p-2 text-center w-16">C</th>
+                    <th className="border p-2 text-center w-16">NC</th>
+                    <th className="border p-2 text-center w-16">NA</th>
+                </tr>
+            </thead>
+            <tbody>
+                {Object.entries(checklistItems).map(([category, items]) => (
+                    <React.Fragment key={category}>
+                        <tr>
+                            <td colSpan={4} className="font-bold bg-gray-50 p-2 border">{category}</td>
+                        </tr>
+                        {items.map((item, index) => {
+                            const verificacao = fichaPgr.checklist?.[item];
+                            return (
+                                <tr key={index}>
+                                    <td className="border p-2">{item}</td>
+                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'c' ? 'X' : ''}</td>
+                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'nc' ? 'X' : ''}</td>
+                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'na' ? 'X' : ''}</td>
+                                </tr>
+                            )
+                        })}
+                    </React.Fragment>
+                ))}
+            </tbody>
+        </table>
+    );
+};
+
+
+const FichaVisitaPrint = ({ ficha, service }: { ficha: FichaVisita, service: Service }) => (
+    <div className="no-break">
+        <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Inspeção - {formatFichaDate(ficha.dataPreenchimento)}</h2>
         
         <div className="mb-4 p-4 border rounded-lg">
         <h3 className="font-bold mb-2 text-lg">1. Identificação da Inspeção</h3>
@@ -167,6 +212,52 @@ const FichaVisitaPrint = ({ ficha }: { ficha: FichaVisita }) => (
         </div>
         )}
         
+        {ficha.pgr && (
+            <section className="mb-6 no-break">
+                <div className="page-break"></div>
+                <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Anexo: Avaliação de Riscos (PGR)</h2>
+                 <div className="mb-4 p-4 border rounded-lg">
+                    <h3 className="font-bold mb-2 text-lg">1. Detalhes da Vistoria PGR</h3>
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                        <div><p className="font-medium">N° da Vistoria:</p><p>{ficha.pgr.numeroVistoria}</p></div>
+                        <div className="col-span-2"><p className="font-medium">Atividade/Equipamento:</p><p>{ficha.pgr.atividade}</p></div>
+                        <div><p className="font-medium">Responsável Vistoria:</p><p>{ficha.pgr.responsavelVistoria}</p></div>
+                        <div><p className="font-medium">Acompanhante(s):</p><p>{ficha.pgr.acompanhantes}</p></div>
+                    </div>
+                </div>
+                <div className="mb-4 p-4 border rounded-lg no-break">
+                    <h3 className="font-bold mb-2 text-lg">2. Checklist de Verificação de Riscos</h3>
+                    {renderChecklistPgr(ficha.pgr)}
+                </div>
+                {ficha.pgr.planoAcao && ficha.pgr.planoAcao.length > 0 && (
+                    <div className="mb-4 p-4 border rounded-lg no-break">
+                        <h3 className="font-bold mb-2 text-lg">3. Plano de Ação</h3>
+                        {ficha.pgr.planoAcao.map((acao, index) => (
+                            <div key={index} className="p-3 border-t mt-2 first:mt-0 first:border-t-0">
+                                <p className="font-semibold">Ação Corretiva {index + 1}</p>
+                                <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                                    <div className="col-span-2"><p className="font-medium">Não Conformidade:</p><p>{acao.descricaoNaoConformidade}</p></div>
+                                    <div className="col-span-2"><p className="font-medium">Ação Corretiva:</p><p>{acao.acaoCorretiva}</p></div>
+                                    <div><p className="font-medium">Nível de Risco:</p><p className="capitalize">{acao.nivelRisco}</p></div>
+                                    <div><p className="font-medium">Prazo:</p><p>{formatFichaDate(acao.prazo)}</p></div>
+                                    <div><p className="font-medium">Responsável:</p><p>{acao.responsavel}</p></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </section>
+        )}
+
+        {ficha.ltcat && (
+             <section className="mb-6 no-break">
+                <div className="page-break"></div>
+                <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Anexo: Caracterização Ambiental (LTCAT)</h2>
+                {/* LTCAT Print Content */}
+            </section>
+        )}
+
+
         <div className="p-4 border rounded-lg no-break">
         <h3 className="font-bold mb-8 text-lg">4. Conclusão e Assinaturas</h3>
         <div className="grid grid-cols-2 gap-8 pt-12">
@@ -174,220 +265,9 @@ const FichaVisitaPrint = ({ ficha }: { ficha: FichaVisita }) => (
              <AssinaturaPrint assinatura={ficha.assinaturaResponsavelArea} label="Assinatura do Responsável pela Área" nome={ficha.acompanhante} />
         </div>
         </div>
-    </section>
+    </div>
 );
 
-
-const renderChecklistPgr = (ficha: FichaPGR) => {
-    const checklistItems = {
-        'Riscos Físicos': [ 'Ruído: Fontes de ruído identificadas? Proteção auditiva disponível e em uso?', 'Calor/Frio: Ambiente com temperatura controlada? EPIs para condições térmicas extremas?', 'Vibrações: Equipamentos que geram vibração (mãos/braços, corpo inteiro) estão com manutenção em dia?', 'Radiações (Ionizantes/Não Ionizantes): Fontes de radiação isoladas? Sinalização adequada?'],
-        'Riscos Químicos': [ 'Produtos Químicos: Armazenamento correto (longe de calor, ventilado)?', 'FISPQ/FDS: Ficha de Informação de Segurança de Produtos Químicos disponível e acessível a todos?', 'EPIs: Trabalhadores usam luvas, máscaras e óculos adequados para os produtos manuseados?', 'Ventilação: Sistema de exaustão/ventilação funcionando corretamente?'],
-        'Riscos Biológicos': [ 'Materiais Contaminados: Descarte de resíduos (lixo hospitalar, etc.) feito em local apropriado?', 'Limpeza e Higienização: Procedimentos de limpeza sendo seguidos?', 'Controle de Pragas: Existe evidência de vetores (insetos, roedores)?'],
-        'Riscos Ergonômicos': [ 'Postura: Mobiliário (cadeiras, mesas) ajustado ao trabalhador?', 'Levantamento de Peso: Técnicas corretas sendo aplicadas? Há auxílio de equipamentos?', 'Ritmo de Trabalho: Pausas para descanso estão sendo cumpridas?', 'Iluminação: Iluminação do posto de trabalho é adequada (nem fraca, nem ofuscante)?'],
-        'Riscos de Acidentes (Mecânicos)': [ 'Máquinas e Equipamentos: Proteções de partes móveis (correias, polias) estão instaladas e intactas?', 'Instalações Elétricas: Fios expostos? Quadros elétricos sinalizados e desobstruídos?', 'Prevenção de Incêndio: Extintores dentro da validade, sinalizados e desobstruídos? Saídas de emergência livres?', 'Arranjo Físico (Layout): Corredores de circulação estão livres de obstáculos?', 'Trabalho em Altura: Uso de cinto de segurança, andaimes seguros, linha de vida?'],
-    };
-
-    return (
-        <table className="w-full border-collapse text-xs">
-            <thead>
-                <tr className="bg-gray-100">
-                    <th className="border p-2 text-left">Item de Verificação de Riscos</th>
-                    <th className="border p-2 text-center w-16">C</th>
-                    <th className="border p-2 text-center w-16">NC</th>
-                    <th className="border p-2 text-center w-16">NA</th>
-                </tr>
-            </thead>
-            <tbody>
-                {Object.entries(checklistItems).map(([category, items]) => (
-                    <React.Fragment key={category}>
-                        <tr>
-                            <td colSpan={4} className="font-bold bg-gray-50 p-2 border">{category}</td>
-                        </tr>
-                        {items.map((item, index) => {
-                            const verificacao = ficha.checklist?.[item];
-                            return (
-                                <tr key={index}>
-                                    <td className="border p-2">{item}</td>
-                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'c' ? 'X' : ''}</td>
-                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'nc' ? 'X' : ''}</td>
-                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'na' ? 'X' : ''}</td>
-                                </tr>
-                            )
-                        })}
-                    </React.Fragment>
-                ))}
-            </tbody>
-        </table>
-    );
-};
-
-
-const FichaPgrPrint = ({ ficha }: { ficha: FichaPGR }) => (
-    <section className="mb-6 no-break">
-        <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Vistoria de Riscos (PGR) - {formatFichaDate(ficha.dataPreenchimento)}</h2>
-
-        <div className="mb-4 p-4 border rounded-lg">
-            <h3 className="font-bold mb-2 text-lg">1. Identificação da Inspeção</h3>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                <div><p className="font-medium">N° da Vistoria:</p><p>{ficha.numeroVistoria}</p></div>
-                <div><p className="font-medium">Data:</p><p>{formatFichaDate(ficha.dataVistoria)} às {ficha.horario}</p></div>
-                <div className="col-span-2"><p className="font-medium">Setor/Departamento:</p><p>{ficha.setor}</p></div>
-                <div className="col-span-2"><p className="font-medium">Atividade/Equipamento:</p><p>{ficha.atividade}</p></div>
-                <div><p className="font-medium">Responsável Vistoria:</p><p>{ficha.responsavelVistoria}</p></div>
-                <div><p className="font-medium">Acompanhante(s):</p><p>{ficha.acompanhantes}</p></div>
-            </div>
-        </div>
-
-        <div className="mb-4 p-4 border rounded-lg no-break">
-            <h3 className="font-bold mb-2 text-lg">2. Checklist de Verificação de Riscos</h3>
-            {renderChecklistPgr(ficha)}
-        </div>
-
-        {ficha.planoAcao && ficha.planoAcao.length > 0 && (
-            <div className="mb-4 p-4 border rounded-lg no-break">
-                <h3 className="font-bold mb-2 text-lg">3. Plano de Ação</h3>
-                {ficha.planoAcao.map((acao, index) => (
-                    <div key={index} className="p-3 border-t mt-2 first:mt-0 first:border-t-0">
-                        <p className="font-semibold">Ação Corretiva {index + 1}</p>
-                        <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
-                            <div className="col-span-2"><p className="font-medium">Não Conformidade:</p><p>{acao.descricaoNaoConformidade}</p></div>
-                            <div className="col-span-2"><p className="font-medium">Ação Corretiva:</p><p>{acao.acaoCorretiva}</p></div>
-                            <div><p className="font-medium">Nível de Risco:</p><p className="capitalize">{acao.nivelRisco}</p></div>
-                            <div><p className="font-medium">Prazo:</p><p>{formatFichaDate(acao.prazo)}</p></div>
-                            <div><p className="font-medium">Responsável:</p><p>{acao.responsavel}</p></div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        )}
-
-        <div className="p-4 border rounded-lg no-break">
-            <h3 className="font-bold mb-8 text-lg">4. Assinaturas</h3>
-            <div className="grid grid-cols-2 gap-8 pt-12">
-                <AssinaturaPrint label="Assinatura do Responsável pela Vistoria" nome={ficha.responsavelVistoria} />
-                <AssinaturaPrint assinatura={ficha.assinaturaResponsavelArea} label="Assinatura do Responsável pelo Setor/Área" nome={ficha.acompanhantes} />
-            </div>
-        </div>
-    </section>
-);
-
-const FichaLtcatPrint = ({ ficha, service }: { ficha: FichaLTCAT, service: Service }) => (
-    <section className="mb-6 no-break">
-        <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Campo LTCAT - {formatFichaDate(ficha.dataPreenchimento)}</h2>
-
-        <div className="mb-4 p-4 border rounded-lg">
-            <h3 className="font-bold mb-2 text-lg">1. DADOS GERAIS DA AVALIAÇÃO</h3>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                <div><p className="font-medium">Empresa:</p><p>{service.nomeEmpresa}</p></div>
-                <div><p className="font-medium">CNPJ:</p><p>{service.cnpj}</p></div>
-                <div className="col-span-2"><p className="font-medium">Endereço:</p><p>{`${service.endereco}, ${service.bairro} - ${service.cidade}`}</p></div>
-                <div><p className="font-medium">CNAE:</p><p>{ficha.cnae}</p></div>
-                <div><p className="font-medium">Data da Vistoria:</p><p>{formatFichaDate(ficha.dataVistoria)} às {ficha.horario}</p></div>
-                <div><p className="font-medium">Responsável Vistoria:</p><p>{ficha.responsavelVistoria}</p></div>
-                <div><p className="font-medium">Acompanhante:</p><p>{ficha.acompanhante}</p></div>
-            </div>
-        </div>
-
-        <div className="mb-4 p-4 border rounded-lg no-break">
-            <h3 className="font-bold mb-2 text-lg">2. CARACTERIZAÇÃO DO AMBIENTE E DA FUNÇÃO</h3>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                <div><p className="font-medium">Setor/Departamento:</p><p>{ficha.setor}</p></div>
-                <div><p className="font-medium">GHE:</p><p>{ficha.ghe}</p></div>
-                <div className="col-span-2"><p className="font-medium">Função(ões):</p><p>{ficha.funcoes}</p></div>
-                <div><p className="font-medium">N° Trabalhadores:</p><p>H: {ficha.homens}, M: {ficha.mulheres}, Total: {ficha.totalTrabalhadores}</p></div>
-                <div><p className="font-medium">Jornada:</p><p>{ficha.jornadaTrabalho}</p></div>
-                <div><p className="font-medium">Frequência Exposição:</p><p className="capitalize">{ficha.frequenciaExposicao}</p></div>
-                <div className="col-span-2"><p className="font-medium">Descrição Atividades:</p><p className="whitespace-pre-wrap">{ficha.descricaoAtividades}</p></div>
-                <div className="col-span-2"><p className="font-medium">Arranjo Físico:</p><p className="whitespace-pre-wrap">{ficha.arranjoFisico}</p></div>
-                <div className="col-span-2"><p className="font-medium">Equipamentos:</p><p className="whitespace-pre-wrap">{ficha.equipamentos}</p></div>
-            </div>
-        </div>
-
-        <div className="mb-4 p-4 border rounded-lg no-break">
-             <h3 className="font-bold mb-2 text-lg">3. AVALIAÇÃO DE AGENTES NOCIVOS</h3>
-             
-             {ficha.agentesFisicos && ficha.agentesFisicos.filter(a => a.resultado).length > 0 && <>
-                <h4 className="font-semibold mt-4 mb-2 text-base">A. Agentes Físicos</h4>
-                <table className="w-full border-collapse text-xs">
-                    <thead><tr className="bg-gray-100">
-                        <th className="border p-1 text-left">Agente</th><th className="border p-1 text-left">Fonte</th><th className="border p-1 text-left">Instrumento</th><th className="border p-1 text-left">Resultado</th>
-                    </tr></thead>
-                    <tbody>
-                        {ficha.agentesFisicos.filter(a => a.resultado).map((agente, i) => (
-                            <tr key={i}>
-                                <td className="border p-1">{agente.agente}</td>
-                                <td className="border p-1">{agente.fonteGeradora}</td>
-                                <td className="border p-1">{agente.instrumento}</td>
-                                <td className="border p-1">{agente.resultado}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-             </>}
-
-            {ficha.agentesQuimicos && ficha.agentesQuimicos.filter(a => a.resultado).length > 0 && (
-                <>
-                    <h4 className="font-semibold mt-4 mb-2 text-base">B. Agentes Químicos</h4>
-                    <table className="w-full border-collapse text-xs">
-                         <thead><tr className="bg-gray-100">
-                            <th className="border p-1 text-left">Agente</th><th className="border p-1 text-left">Fonte</th><th className="border p-1 text-left">Resultado</th>
-                        </tr></thead>
-                        <tbody>
-                            {ficha.agentesQuimicos.filter(a => a.resultado).map((agente, i) => (
-                                <tr key={i}>
-                                    <td className="border p-1">{agente.agente}</td>
-                                    <td className="border p-1">{agente.fonteGeradora}</td>
-                                    <td className="border p-1">{agente.resultado}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </>
-            )}
-
-            {ficha.agentesBiologicos && ficha.agentesBiologicos.filter(a => a.descricao).length > 0 && (
-                 <>
-                    <h4 className="font-semibold mt-4 mb-2 text-base">C. Agentes Biológicos</h4>
-                     <table className="w-full border-collapse text-xs">
-                         <thead><tr className="bg-gray-100">
-                            <th className="border p-1 text-left">Descrição Atividade</th><th className="border p-1 text-left">Agente Provável</th><th className="border p-1 text-center">Enquadrado</th>
-                        </tr></thead>
-                        <tbody>
-                           {ficha.agentesBiologicos.filter(a => a.descricao).map((agente, i) => (
-                               <tr key={i}>
-                                   <td className="border p-1">{agente.descricao}</td>
-                                   <td className="border p-1">{agente.agenteProvavel}</td>
-                                   <td className="border p-1 text-center">{agente.enquadramento ? 'Sim' : 'Não'}</td>
-                               </tr>
-                           ))}
-                        </tbody>
-                    </table>
-                </>
-            )}
-        </div>
-        
-        <div className="mb-4 p-4 border rounded-lg no-break">
-            <h3 className="font-bold mb-2 text-lg">4. MEDIDAS DE CONTROLE EXISTENTES</h3>
-            <p className="text-sm"><span className="font-medium">EPCs Eficazes:</span> <span className="capitalize">{ficha.epcsEficaz}</span></p>
-            <p className="text-sm"><span className="font-medium">EPIs Eficazes:</span> <span className="capitalize">{ficha.episEficaz}</span></p>
-        </div>
-
-        {ficha.observacoes && (
-             <div className="mb-4 p-4 border rounded-lg no-break">
-                <h3 className="font-bold mb-2 text-lg">5. OBSERVAÇÕES</h3>
-                <p className="text-sm whitespace-pre-wrap">{ficha.observacoes}</p>
-            </div>
-        )}
-
-        <div className="p-4 border rounded-lg no-break">
-            <h3 className="font-bold mb-8 text-lg">6. ASSINATURAS</h3>
-             <div className="grid grid-cols-2 gap-8 pt-12">
-                <AssinaturaPrint label="Técnico/Engenheiro Responsável" nome={ficha.responsavelVistoria} />
-                <AssinaturaPrint assinatura={ficha.assinaturaResponsavelArea} label="Responsável da Empresa" nome={ficha.acompanhante} />
-            </div>
-        </div>
-    </section>
-);
 
 
 export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableServiceCardProps>(
@@ -396,15 +276,7 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
       ? [...service.fichasVisita].sort((a, b) => (a.dataPreenchimento?.seconds ?? 0) - (b.dataPreenchimento?.seconds ?? 0)) 
       : [];
 
-    const sortedFichasPgr = service.fichasPGR
-      ? [...service.fichasPGR].sort((a, b) => (a.dataPreenchimento?.seconds ?? 0) - (b.dataPreenchimento?.seconds ?? 0))
-      : [];
-      
-    const sortedFichasLtcat = service.fichasLTCAT
-        ? [...service.fichasLTCAT].sort((a, b) => (a.dataPreenchimento?.seconds ?? 0) - (b.dataPreenchimento?.seconds ?? 0))
-        : [];
-      
-    const hasAnyFicha = sortedFichasVisita.length > 0 || sortedFichasPgr.length > 0 || sortedFichasLtcat.length > 0;
+    const hasAnyFicha = sortedFichasVisita.length > 0;
 
     return (
       <div ref={ref} className="p-4 sm:p-8 font-sans text-gray-800 bg-white">
@@ -419,7 +291,7 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
           `}
         </style>
         <header className="mb-8 border-b pb-4 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Ficha de Vistoria</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Dossiê de Vistoria Técnica</h1>
           <p className="text-sm text-gray-600">Service Flow Dashboard</p>
         </header>
 
@@ -439,29 +311,15 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
 
         {!hasAnyFicha && (
             <div className="text-center text-gray-500">
-                <p>Nenhuma ficha (Visita, PGR, LTCAT) foi encontrada para este serviço.</p>
+                <p>Nenhuma ficha de vistoria foi encontrada para este serviço.</p>
             </div>
         )}
 
         {sortedFichasVisita.map((ficha, index) => (
           <React.Fragment key={`visita-${index}`}>
-            <div className={index > 0 ? "page-break" : ""}></div>
-             <FichaVisitaPrint ficha={ficha} />
+            {index > 0 && <div className="page-break"></div>}
+             <FichaVisitaPrint ficha={ficha} service={service} />
           </React.Fragment>
-        ))}
-
-        {sortedFichasPgr.map((ficha, index) => (
-            <React.Fragment key={`pgr-${index}`}>
-                <div className={sortedFichasVisita.length > 0 || index > 0 ? "page-break" : ""}></div>
-                <FichaPgrPrint ficha={ficha} />
-            </React.Fragment>
-        ))}
-
-        {sortedFichasLtcat.map((ficha, index) => (
-            <React.Fragment key={`ltcat-${index}`}>
-                <div className={(sortedFichasVisita.length > 0 || sortedFichasPgr.length > 0) || index > 0 ? "page-break" : ""}></div>
-                <FichaLtcatPrint ficha={ficha} service={service} />
-            </React.Fragment>
         ))}
 
         <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-500 no-break">

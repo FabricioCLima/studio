@@ -12,7 +12,7 @@ import { db } from '@/lib/firebase';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, CheckCircle2, FileText, Pencil, PlusCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Pencil, PlusCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -20,10 +20,9 @@ import { useToast } from '@/hooks/use-toast';
 interface FichaVisitaViewProps {
     serviceId: string;
     onBack: () => void;
-    onSwitchView: (mode: 'pgr' | 'ltcat') => void;
 }
 
-export function FichaVisitaView({ serviceId, onBack, onSwitchView }: FichaVisitaViewProps) {
+export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingFicha, setEditingFicha] = useState<{ ficha: FichaVisita; index: number } | null>(null);
@@ -143,20 +142,12 @@ export function FichaVisitaView({ serviceId, onBack, onSwitchView }: FichaVisita
         </Button>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
             <div>
-                 <h1 className="text-3xl font-bold tracking-tight">Fichas de Visita</h1>
+                 <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Fichas</h1>
                 <p className="text-muted-foreground">
                     Empresa: <span className="font-semibold">{service.nomeEmpresa}</span>
                 </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-end">
-                <Button onClick={() => onSwitchView('pgr')} variant="secondary">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Gerenciar Fichas PGR
-                </Button>
-                <Button onClick={() => onSwitchView('ltcat')} variant="secondary">
-                  <ShieldCheck className="mr-2 h-4 w-4" />
-                  Gerenciar Fichas LTCAT
-                </Button>
                 <Button onClick={handleAddNew} variant="default" disabled={showForm}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Adicionar Nova Ficha
@@ -173,8 +164,8 @@ export function FichaVisitaView({ serviceId, onBack, onSwitchView }: FichaVisita
         {showForm && (
             <Card className="mt-4">
                 <CardHeader>
-                    <CardTitle>{editingFicha ? 'Editar Ficha de Inspeção' : 'Nova Ficha de Inspeção'}</CardTitle>
-                    <CardDescription>{editingFicha ? 'Altere os detalhes da inspeção abaixo.' : 'Preencha os detalhes da inspeção de segurança.'}</CardDescription>
+                    <CardTitle>{editingFicha ? 'Editar Ficha de Vistoria' : 'Nova Ficha de Vistoria Unificada'}</CardTitle>
+                    <CardDescription>{editingFicha ? 'Altere os detalhes da vistoria abaixo.' : 'Preencha os detalhes da vistoria, incluindo seções de PGR e LTCAT se necessário.'}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <FichaVisitaForm 
@@ -195,7 +186,7 @@ export function FichaVisitaView({ serviceId, onBack, onSwitchView }: FichaVisita
             {sortedFichas.length > 0 ? (
                 sortedFichas.map((ficha, index) => {
                   // The sortedFichas is reversed, so we need to find the original index
-                  const originalIndex = service.fichasVisita.findIndex(f => f.dataPreenchimento.seconds === ficha.dataPreenchimento.seconds);
+                  const originalIndex = (service.fichasVisita || []).findIndex(f => f.dataPreenchimento.seconds === ficha.dataPreenchimento.seconds);
                   return (
                     <Card key={index}>
                         <CardHeader>
@@ -220,14 +211,30 @@ export function FichaVisitaView({ serviceId, onBack, onSwitchView }: FichaVisita
                                <p className="text-sm"><span className="font-medium">Setor:</span> {ficha.setorInspecionado}</p>
                                <p className="text-sm"><span className="font-medium">Acompanhante:</span> {ficha.acompanhante}</p>
                            </div>
-                           {ficha.naoConformidades && ficha.naoConformidades.length > 0 && (
+                           {(ficha.naoConformidades && ficha.naoConformidades.length > 0) && (
                              <div>
-                                <h4 className="font-semibold mb-2 mt-4">Não Conformidades:</h4>
+                                <h4 className="font-semibold mb-2 mt-4">Não Conformidades (Ficha de Visita):</h4>
                                 <ul className="list-disc list-inside space-y-1">
                                     {ficha.naoConformidades.map((nc, i) => (
                                         <li key={i} className="text-sm">{nc.descricao}</li>
                                     ))}
                                 </ul>
+                            </div>
+                           )}
+                           {(ficha.pgr?.planoAcao && ficha.pgr.planoAcao.length > 0) && (
+                             <div>
+                                <h4 className="font-semibold mb-2 mt-4">Plano de Ação (PGR):</h4>
+                                <ul className="list-disc list-inside space-y-1">
+                                    {ficha.pgr.planoAcao.map((nc, i) => (
+                                        <li key={i} className="text-sm">{nc.descricaoNaoConformidade}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                           )}
+                            {(ficha.ltcat?.observacoes) && (
+                             <div>
+                                <h4 className="font-semibold mb-2 mt-4">Observações (LTCAT):</h4>
+                               <p className="text-sm">{ficha.ltcat.observacoes}</p>
                             </div>
                            )}
                         </CardContent>
