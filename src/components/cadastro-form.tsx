@@ -33,6 +33,7 @@ const formSchema = z.object({
   email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
   servicos: z.array(z.object({ value: z.string() })).optional(),
   dataServico: z.date({ required_error: 'Data de cadastro é obrigatória.' }),
+  valorServico: z.coerce.number({invalid_type_error: "Valor inválido"}).optional(),
 });
 
 interface CadastroFormProps {
@@ -105,6 +106,7 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
         servicos: values.servicos ? values.servicos.map(s => s.value).filter(s => s.trim() !== '') : [],
         email: values.email || null,
         complemento: values.complemento || null,
+        valorServico: values.valorServico || null,
         status: 'engenharia',
         createdAt: serverTimestamp(),
         responsavel: null,
@@ -205,6 +207,15 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
                       </Popover>
                       <FormMessage />
                     </FormItem>
+                  )}/>
+                   <FormField control={form.control} name="valorServico" render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Valor do Serviço (R$)</FormLabel>
+                          <FormControl>
+                              <Input type="number" placeholder="150.00" {...field} onChange={event => field.onChange(+event.target.value)} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
                   )}/>
             </div>
           </div>

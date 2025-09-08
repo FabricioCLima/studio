@@ -99,6 +99,7 @@ export type Service = {
   medicinaResponsavel?: string;
   fichasVisita?: FichaVisita[];
   fichasPGR?: FichaPGR[];
+  valorServico?: number;
 };
 
 export default function EngenhariaPage() {
