@@ -22,7 +22,8 @@ export function DashboardCards({ services }: DashboardCardsProps) {
     );
 
     const revenueLast30Days = concludedLast30Days.reduce((acc, service) => {
-        return acc + (service.valorServico || 0);
+        const serviceTotal = service.servicos?.reduce((subAcc, item) => subAcc + (item.valor || 0), 0) || 0;
+        return acc + serviceTotal;
     }, 0);
 
     const pendingServices = services.filter(s => 

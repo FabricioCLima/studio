@@ -7,11 +7,10 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, PlusCircle, Search, Trash2 } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
 import { addYears, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +18,11 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useState } from 'react';
 import { useAuth } from '@/context/auth-context';
+
+const servicoSchema = z.object({
+  nome: z.string().min(1, 'O nome do serviço é obrigatório.'),
+  valor: z.coerce.number().min(0, 'O valor não pode ser negativo.').optional(),
+});
 
 const formSchema = z.object({
   cnpj: z.string().min(1, 'CNPJ é obrigatório.'),
@@ -31,9 +35,8 @@ const formSchema = z.object({
   telefone: z.string().min(1, 'Telefone é obrigatório.'),
   contato: z.string().min(1, 'Contato é obrigatório.'),
   email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
-  servicos: z.array(z.object({ value: z.string() })).optional(),
+  servicos: z.array(servicoSchema).min(1, 'Adicione pelo menos um serviço.'),
   dataServico: z.date({ required_error: 'Data de cadastro é obrigatória.' }),
-  valorServico: z.coerce.number({invalid_type_error: "Valor inválido"}).optional(),
 });
 
 interface CadastroFormProps {
@@ -59,7 +62,7 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
       telefone: '',
       contato: '',
       email: '',
-      servicos: [{ value: '' }],
+      servicos: [{ nome: '', valor: 0 }],
     },
   });
 
@@ -103,10 +106,12 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
       await addDoc(collection(db, 'servicos'), {
         ...values,
         dataVencimento,
-        servicos: values.servicos ? values.servicos.map(s => s.value).filter(s => s.trim() !== '') : [],
+        servicos: values.servicos.map(s => ({
+          nome: s.nome,
+          valor: s.valor || 0
+        })),
         email: values.email || null,
         complemento: values.complemento || null,
-        valorServico: values.valorServico || null,
         status: 'engenharia',
         createdAt: serverTimestamp(),
         responsavel: null,
@@ -176,19 +181,43 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
             <div className="space-y-4">
               <FormLabel>Serviços</FormLabel>
               {fields.map((field, index) => (
-                <FormField key={field.id} control={form.control} name={`servicos.${index}.value`} render={({ field }) => (
+                <div key={field.id} className="flex items-start gap-2">
+                    <FormField
+                      control={form.control}
+                      name={`servicos.${index}.nome`}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
+                            <Input placeholder={`Serviço ${index + 1}`} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`servicos.${index}.valor`}
+                      render={({ field }) => (
+                        <FormItem className="w-32">
+                          <FormControl>
+                            <Input type="number" placeholder="Valor" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => append({ nome: '', valor: 0 })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Serviço</Button>
+               <FormField
+                  name="servicos"
+                  render={() => (
                     <FormItem>
-                      <FormControl>
-                        <div className="flex items-center gap-2">
-                          <Input placeholder={`Serviço ${index + 1}`} {...field} />
-                          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                      </FormControl>
                       <FormMessage />
                     </FormItem>
-                  )}/>
-              ))}
-              <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Serviço</Button>
+                  )}
+                />
             </div>
             <div className="space-y-4">
                 <FormField control={form.control} name="dataServico" render={({ field }) => (
@@ -207,15 +236,6 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
                       </Popover>
                       <FormMessage />
                     </FormItem>
-                  )}/>
-                   <FormField control={form.control} name="valorServico" render={({ field }) => (
-                      <FormItem>
-                          <FormLabel>Valor do Serviço (R$)</FormLabel>
-                          <FormControl>
-                              <Input type="number" placeholder="150.00" {...field} onChange={event => field.onChange(+event.target.value)} />
-                          </FormControl>
-                          <FormMessage />
-                      </FormItem>
                   )}/>
             </div>
           </div>

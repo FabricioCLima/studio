@@ -78,7 +78,7 @@ export type Service = {
   telefone: string;
   contato: string;
   email?: string;
-  servicos: string[];
+  servicos: { nome: string; valor: number }[];
   dataServico: {
     seconds: number;
     nanoseconds: number;
@@ -99,7 +99,6 @@ export type Service = {
   medicinaResponsavel?: string;
   fichasVisita?: FichaVisita[];
   fichasPGR?: FichaPGR[];
-  valorServico?: number;
 };
 
 export default function EngenhariaPage() {
