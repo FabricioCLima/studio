@@ -9,9 +9,14 @@ import { useEffect, useState } from 'react';
 import type { Service } from '../engenharia/page';
 import { PgrTable } from '@/components/pgr-table';
 import { useRouter } from 'next/navigation';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function PgrPage() {
-  const [services, setServices] = useState<Service[]>([]);
+  const [allCompanies, setAllCompanies] = useState<Service[]>([]);
+  const [filteredCompanies, setFilteredCompanies] = useState<Service[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const router = useRouter();
@@ -29,7 +34,15 @@ export default function PgrPage() {
       querySnapshot.forEach((doc) => {
         servicesData.push({ id: doc.id, ...doc.data() } as Service);
       });
-      setServices(servicesData);
+      
+      const uniqueCompanies = servicesData.reduce((acc, service) => {
+        if (service.cnpj && !acc.some(s => s.cnpj === service.cnpj)) {
+            acc.push(service);
+        }
+        return acc;
+      }, [] as Service[]);
+      
+      setAllCompanies(uniqueCompanies);
       setLoading(false);
     }, (error) => {
         console.error("Error fetching services for PGR:", error);
@@ -38,6 +51,17 @@ export default function PgrPage() {
 
     return () => unsubscribe();
   }, [user]);
+
+  useEffect(() => {
+    const lowercasedTerm = searchTerm.toLowerCase();
+    const results = allCompanies.filter(
+      (company) =>
+        company.nomeEmpresa.toLowerCase().includes(lowercasedTerm) ||
+        company.cnpj.toLowerCase().includes(lowercasedTerm)
+    );
+    setFilteredCompanies(results);
+  }, [searchTerm, allCompanies]);
+
 
   const handleSelectCompany = (cnpj: string) => {
       router.push(`/empresa/${cnpj}`);
@@ -49,6 +73,15 @@ export default function PgrPage() {
         <div className="flex items-center justify-between space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Empresas</h1>
         </div>
+        <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+                placeholder="Buscar por nome da empresa ou CNPJ..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+        </div>
         {loading ? (
           <div className="space-y-4">
               <Skeleton className="h-12 w-full" />
@@ -56,7 +89,7 @@ export default function PgrPage() {
               <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <PgrTable services={services} onSelectCompany={handleSelectCompany} />
+          <PgrTable services={filteredCompanies} onSelectCompany={handleSelectCompany} />
         )}
       </div>
     </>

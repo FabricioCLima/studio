@@ -21,18 +21,11 @@ interface PgrTableProps {
 
 export function PgrTable({ services, onSelectCompany }: PgrTableProps) {
     
-  const uniqueCompanies = services.reduce((acc, service) => {
-      if (service.cnpj && !acc.some(s => s.cnpj === service.cnpj)) {
-          acc.push(service);
-      }
-      return acc;
-  }, [] as Service[]);
-
-  if (uniqueCompanies.length === 0) {
+  if (services.length === 0) {
     return (
         <Card>
             <CardContent className="p-8 text-center text-muted-foreground">
-                <p>Nenhuma empresa com serviços ativos encontrada.</p>
+                <p>Nenhuma empresa encontrada.</p>
             </CardContent>
         </Card>
     )
@@ -51,7 +44,7 @@ export function PgrTable({ services, onSelectCompany }: PgrTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {uniqueCompanies.map((service) => (
+            {services.map((service) => (
               <TableRow key={service.cnpj}>
                 <TableCell>
                     <Button variant="outline" size="sm" onClick={() => onSelectCompany(service.cnpj)}>
