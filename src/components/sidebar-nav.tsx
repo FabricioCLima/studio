@@ -51,7 +51,6 @@ const navItems: NavItem[] = [
   { href: '/digitacao', label: 'Digitação', icon: Keyboard, permission: 'digitacao', notificationKey: 'digitacao' },
   { href: '/medicina', label: 'Medicina', icon: Stethoscope, permission: 'medicina', notificationKey: 'medicina' },
   { href: '/financeiro', label: 'Financeiro', icon: DollarSign, permission: 'financeiro', notificationKey: 'financeiro' },
-  { href: '/pgr', label: 'Gerenciamento de Serviços', icon: ShieldCheck, permission: 'pgr' },
   { href: '/tecnicos', label: 'Técnicos', icon: Users, permission: 'tecnicos' },
   { href: '/vencidos', label: 'Vencidos', icon: FileWarning, permission: 'vencidos' },
   { href: '/arquivo-morto', label: 'Arquivo Morto', icon: Archive, permission: 'arquivo-morto' },
