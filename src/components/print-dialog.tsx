@@ -27,17 +27,21 @@ export function PrintDialog({ open, onOpenChange, service }: PrintDialogProps) {
   
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
-    documentTitle: `Ficha-Servico-${service.nomeEmpresa.replace(/\s/g, '-')}`,
+    documentTitle: `Dossie-Servico-${service.nomeEmpresa.replace(/\s/g, '-')}`,
   });
+
+  const hasAnyFicha = (service.fichasVisita && service.fichasVisita.length > 0) ||
+                      (service.fichasPGR && service.fichasPGR.length > 0) ||
+                      (service.fichasLTCAT && service.fichasLTCAT.length > 0);
 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Imprimir Ficha de Serviço</DialogTitle>
+          <DialogTitle>Imprimir Dossiê de Serviço</DialogTitle>
           <DialogDescription>
-            Revise as informações abaixo. Apenas este conteúdo será impresso.
+            Revise as informações abaixo. Todas as fichas (Visita, PGR, LTCAT) serão incluídas.
           </DialogDescription>
         </DialogHeader>
 
@@ -47,7 +51,9 @@ export function PrintDialog({ open, onOpenChange, service }: PrintDialogProps) {
 
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Fechar</Button>
-          <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Imprimir</Button>
+          <Button onClick={handlePrint} disabled={!hasAnyFicha}>
+            <Printer className="mr-2 h-4 w-4" /> Imprimir Dossiê
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

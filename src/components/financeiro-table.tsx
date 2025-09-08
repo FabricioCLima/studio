@@ -69,8 +69,14 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
         }
     }
     
-    const calculateTotal = (servicos: { nome: string; valor: number }[]) => {
+    const calculateTotal = (servicos: { nome: string; valor?: number }[]) => {
         return servicos.reduce((total, servico) => total + (servico.valor || 0), 0);
+    }
+    
+    const hasAnyFicha = (service: Service) => {
+      return (service.fichasVisita && service.fichasVisita.length > 0) ||
+             (service.fichasPGR && service.fichasPGR.length > 0) ||
+             (service.fichasLTCAT && service.fichasLTCAT.length > 0);
     }
 
 
@@ -115,10 +121,10 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
                       <DropdownMenuSeparator />
                        <DropdownMenuItem 
                         onClick={() => setPrintingService(service)} 
-                        disabled={!service.fichasVisita || service.fichasVisita.length === 0}
+                        disabled={!hasAnyFicha(service)}
                       >
                         <Printer className="mr-2 h-4 w-4" />
-                        Visualizar Ficha
+                        Imprimir Dossiê
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 

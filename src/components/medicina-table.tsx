@@ -70,6 +70,12 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
             setServiceToConclude(null);
         }
     }
+    
+    const hasAnyFicha = (service: Service) => {
+      return (service.fichasVisita && service.fichasVisita.length > 0) ||
+             (service.fichasPGR && service.fichasPGR.length > 0) ||
+             (service.fichasLTCAT && service.fichasLTCAT.length > 0);
+    }
 
 
   if (services.length === 0) {
@@ -115,10 +121,10 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
                       </DropdownMenuItem>
                        <DropdownMenuItem 
                         onClick={() => setPrintingService(service)} 
-                        disabled={!service.fichasVisita || service.fichasVisita.length === 0}
+                        disabled={!hasAnyFicha(service)}
                       >
                         <Printer className="mr-2 h-4 w-4" />
-                        Visualizar Ficha
+                        Imprimir Dossiê
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
