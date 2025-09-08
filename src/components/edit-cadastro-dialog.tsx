@@ -60,7 +60,7 @@ export function EditCadastroDialog({ service, open, onOpenChange }: EditCadastro
     if (service) {
       form.reset({
         ...service,
-        servicos: service.servicos.map((s) => ({ nome: s.nome, valor: s.valor || 0 })),
+        servicos: service.servicos ? service.servicos.map((s) => ({ nome: s.nome, valor: s.valor || 0 })) : [{ nome: '', valor: 0 }],
         dataServico: new Date(service.dataServico.seconds * 1000),
         email: service.email || '',
         complemento: service.complemento || '',
