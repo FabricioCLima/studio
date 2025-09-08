@@ -50,7 +50,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
     const [assigningDigitadorService, setAssigningDigitadorService] = useState<Service | null>(null);
     const [printingService, setPrintingService] = useState<Service | null>(null);
 
-    const handleUpdateStatus = async (service: Service, newStatus: 'medicina' | 'engenharia') => {
+    const handleUpdateStatus = async (service: Service, newStatus: 'medicina' | 'avaliacao') => {
         try {
             const serviceRef = doc(db, 'servicos', service.id);
             await updateDoc(serviceRef, {
@@ -58,7 +58,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
             });
             toast({
                 title: 'Sucesso!',
-                description: `Serviço enviado para a ${newStatus === 'medicina' ? 'Medicina' : 'Engenharia'}.`,
+                description: `Serviço enviado para a ${newStatus === 'medicina' ? 'Medicina' : 'Avaliação na Engenharia'}.`,
                 className: 'bg-accent text-accent-foreground',
             });
         } catch (error) {
@@ -166,12 +166,12 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
             <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Retorno</AlertDialogTitle>
             <AlertDialogDescription>
-                Você tem certeza que deseja retornar o serviço da empresa <span className='font-bold'>{serviceToReturn?.nomeEmpresa}</span> para a Engenharia?
+                Você tem certeza que deseja retornar o serviço da empresa <span className='font-bold'>{serviceToReturn?.nomeEmpresa}</span> para avaliação na Engenharia?
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => serviceToReturn && handleUpdateStatus(serviceToReturn, 'engenharia')} className="bg-primary hover:bg-primary/90">Confirmar</AlertDialogAction>
+            <AlertDialogAction onClick={() => serviceToReturn && handleUpdateStatus(serviceToReturn, 'avaliacao')} className="bg-primary hover:bg-primary/90">Confirmar</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

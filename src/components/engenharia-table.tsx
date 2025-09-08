@@ -141,6 +141,13 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                           <Pencil className="mr-2 h-4 w-4" />
                           Editar Agendamento
                         </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setPrintingService(service)}
+                          disabled={!service.fichasVisita || service.fichasVisita.length === 0}
+                        >
+                          <Printer className="mr-2 h-4 w-4" />
+                          Visualizar Ficha
+                        </DropdownMenuItem>
                          {service.status === 'concluido' && (
                             <>
                               <DropdownMenuSeparator />

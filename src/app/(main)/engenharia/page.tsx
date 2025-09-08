@@ -87,7 +87,7 @@ export default function EngenhariaPage() {
       return;
     }
 
-    const q = query(collection(db, 'servicos'), where('status', 'in', ['engenharia', 'agendado', 'aguardando_visita', 'em_visita', 'digitacao', 'medicina', 'financeiro', 'concluido']));
+    const q = query(collection(db, 'servicos'), where('status', 'in', ['engenharia', 'agendado', 'aguardando_visita', 'em_visita', 'digitacao', 'medicina', 'financeiro', 'concluido', 'avaliacao']));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const servicesData: Service[] = [];
       querySnapshot.forEach((doc) => {
