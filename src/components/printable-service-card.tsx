@@ -419,7 +419,7 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
           `}
         </style>
         <header className="mb-8 border-b pb-4 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Dossiê de Serviço</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Ficha de Vistoria</h1>
           <p className="text-sm text-gray-600">Service Flow Dashboard</p>
         </header>
 

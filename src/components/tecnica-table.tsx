@@ -150,7 +150,7 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                            <DropdownMenuSeparator />
                            <DropdownMenuItem onClick={() => setPrintingService(service)}>
                               <Printer className="mr-2 h-4 w-4" />
-                              Imprimir Dossiê
+                              Ficha Vistoria
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem

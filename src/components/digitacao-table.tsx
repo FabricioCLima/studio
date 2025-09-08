@@ -120,7 +120,7 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                         disabled={!hasAnyFicha(service)}
                       >
                         <Printer className="mr-2 h-4 w-4" />
-                        Imprimir Dossiê
+                        Ficha Vistoria
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => setServiceToReturn(service)}>
