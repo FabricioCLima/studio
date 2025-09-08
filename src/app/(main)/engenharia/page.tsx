@@ -79,7 +79,6 @@ export type Service = {
   contato: string;
   email?: string;
   servicos: string[];
-  valorServico?: number;
   dataServico: {
     seconds: number;
     nanoseconds: number;
