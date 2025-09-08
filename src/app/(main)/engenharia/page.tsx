@@ -41,6 +41,30 @@ export type FichaVisita = {
   tecnico?: string;
 };
 
+export type PgrAcaoCorretiva = {
+    descricaoNaoConformidade: string;
+    registroFotografico?: string;
+    nivelRisco: 'baixo' | 'medio' | 'alto' | 'critico';
+    acaoCorretiva: string;
+    responsavel: string;
+    prazo: Date;
+};
+
+export type FichaPGR = {
+    numeroVistoria: string;
+    dataVistoria: { seconds: number; nanoseconds: number };
+    horario: string;
+    setor: string;
+    atividade: string;
+    responsavelVistoria: string;
+    acompanhantes: string;
+    checklist: {
+        [key: string]: { status: 'c' | 'nc' | 'na' };
+    };
+    planoAcao: PgrAcaoCorretiva[];
+    dataPreenchimento: { seconds: number; nanoseconds: number };
+};
+
 
 export type Service = {
   id: string;
@@ -74,6 +98,7 @@ export type Service = {
   responsavel?: string;
   medicinaResponsavel?: string;
   fichasVisita?: FichaVisita[];
+  fichasPGR?: FichaPGR[];
 };
 
 export default function EngenhariaPage() {

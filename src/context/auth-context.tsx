@@ -18,11 +18,12 @@ export type Permission =
     | 'financeiro'
     | 'tecnicos'
     | 'vencidos'
-    | 'arquivo-morto';
+    | 'arquivo-morto'
+    | 'pgr';
 
 const ALL_PERMISSIONS: Permission[] = [
     'dashboard', 'cadastro', 'engenharia', 'tecnica', 'digitacao', 'medicina', 
-    'financeiro', 'tecnicos', 'vencidos', 'arquivo-morto'
+    'financeiro', 'tecnicos', 'vencidos', 'arquivo-morto', 'pgr'
 ];
 
 type AuthContextType = {
