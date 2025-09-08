@@ -81,9 +81,9 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Atribuir Responsável e Enviar para Digitação</DialogTitle>
+          <DialogTitle>Enviar para Digitação</DialogTitle>
           <DialogDescription>
-            Insira o nome do responsável e o serviço da empresa <span className="font-semibold">{service.nomeEmpresa}</span> será enviado para a Digitação.
+            Atribua um responsável pela digitação para o serviço da empresa <span className="font-semibold">{service.nomeEmpresa}</span>.
           </DialogDescription>
         </DialogHeader>
         
@@ -94,7 +94,7 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
                     name="digitador"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Nome do Responsável</FormLabel>
+                            <FormLabel>Nome do Responsável pela Digitação</FormLabel>
                             <FormControl>
                                 <Input placeholder="Nome do Responsável" {...field} />
                             </FormControl>
@@ -105,7 +105,7 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
                  <DialogFooter>
                     <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
                     <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90">
-                        {isSubmitting ? 'Salvando...' : 'Salvar e Enviar'}
+                        {isSubmitting ? 'Enviando...' : 'Enviar para Digitação'}
                     </Button>
                 </DialogFooter>
             </form>

@@ -52,7 +52,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [printingService, setPrintingService] = useState<Service | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
-  const [serviceToUpdate, setServiceToUpdate] = useState<{service: Service, newStatus: 'digitacao' | 'arquivado' | 'concluido'} | null>(null);
+  const [serviceToUpdate, setServiceToUpdate] = useState<{service: Service, newStatus: 'arquivado' | 'concluido'} | null>(null);
   const [assigningResponsavelService, setAssigningResponsavelService] = useState<Service | null>(null);
   const [assigningDigitadorService, setAssigningDigitadorService] = useState<Service | null>(null);
 
@@ -74,13 +74,12 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
     }
   };
 
-  const handleUpdateStatus = async (id: string, newStatus: 'digitacao' | 'arquivado' | 'concluido') => {
+  const handleUpdateStatus = async (id: string, newStatus: 'arquivado' | 'concluido') => {
     try {
         const serviceRef = doc(db, 'servicos', id);
         await updateDoc(serviceRef, { status: newStatus });
         
         let description = 'Status do serviço atualizado.';
-        if (newStatus === 'digitacao') description = 'Serviço enviado para Digitação.';
         if (newStatus === 'arquivado') description = 'Serviço movido para Arquivo Morto.';
         if (newStatus === 'concluido') description = 'Serviço finalizado com sucesso.';
 
@@ -104,11 +103,6 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
     if (!serviceToUpdate) return { title: '', description: '' };
     
     switch(serviceToUpdate.newStatus) {
-        case 'digitacao':
-            return {
-                title: 'Confirmar Envio para Digitação',
-                description: `Tem certeza que deseja enviar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa} diretamente para a Digitação? Esta ação deve ser usada quando não há necessidade de visita técnica.`
-            }
         case 'concluido':
             return {
                 title: 'Confirmar Finalização de Serviço',
@@ -192,14 +186,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                         </DropdownMenuItem>
                          
                          <DropdownMenuSeparator />
-                         
-                         {service.status === 'engenharia' && (
-                           <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'digitacao' })}>
-                                <Keyboard className="mr-2 h-4 w-4" />
-                                Enviar p/ Digitação (Sem Resp.)
-                            </DropdownMenuItem>
-                         )}
-                        
+                                                 
                          {service.status === 'avaliacao' && (
                             <>
                                 <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
