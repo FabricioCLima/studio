@@ -367,7 +367,7 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
                                     </div>
                                 ))}
                             </div>
-                            <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAgenteFisico({})}>
+                            <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAgenteFisico({ agente: '', fonteGeradora: '', instrumento: '', numeroSerie: '', resultado: '', limiteTolerancia: '', metodologia: '', conclusao: '' })}>
                                 <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Agente Físico
                             </Button>
                         </div>
@@ -409,7 +409,7 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
                                     </Button>
                                 </div>
                             ))}
-                            <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAgenteQuimico({})}>
+                            <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAgenteQuimico({ agente: '', fonteGeradora: '', tipoAmostra: '', tempoColeta: '', resultado: '', limiteTolerancia: '', metodologia: '', conclusao: '' })}>
                                 <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Agente Químico
                             </Button>
                         </div>
@@ -437,7 +437,7 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
                                     </Button>
                                 </div>
                             ))}
-                            <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAgenteBiologico({})}>
+                            <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAgenteBiologico({ descricao: '', agenteProvavel: '', enquadramento: false })}>
                                 <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Agente Biológico
                             </Button>
                         </div>
