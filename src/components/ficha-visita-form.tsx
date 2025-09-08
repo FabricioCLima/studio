@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Separator } from './ui/separator';
 import { useEffect, useState } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+import { Label } from './ui/label';
 
 const itemVerificacaoSchema = z.object({
     status: z.enum(['c', 'nc', 'na'], { required_error: 'Selecione uma opção.' }),
@@ -341,9 +342,18 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
                                                         value={field.value?.status || 'na'}
                                                         className="flex space-x-4"
                                                     >
-                                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="c" /></FormControl><FormLabel className="font-normal text-sm">C</FormLabel></FormItem>
-                                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="nc" /></FormControl><FormLabel className="font-normal text-sm">NC</FormLabel></FormItem>
-                                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="na" /></FormControl><FormLabel className="font-normal text-sm">NA</FormLabel></FormItem>
+                                                        <div className="flex items-center space-x-2 space-y-0">
+                                                            <RadioGroupItem value="c" id={`${item}-c`}/>
+                                                            <Label htmlFor={`${item}-c`} className="font-normal text-sm">C</Label>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2 space-y-0">
+                                                            <RadioGroupItem value="nc" id={`${item}-nc`}/>
+                                                            <Label htmlFor={`${item}-nc`} className="font-normal text-sm">NC</Label>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2 space-y-0">
+                                                            <RadioGroupItem value="na" id={`${item}-na`}/>
+                                                            <Label htmlFor={`${item}-na`} className="font-normal text-sm">NA</Label>
+                                                        </div>
                                                     </RadioGroup>
                                                 </FormControl>
                                                 <FormControl>
@@ -490,3 +500,5 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
     </>
   );
 }
+
+    
