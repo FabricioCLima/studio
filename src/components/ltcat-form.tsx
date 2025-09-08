@@ -12,7 +12,7 @@ import { db } from '@/lib/firebase';
 import type { FichaLTCAT, Service } from '@/app/(main)/engenharia/page';
 import { Textarea } from './ui/textarea';
 import { Input } from './ui/input';
-import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Signature, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Separator } from './ui/separator';
 import { useEffect, useState } from 'react';
 import { Checkbox } from './ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 
 const agenteFisicoSchema = z.object({
     agente: z.string().optional(),
@@ -51,6 +52,11 @@ const agenteBiologicoSchema = z.object({
     agenteProvavel: z.string().optional(),
     enquadramento: z.boolean().optional(),
 });
+
+const assinaturaSchema = z.object({
+    nome: z.string(),
+    data: z.date(),
+}).nullable().optional();
 
 
 const formSchema = z.object({
@@ -81,6 +87,7 @@ const formSchema = z.object({
     episEficaz: z.enum(['sim', 'nao', 'na'], { required_error: 'Selecione a eficácia.' }),
     observacoes: z.string().optional(),
     fotos: z.array(z.string()).optional(),
+    assinaturaResponsavelArea: assinaturaSchema,
 });
 
 const defaultAgentesFisicos = [
@@ -136,6 +143,7 @@ const generateDefaultValues = (service: Service) => ({
     episEficaz: 'nao' as const,
     observacoes: '',
     fotos: [],
+    assinaturaResponsavelArea: null,
 });
 
 interface LtcatFormProps {
@@ -149,6 +157,8 @@ interface LtcatFormProps {
 export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: LtcatFormProps) {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSigning, setIsSigning] = useState(false);
+    const [signerName, setSignerName] = useState('');
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -167,10 +177,14 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
 
     useEffect(() => {
         if (fichaToEdit) {
+            const assinatura = fichaToEdit.assinaturaResponsavelArea 
+                ? { ...fichaToEdit.assinaturaResponsavelArea, data: new Date((fichaToEdit.assinaturaResponsavelArea.data as any).seconds * 1000) }
+                : null;
             form.reset({
                 ...fichaToEdit,
                 dataVistoria: fichaToEdit.dataVistoria?.seconds ? new Date(fichaToEdit.dataVistoria.seconds * 1000) : new Date(),
                 agentesFisicos: fichaToEdit.agentesFisicos || defaultAgentesFisicos,
+                assinaturaResponsavelArea: assinatura,
             });
         } else {
             form.reset(generateDefaultValues(service));
@@ -225,8 +239,22 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
             setIsSubmitting(false);
         }
     }
+    
+    const handleSign = () => {
+        if (signerName.trim()) {
+            form.setValue('assinaturaResponsavelArea', {
+                nome: signerName.trim(),
+                data: new Date()
+            });
+            setIsSigning(false);
+            setSignerName('');
+        }
+    }
+    
+    const assinatura = form.watch('assinaturaResponsavelArea');
 
     return (
+        <>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pt-4">
 
@@ -506,14 +534,29 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
 
                 <Card>
                     <CardHeader><CardTitle>6. Assinaturas</CardTitle></CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                          <div className="flex flex-col items-center">
                             <Separator className="bg-foreground" />
                             <p className="mt-2 text-sm font-semibold">Técnico/Engenheiro Responsável</p>
+                            <p className="text-sm text-muted-foreground">{form.getValues('responsavelVistoria')}</p>
                         </div>
                         <div className="flex flex-col items-center">
-                            <Separator className="bg-foreground" />
-                            <p className="mt-2 text-sm font-semibold">Responsável da Empresa</p>
+                            {assinatura ? (
+                                <div className='text-center'>
+                                    <p className='font-serif text-lg'>{assinatura.nome}</p>
+                                    <Separator className="bg-foreground" />
+                                    <p className="mt-2 text-sm font-semibold">Responsável da Empresa</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Assinado digitalmente em {format(assinatura.data, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                    </p>
+                                     <Button variant="link" size="sm" onClick={() => form.setValue('assinaturaResponsavelArea', null)}>Remover assinatura</Button>
+                                </div>
+                            ) : (
+                                <Button type="button" onClick={() => setIsSigning(true)}>
+                                    <Signature className="mr-2 h-4 w-4" />
+                                    Assinar como Responsável da Empresa
+                                </Button>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -526,5 +569,25 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
                 </div>
             </form>
         </Form>
+        <AlertDialog open={isSigning} onOpenChange={setIsSigning}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Assinatura Digital</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Digite o nome completo do responsável da empresa para confirmar a vistoria. Isso registrará o nome e a data/hora atuais.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <Input 
+                    placeholder="Nome completo do responsável"
+                    value={signerName}
+                    onChange={(e) => setSignerName(e.target.value)}
+                />
+                <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSign} disabled={!signerName.trim()}>Assinar</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+        </>
     );
 }

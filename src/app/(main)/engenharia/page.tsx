@@ -21,6 +21,11 @@ export type ItemVerificacao = {
   observacoes: string;
 };
 
+export type Assinatura = {
+    nome: string;
+    data: { seconds: number; nanoseconds: number; } | Date;
+}
+
 export type FichaVisita = {
   setorInspecionado: string;
   dataVistoria: {
@@ -39,6 +44,7 @@ export type FichaVisita = {
     nanoseconds: number;
   };
   tecnico?: string;
+  assinaturaResponsavelArea?: Assinatura | null;
 };
 
 export type PgrAcaoCorretiva = {
@@ -63,6 +69,7 @@ export type FichaPGR = {
     };
     planoAcao: PgrAcaoCorretiva[];
     dataPreenchimento: { seconds: number; nanoseconds: number };
+    assinaturaResponsavelArea?: Assinatura | null;
 };
 
 export type AgenteFisico = {
@@ -122,6 +129,7 @@ export type FichaLTCAT = {
     observacoes: string;
     fotos: string[];
     dataPreenchimento: { seconds: number; nanoseconds: number };
+    assinaturaResponsavelArea?: Assinatura | null;
 };
 
 export type Service = {

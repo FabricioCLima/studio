@@ -12,7 +12,7 @@ import { db } from '@/lib/firebase';
 import type { FichaPGR, Service } from '@/app/(main)/engenharia/page';
 import { Textarea } from './ui/textarea';
 import { Input } from './ui/input';
-import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Signature, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Separator } from './ui/separator';
 import { useEffect, useState } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 
 const planoAcaoSchema = z.object({
     descricaoNaoConformidade: z.string().min(1, 'Descrição é obrigatória.'),
@@ -32,6 +33,11 @@ const planoAcaoSchema = z.object({
     responsavel: z.string().min(1, 'Responsável é obrigatório.'),
     prazo: z.date({ required_error: 'Prazo é obrigatório.' }),
 });
+
+const assinaturaSchema = z.object({
+    nome: z.string(),
+    data: z.date(),
+}).nullable().optional();
 
 const formSchema = z.object({
   numeroVistoria: z.string().min(1, "Número da vistoria é obrigatório"),
@@ -45,6 +51,7 @@ const formSchema = z.object({
       status: z.enum(['c', 'nc', 'na'], { required_error: 'Selecione uma opção.' }),
   })),
   planoAcao: z.array(planoAcaoSchema).optional(),
+  assinaturaResponsavelArea: assinaturaSchema,
 });
 
 
@@ -75,6 +82,7 @@ const generateDefaultValues = (service?: Service) => ({
     acompanhantes: '',
     checklist: generateInitialChecklist(),
     planoAcao: [],
+    assinaturaResponsavelArea: null,
 });
 
 interface PgrFormProps {
@@ -88,6 +96,8 @@ interface PgrFormProps {
 export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: PgrFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSigning, setIsSigning] = useState(false);
+  const [signerName, setSignerName] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -102,11 +112,16 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
               ...pa,
               prazo: pa.prazo.seconds ? new Date(pa.prazo.seconds * 1000) : pa.prazo
           }));
+          
+          const assinatura = restOfFicha.assinaturaResponsavelArea
+            ? { ...restOfFicha.assinaturaResponsavelArea, data: new Date((restOfFicha.assinaturaResponsavelArea.data as any).seconds * 1000) }
+            : null;
 
           form.reset({
               ...restOfFicha,
               dataVistoria: restOfFicha.dataVistoria.seconds ? new Date(restOfFicha.dataVistoria.seconds * 1000) : restOfFicha.dataVistoria,
               planoAcao: planoAcaoWithDates,
+              assinaturaResponsavelArea: assinatura,
           });
       } else {
           form.reset(generateDefaultValues(service));
@@ -172,8 +187,22 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
         setIsSubmitting(false);
     }
   }
+  
+  const handleSign = () => {
+    if (signerName.trim()) {
+        form.setValue('assinaturaResponsavelArea', {
+            nome: signerName.trim(),
+            data: new Date()
+        });
+        setIsSigning(false);
+        setSignerName('');
+    }
+  }
+  
+  const assinatura = form.watch('assinaturaResponsavelArea');
 
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pt-4">
         
@@ -312,17 +341,30 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
         </Card>
 
         <Card>
-             <CardHeader><CardTitle>5. Assinaturas</CardTitle></CardHeader>
-            <CardContent className="space-y-6">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
-                    <div className="flex flex-col items-center">
-                        <Separator className="bg-foreground" />
-                        <p className="mt-2 text-sm font-semibold">Assinatura do Responsável pela Vistoria</p>
-                    </div>
-                     <div className="flex flex-col items-center">
-                        <Separator className="bg-foreground" />
-                        <p className="mt-2 text-sm font-semibold">Assinatura do Responsável pelo Setor/Área</p>
-                    </div>
+             <CardHeader><CardTitle>4. Assinaturas</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                 <div className="flex flex-col items-center">
+                    <Separator className="bg-foreground" />
+                    <p className="mt-2 text-sm font-semibold">Assinatura do Responsável pela Vistoria</p>
+                    <p className="text-sm text-muted-foreground">{form.getValues('responsavelVistoria')}</p>
+                </div>
+                 <div className="flex flex-col items-center">
+                    {assinatura ? (
+                        <div className='text-center'>
+                            <p className='font-serif text-lg'>{assinatura.nome}</p>
+                            <Separator className="bg-foreground" />
+                            <p className="mt-2 text-sm font-semibold">Assinatura do Responsável pelo Setor/Área</p>
+                            <p className="text-xs text-muted-foreground">
+                                Assinado digitalmente em {format(assinatura.data, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            </p>
+                             <Button variant="link" size="sm" onClick={() => form.setValue('assinaturaResponsavelArea', null)}>Remover assinatura</Button>
+                        </div>
+                    ) : (
+                        <Button type="button" onClick={() => setIsSigning(true)}>
+                            <Signature className="mr-2 h-4 w-4" />
+                            Assinar como Responsável da Área
+                        </Button>
+                    )}
                 </div>
             </CardContent>
         </Card>
@@ -335,5 +377,25 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
         </div>
       </form>
     </Form>
+     <AlertDialog open={isSigning} onOpenChange={setIsSigning}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Assinatura Digital</AlertDialogTitle>
+            <AlertDialogDescription>
+                Digite o nome completo do responsável da área para confirmar a vistoria. Isso registrará o nome e a data/hora atuais.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <Input 
+                placeholder="Nome completo do responsável"
+                value={signerName}
+                onChange={(e) => setSignerName(e.target.value)}
+            />
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSign} disabled={!signerName.trim()}>Assinar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

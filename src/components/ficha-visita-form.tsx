@@ -9,11 +9,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { FichaVisita, Service } from '@/app/(main)/engenharia/page';
+import type { Assinatura, FichaVisita, Service } from '@/app/(main)/engenharia/page';
 import { Textarea } from './ui/textarea';
 import { useAuth } from '@/context/auth-context';
 import { Input } from './ui/input';
-import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Signature, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -23,6 +23,7 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
 import { useEffect, useState } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 
 const itemVerificacaoSchema = z.object({
     status: z.enum(['c', 'nc', 'na'], { required_error: 'Selecione uma opção.' }),
@@ -37,6 +38,11 @@ const naoConformidadeSchema = z.object({
     responsavelAcao: z.string().min(1, 'Responsável é obrigatório.'),
 });
 
+const assinaturaSchema = z.object({
+    nome: z.string(),
+    data: z.date(),
+}).nullable().optional();
+
 
 const formSchema = z.object({
   setorInspecionado: z.string().min(1, 'Setor é obrigatório.'),
@@ -46,6 +52,7 @@ const formSchema = z.object({
   tipoInspecao: z.enum(['rotina', 'denuncia', 'especifica', 'oficial'], { required_error: 'Selecione o tipo de inspeção.' }),
   itensVerificacao: z.record(itemVerificacaoSchema),
   naoConformidades: z.array(naoConformidadeSchema).optional(),
+  assinaturaResponsavelArea: assinaturaSchema,
 });
 
 
@@ -98,6 +105,7 @@ const generateDefaultValues = () => ({
     tipoInspecao: 'rotina' as 'rotina',
     itensVerificacao: generateInitialItensVerificacao(),
     naoConformidades: [],
+    assinaturaResponsavelArea: null,
 });
 
 
@@ -112,6 +120,8 @@ interface FichaVisitaFormProps {
 export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: FichaVisitaFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSigning, setIsSigning] = useState(false);
+  const [signerName, setSignerName] = useState('');
   const { user } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -123,16 +133,20 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
       if (fichaToEdit) {
           const { dataPreenchimento, tecnico, ...restOfFicha } = fichaToEdit;
           
-          // Convert firebase timestamps to JS Dates
           const naoConformidadesWithDates = (restOfFicha.naoConformidades || []).map(nc => ({
               ...nc,
               prazo: nc.prazo.seconds ? new Date(nc.prazo.seconds * 1000) : nc.prazo
           }));
 
+          const assinatura = restOfFicha.assinaturaResponsavelArea 
+            ? { ...restOfFicha.assinaturaResponsavelArea, data: new Date((restOfFicha.assinaturaResponsavelArea.data as any).seconds * 1000) }
+            : null;
+
           form.reset({
               ...restOfFicha,
               dataVistoria: restOfFicha.dataVistoria.seconds ? new Date(restOfFicha.dataVistoria.seconds * 1000) : restOfFicha.dataVistoria,
               naoConformidades: naoConformidadesWithDates,
+              assinaturaResponsavelArea: assinatura,
           });
       } else {
           form.reset(generateDefaultValues());
@@ -151,15 +165,14 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
         const serviceRef = doc(db, 'servicos', service.id);
         
         if (fichaToEdit !== undefined && fichaIndex !== undefined) {
-            // Update existing ficha
             const docSnap = await getDoc(serviceRef);
             if (docSnap.exists()) {
                 const serviceData = docSnap.data() as Service;
                 const fichas = [...(serviceData.fichasVisita || [])];
                 
                 const updatedFicha = {
-                    ...fichas[fichaIndex], // Preserve original data like dataPreenchimento
-                    ...values, // Overwrite with new form values
+                    ...fichas[fichaIndex], 
+                    ...values,
                 };
                 
                 fichas[fichaIndex] = updatedFicha;
@@ -172,7 +185,6 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
                 });
             }
         } else {
-            // Add new ficha
             const newFicha = {
                 ...values,
                 dataPreenchimento: new Date(),
@@ -203,7 +215,21 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
     }
   }
 
+  const handleSign = () => {
+    if (signerName.trim()) {
+        form.setValue('assinaturaResponsavelArea', {
+            nome: signerName.trim(),
+            data: new Date()
+        });
+        setIsSigning(false);
+        setSignerName('');
+    }
+  }
+  
+  const assinatura = form.watch('assinaturaResponsavelArea');
+
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pt-4">
         
@@ -416,17 +442,29 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
              <CardHeader>
                 <CardTitle>4. Conclusão e Assinaturas</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
-                    <div className="flex flex-col items-center">
-                        <Separator className="bg-foreground" />
-                        <p className="mt-2 text-sm font-semibold">Assinatura do Responsável pela Vistoria</p>
-                         <p className="text-sm text-muted-foreground">{service.tecnico || 'Não atribuído'}</p>
-                    </div>
-                     <div className="flex flex-col items-center">
-                        <Separator className="bg-foreground" />
-                        <p className="mt-2 text-sm font-semibold">Assinatura do Responsável pela Área</p>
-                    </div>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div className="flex flex-col items-center">
+                    <Separator className="bg-foreground" />
+                    <p className="mt-2 text-sm font-semibold">Assinatura do Responsável pela Vistoria</p>
+                    <p className="text-sm text-muted-foreground">{service.tecnico || 'Não atribuído'}</p>
+                </div>
+                 <div className="flex flex-col items-center">
+                    {assinatura ? (
+                        <div className='text-center'>
+                            <p className='font-serif text-lg'>{assinatura.nome}</p>
+                             <Separator className="bg-foreground" />
+                             <p className="mt-2 text-sm font-semibold">Assinatura do Responsável pela Área</p>
+                             <p className="text-xs text-muted-foreground">
+                                Assinado digitalmente em {format(assinatura.data, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            </p>
+                             <Button variant="link" size="sm" onClick={() => form.setValue('assinaturaResponsavelArea', null)}>Remover assinatura</Button>
+                        </div>
+                    ) : (
+                        <Button type="button" onClick={() => setIsSigning(true)}>
+                            <Signature className="mr-2 h-4 w-4" />
+                            Assinar como Responsável da Área
+                        </Button>
+                    )}
                 </div>
             </CardContent>
         </Card>
@@ -439,5 +477,25 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
         </div>
       </form>
     </Form>
+    <AlertDialog open={isSigning} onOpenChange={setIsSigning}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Assinatura Digital</AlertDialogTitle>
+            <AlertDialogDescription>
+                Digite o nome completo do responsável da área para confirmar a vistoria. Isso registrará o nome e a data/hora atuais.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <Input 
+                placeholder="Nome completo do responsável"
+                value={signerName}
+                onChange={(e) => setSignerName(e.target.value)}
+            />
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSign} disabled={!signerName.trim()}>Assinar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

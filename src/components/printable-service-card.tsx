@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { FichaLTCAT, FichaPGR, FichaVisita, Service } from '@/app/(main)/engenharia/page';
+import type { Assinatura, FichaLTCAT, FichaPGR, FichaVisita, Service } from '@/app/(main)/engenharia/page';
 import { format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React from 'react';
@@ -21,13 +21,42 @@ const tipoInspecaoMap = {
 
 const formatFichaDate = (date: any) => {
     if (!date) return '-';
-    // Handle both firebase timestamp and date objects from the form
     const d = date.seconds ? new Date(date.seconds * 1000) : new Date(date);
     try {
         return format(d, 'dd/MM/yyyy', { locale: ptBR });
     } catch (e) {
         return '-'
     }
+}
+
+const formatFichaDateTime = (date: any) => {
+    if (!date) return '-';
+    const d = date.seconds ? new Date(date.seconds * 1000) : new Date(date);
+     try {
+        return format(d, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+    } catch (e) {
+        return '-'
+    }
+}
+
+const AssinaturaPrint = ({ assinatura, label, nome }: { assinatura?: Assinatura | null, label: string, nome?: string | null }) => {
+    if (assinatura) {
+        return (
+             <div className="text-center">
+                <p className="font-serif text-lg mb-2">{assinatura.nome}</p>
+                <div className="border-t border-gray-400 w-full mx-auto"></div>
+                <p className="mt-2 text-xs">{label}</p>
+                <p className="text-xs text-gray-500">Assinado digitalmente em {formatFichaDateTime(assinatura.data)}</p>
+            </div>
+        )
+    }
+    return (
+        <div className="text-center">
+            <div className="border-t border-gray-400 w-full mx-auto"></div>
+            <p className="mt-2 text-xs">{label}</p>
+            {nome && <p className="text-xs font-semibold">{nome}</p>}
+        </div>
+    )
 }
 
 const renderItensVerificacao = (ficha: FichaVisita) => {
@@ -103,7 +132,6 @@ const FichaVisitaPrint = ({ ficha }: { ficha: FichaVisita }) => (
     <section className="mb-6 no-break">
         <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Inspeção de Segurança - {formatFichaDate(ficha.dataPreenchimento)}</h2>
         
-        {/* Seção 1: Identificação */}
         <div className="mb-4 p-4 border rounded-lg">
         <h3 className="font-bold mb-2 text-lg">1. Identificação da Inspeção</h3>
         <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
@@ -116,13 +144,11 @@ const FichaVisitaPrint = ({ ficha }: { ficha: FichaVisita }) => (
         </div>
         </div>
 
-        {/* Seção 2: Itens de Verificação */}
         <div className="mb-4 p-4 border rounded-lg no-break">
             <h3 className="font-bold mb-2 text-lg">2. Itens de Verificação</h3>
             {renderItensVerificacao(ficha)}
         </div>
 
-        {/* Seção 3: Não Conformidades */}
         {ficha.naoConformidades && ficha.naoConformidades.length > 0 && (
         <div className="mb-4 p-4 border rounded-lg no-break">
             <h3 className="font-bold mb-2 text-lg">3. Descrição de Não Conformidades e Recomendações</h3>
@@ -141,20 +167,11 @@ const FichaVisitaPrint = ({ ficha }: { ficha: FichaVisita }) => (
         </div>
         )}
         
-        {/* Seção 4: Assinaturas */}
         <div className="p-4 border rounded-lg no-break">
         <h3 className="font-bold mb-8 text-lg">4. Conclusão e Assinaturas</h3>
         <div className="grid grid-cols-2 gap-8 pt-12">
-            <div className="text-center">
-            <div className="border-t border-gray-400 w-full mx-auto"></div>
-            <p className="mt-2 text-xs">Assinatura do Responsável pela Vistoria</p>
-            <p className="text-xs font-semibold">{ficha.tecnico}</p>
-            </div>
-            <div className="text-center">
-            <div className="border-t border-gray-400 w-full mx-auto"></div>
-            <p className="mt-2 text-xs">Assinatura do Responsável pela Área</p>
-            <p className="text-xs font-semibold">{ficha.acompanhante}</p>
-            </div>
+             <AssinaturaPrint label="Assinatura do Responsável pela Vistoria" nome={ficha.tecnico} />
+             <AssinaturaPrint assinatura={ficha.assinaturaResponsavelArea} label="Assinatura do Responsável pela Área" nome={ficha.acompanhante} />
         </div>
         </div>
     </section>
@@ -198,16 +215,8 @@ const FichaPgrPrint = ({ ficha }: { ficha: FichaPGR }) => (
         <div className="p-4 border rounded-lg no-break">
             <h3 className="font-bold mb-8 text-lg">3. Assinaturas</h3>
             <div className="grid grid-cols-2 gap-8 pt-12">
-                <div className="text-center">
-                    <div className="border-t border-gray-400 w-full mx-auto"></div>
-                    <p className="mt-2 text-xs">Assinatura do Responsável pela Vistoria</p>
-                    <p className="text-xs font-semibold">{ficha.responsavelVistoria}</p>
-                </div>
-                <div className="text-center">
-                    <div className="border-t border-gray-400 w-full mx-auto"></div>
-                    <p className="mt-2 text-xs">Assinatura do Responsável pelo Setor/Área</p>
-                     <p className="text-xs font-semibold">{ficha.acompanhantes}</p>
-                </div>
+                <AssinaturaPrint label="Assinatura do Responsável pela Vistoria" nome={ficha.responsavelVistoria} />
+                <AssinaturaPrint assinatura={ficha.assinaturaResponsavelArea} label="Assinatura do Responsável pelo Setor/Área" nome={ficha.acompanhantes} />
             </div>
         </div>
     </section>
@@ -217,7 +226,6 @@ const FichaLtcatPrint = ({ ficha, service }: { ficha: FichaLTCAT, service: Servi
     <section className="mb-6 no-break">
         <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Campo LTCAT - {formatFichaDate(ficha.dataPreenchimento)}</h2>
 
-        {/* Dados Gerais */}
         <div className="mb-4 p-4 border rounded-lg">
             <h3 className="font-bold mb-2 text-lg">1. DADOS GERAIS DA AVALIAÇÃO</h3>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
@@ -231,7 +239,6 @@ const FichaLtcatPrint = ({ ficha, service }: { ficha: FichaLTCAT, service: Servi
             </div>
         </div>
 
-        {/* Caracterização */}
         <div className="mb-4 p-4 border rounded-lg no-break">
             <h3 className="font-bold mb-2 text-lg">2. CARACTERIZAÇÃO DO AMBIENTE E DA FUNÇÃO</h3>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
@@ -247,30 +254,29 @@ const FichaLtcatPrint = ({ ficha, service }: { ficha: FichaLTCAT, service: Servi
             </div>
         </div>
 
-        {/* Agentes */}
         <div className="mb-4 p-4 border rounded-lg no-break">
              <h3 className="font-bold mb-2 text-lg">3. AVALIAÇÃO DE AGENTES NOCIVOS</h3>
              
-             {/* Agentes Físicos */}
-             <h4 className="font-semibold mt-4 mb-2 text-base">A. Agentes Físicos</h4>
-             <table className="w-full border-collapse text-xs">
-                <thead><tr className="bg-gray-100">
-                    <th className="border p-1 text-left">Agente</th><th className="border p-1 text-left">Fonte</th><th className="border p-1 text-left">Instrumento</th><th className="border p-1 text-left">Resultado</th>
-                </tr></thead>
-                <tbody>
-                    {ficha.agentesFisicos?.filter(a => a.resultado).map((agente, i) => (
-                        <tr key={i}>
-                            <td className="border p-1">{agente.agente}</td>
-                            <td className="border p-1">{agente.fonteGeradora}</td>
-                            <td className="border p-1">{agente.instrumento}</td>
-                            <td className="border p-1">{agente.resultado}</td>
-                        </tr>
-                    ))}
-                </tbody>
-             </table>
+             {ficha.agentesFisicos && ficha.agentesFisicos.filter(a => a.resultado).length > 0 && <>
+                <h4 className="font-semibold mt-4 mb-2 text-base">A. Agentes Físicos</h4>
+                <table className="w-full border-collapse text-xs">
+                    <thead><tr className="bg-gray-100">
+                        <th className="border p-1 text-left">Agente</th><th className="border p-1 text-left">Fonte</th><th className="border p-1 text-left">Instrumento</th><th className="border p-1 text-left">Resultado</th>
+                    </tr></thead>
+                    <tbody>
+                        {ficha.agentesFisicos.filter(a => a.resultado).map((agente, i) => (
+                            <tr key={i}>
+                                <td className="border p-1">{agente.agente}</td>
+                                <td className="border p-1">{agente.fonteGeradora}</td>
+                                <td className="border p-1">{agente.instrumento}</td>
+                                <td className="border p-1">{agente.resultado}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+             </>}
 
-            {/* Agentes Químicos */}
-            {ficha.agentesQuimicos && ficha.agentesQuimicos.length > 0 && (
+            {ficha.agentesQuimicos && ficha.agentesQuimicos.filter(a => a.resultado).length > 0 && (
                 <>
                     <h4 className="font-semibold mt-4 mb-2 text-base">B. Agentes Químicos</h4>
                     <table className="w-full border-collapse text-xs">
@@ -290,8 +296,7 @@ const FichaLtcatPrint = ({ ficha, service }: { ficha: FichaLTCAT, service: Servi
                 </>
             )}
 
-             {/* Agentes Biológicos */}
-            {ficha.agentesBiologicos && ficha.agentesBiologicos.length > 0 && (
+            {ficha.agentesBiologicos && ficha.agentesBiologicos.filter(a => a.descricao).length > 0 && (
                  <>
                     <h4 className="font-semibold mt-4 mb-2 text-base">C. Agentes Biológicos</h4>
                      <table className="w-full border-collapse text-xs">
@@ -312,14 +317,12 @@ const FichaLtcatPrint = ({ ficha, service }: { ficha: FichaLTCAT, service: Servi
             )}
         </div>
         
-         {/* Medidas de Controle */}
         <div className="mb-4 p-4 border rounded-lg no-break">
             <h3 className="font-bold mb-2 text-lg">4. MEDIDAS DE CONTROLE EXISTENTES</h3>
             <p className="text-sm"><span className="font-medium">EPCs Eficazes:</span> <span className="capitalize">{ficha.epcsEficaz}</span></p>
             <p className="text-sm"><span className="font-medium">EPIs Eficazes:</span> <span className="capitalize">{ficha.episEficaz}</span></p>
         </div>
 
-        {/* Observações */}
         {ficha.observacoes && (
              <div className="mb-4 p-4 border rounded-lg no-break">
                 <h3 className="font-bold mb-2 text-lg">5. OBSERVAÇÕES</h3>
@@ -327,20 +330,11 @@ const FichaLtcatPrint = ({ ficha, service }: { ficha: FichaLTCAT, service: Servi
             </div>
         )}
 
-        {/* Assinaturas */}
         <div className="p-4 border rounded-lg no-break">
             <h3 className="font-bold mb-8 text-lg">6. ASSINATURAS</h3>
              <div className="grid grid-cols-2 gap-8 pt-12">
-                <div className="text-center">
-                    <div className="border-t border-gray-400 w-full mx-auto"></div>
-                    <p className="mt-2 text-xs">Técnico/Engenheiro Responsável</p>
-                    <p className="text-xs font-semibold">{ficha.responsavelVistoria}</p>
-                </div>
-                <div className="text-center">
-                    <div className="border-t border-gray-400 w-full mx-auto"></div>
-                    <p className="mt-2 text-xs">Responsável da Empresa</p>
-                    <p className="text-xs font-semibold">{ficha.acompanhante}</p>
-                </div>
+                <AssinaturaPrint label="Técnico/Engenheiro Responsável" nome={ficha.responsavelVistoria} />
+                <AssinaturaPrint assinatura={ficha.assinaturaResponsavelArea} label="Responsável da Empresa" nome={ficha.acompanhante} />
             </div>
         </div>
     </section>
@@ -409,19 +403,19 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
 
         {sortedFichasPgr.map((ficha, index) => (
             <React.Fragment key={`pgr-${index}`}>
-                <div className="page-break"></div>
+                <div className={sortedFichasVisita.length > 0 || index > 0 ? "page-break" : ""}></div>
                 <FichaPgrPrint ficha={ficha} />
             </React.Fragment>
         ))}
 
         {sortedFichasLtcat.map((ficha, index) => (
             <React.Fragment key={`ltcat-${index}`}>
-                <div className="page-break"></div>
+                <div className={(sortedFichasVisita.length > 0 || sortedFichasPgr.length > 0) || index > 0 ? "page-break" : ""}></div>
                 <FichaLtcatPrint ficha={ficha} service={service} />
             </React.Fragment>
         ))}
 
-        <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-500 page-break">
+        <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-500 no-break">
             <p>Documento gerado por Service Flow Dashboard em {format(new Date(), "'em' dd/MM/yyyy 'às' HH:mm")}</p>
         </footer>
       </div>
