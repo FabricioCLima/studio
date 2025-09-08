@@ -33,6 +33,7 @@ const formSchema = z.object({
   email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
   servicos: z.array(z.object({ value: z.string() })).optional(),
   dataServico: z.date({ required_error: 'Data de cadastro é obrigatória.' }),
+  valorServico: z.coerce.number().optional(),
 });
 
 interface EditCadastroDialogProps {
@@ -59,6 +60,7 @@ export function EditCadastroDialog({ service, open, onOpenChange }: EditCadastro
         dataServico: new Date(service.dataServico.seconds * 1000),
         email: service.email || '',
         complemento: service.complemento || '',
+        valorServico: service.valorServico || 0,
       });
     }
   }, [service, form, open]);
@@ -104,6 +106,7 @@ export function EditCadastroDialog({ service, open, onOpenChange }: EditCadastro
         servicos: values.servicos ? values.servicos.map((s) => s.value).filter(s => s.trim() !== '') : [],
         email: values.email || null,
         complemento: values.complemento || null,
+        valorServico: values.valorServico || null,
       };
 
       await updateDoc(serviceRef, dataToUpdate);
@@ -193,23 +196,34 @@ export function EditCadastroDialog({ service, open, onOpenChange }: EditCadastro
                 ))}
                 <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Serviço</Button>
                 </div>
-                <FormField control={form.control} name="dataServico" render={({ field }) => (
-                    <FormItem className="flex flex-col"><FormLabel>Data de Cadastro</FormLabel>
-                    <Popover><PopoverTrigger asChild>
-                        <FormControl>
-                            <Button variant={'outline'} className={cn('w-[240px] pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                            {field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                        </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                        </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                    </FormItem>
-                )}/>
+                <div className="space-y-4">
+                  <FormField control={form.control} name="dataServico" render={({ field }) => (
+                      <FormItem className="flex flex-col"><FormLabel>Data de Cadastro</FormLabel>
+                      <Popover><PopoverTrigger asChild>
+                          <FormControl>
+                              <Button variant={'outline'} className={cn('w-[240px] pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
+                              {field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                          </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                          </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                      </FormItem>
+                  )}/>
+                  <FormField control={form.control} name="valorServico" render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Valor do Serviço (R$)</FormLabel>
+                          <FormControl>
+                             <Input type="number" placeholder="0.00" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                  )}/>
+                </div>
             </div>
             
             <DialogFooter>
