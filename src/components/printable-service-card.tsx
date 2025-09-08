@@ -178,6 +178,50 @@ const FichaVisitaPrint = ({ ficha }: { ficha: FichaVisita }) => (
 );
 
 
+const renderChecklistPgr = (ficha: FichaPGR) => {
+    const checklistItems = {
+        'Riscos Físicos': [ 'Ruído: Fontes de ruído identificadas? Proteção auditiva disponível e em uso?', 'Calor/Frio: Ambiente com temperatura controlada? EPIs para condições térmicas extremas?', 'Vibrações: Equipamentos que geram vibração (mãos/braços, corpo inteiro) estão com manutenção em dia?', 'Radiações (Ionizantes/Não Ionizantes): Fontes de radiação isoladas? Sinalização adequada?'],
+        'Riscos Químicos': [ 'Produtos Químicos: Armazenamento correto (longe de calor, ventilado)?', 'FISPQ/FDS: Ficha de Informação de Segurança de Produtos Químicos disponível e acessível a todos?', 'EPIs: Trabalhadores usam luvas, máscaras e óculos adequados para os produtos manuseados?', 'Ventilação: Sistema de exaustão/ventilação funcionando corretamente?'],
+        'Riscos Biológicos': [ 'Materiais Contaminados: Descarte de resíduos (lixo hospitalar, etc.) feito em local apropriado?', 'Limpeza e Higienização: Procedimentos de limpeza sendo seguidos?', 'Controle de Pragas: Existe evidência de vetores (insetos, roedores)?'],
+        'Riscos Ergonômicos': [ 'Postura: Mobiliário (cadeiras, mesas) ajustado ao trabalhador?', 'Levantamento de Peso: Técnicas corretas sendo aplicadas? Há auxílio de equipamentos?', 'Ritmo de Trabalho: Pausas para descanso estão sendo cumpridas?', 'Iluminação: Iluminação do posto de trabalho é adequada (nem fraca, nem ofuscante)?'],
+        'Riscos de Acidentes (Mecânicos)': [ 'Máquinas e Equipamentos: Proteções de partes móveis (correias, polias) estão instaladas e intactas?', 'Instalações Elétricas: Fios expostos? Quadros elétricos sinalizados e desobstruídos?', 'Prevenção de Incêndio: Extintores dentro da validade, sinalizados e desobstruídos? Saídas de emergência livres?', 'Arranjo Físico (Layout): Corredores de circulação estão livres de obstáculos?', 'Trabalho em Altura: Uso de cinto de segurança, andaimes seguros, linha de vida?'],
+    };
+
+    return (
+        <table className="w-full border-collapse text-xs">
+            <thead>
+                <tr className="bg-gray-100">
+                    <th className="border p-2 text-left">Item de Verificação de Riscos</th>
+                    <th className="border p-2 text-center w-16">C</th>
+                    <th className="border p-2 text-center w-16">NC</th>
+                    <th className="border p-2 text-center w-16">NA</th>
+                </tr>
+            </thead>
+            <tbody>
+                {Object.entries(checklistItems).map(([category, items]) => (
+                    <React.Fragment key={category}>
+                        <tr>
+                            <td colSpan={4} className="font-bold bg-gray-50 p-2 border">{category}</td>
+                        </tr>
+                        {items.map((item, index) => {
+                            const verificacao = ficha.checklist?.[item];
+                            return (
+                                <tr key={index}>
+                                    <td className="border p-2">{item}</td>
+                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'c' ? 'X' : ''}</td>
+                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'nc' ? 'X' : ''}</td>
+                                    <td className="border p-2 text-center font-bold">{verificacao?.status === 'na' ? 'X' : ''}</td>
+                                </tr>
+                            )
+                        })}
+                    </React.Fragment>
+                ))}
+            </tbody>
+        </table>
+    );
+};
+
+
 const FichaPgrPrint = ({ ficha }: { ficha: FichaPGR }) => (
     <section className="mb-6 no-break">
         <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Vistoria de Riscos (PGR) - {formatFichaDate(ficha.dataPreenchimento)}</h2>
@@ -194,9 +238,14 @@ const FichaPgrPrint = ({ ficha }: { ficha: FichaPGR }) => (
             </div>
         </div>
 
+        <div className="mb-4 p-4 border rounded-lg no-break">
+            <h3 className="font-bold mb-2 text-lg">2. Checklist de Verificação de Riscos</h3>
+            {renderChecklistPgr(ficha)}
+        </div>
+
         {ficha.planoAcao && ficha.planoAcao.length > 0 && (
             <div className="mb-4 p-4 border rounded-lg no-break">
-                <h3 className="font-bold mb-2 text-lg">2. Plano de Ação</h3>
+                <h3 className="font-bold mb-2 text-lg">3. Plano de Ação</h3>
                 {ficha.planoAcao.map((acao, index) => (
                     <div key={index} className="p-3 border-t mt-2 first:mt-0 first:border-t-0">
                         <p className="font-semibold">Ação Corretiva {index + 1}</p>
@@ -213,7 +262,7 @@ const FichaPgrPrint = ({ ficha }: { ficha: FichaPGR }) => (
         )}
 
         <div className="p-4 border rounded-lg no-break">
-            <h3 className="font-bold mb-8 text-lg">3. Assinaturas</h3>
+            <h3 className="font-bold mb-8 text-lg">4. Assinaturas</h3>
             <div className="grid grid-cols-2 gap-8 pt-12">
                 <AssinaturaPrint label="Assinatura do Responsável pela Vistoria" nome={ficha.responsavelVistoria} />
                 <AssinaturaPrint assinatura={ficha.assinaturaResponsavelArea} label="Assinatura do Responsável pelo Setor/Área" nome={ficha.acompanhantes} />
