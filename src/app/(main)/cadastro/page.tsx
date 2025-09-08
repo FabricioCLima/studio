@@ -59,7 +59,7 @@ export default function CadastroPage() {
         service.nomeEmpresa.toLowerCase().includes(lowercasedTerm) ||
         service.cnpj.toLowerCase().includes(lowercasedTerm) ||
         (service.email && service.email.toLowerCase().includes(lowercasedTerm)) ||
-        (service.servicos && service.servicos.some((s) => s.nome.toLowerCase().includes(lowercasedTerm)))
+        (service.servicos && service.servicos.some((s) => s && s.nome && s.nome.toLowerCase().includes(lowercasedTerm)))
     );
     setFilteredServices(results);
   }, [searchTerm, allServices]);
