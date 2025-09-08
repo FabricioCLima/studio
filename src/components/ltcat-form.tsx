@@ -90,17 +90,6 @@ const formSchema = z.object({
     assinaturaResponsavelArea: assinaturaSchema,
 });
 
-const defaultAgentesFisicos = [
-    { agente: 'Ruído Contínuo/Intermitente', limiteTolerancia: '85 dB(A)', metodologia: 'NHO-01 / NR-15' },
-    { agente: 'Ruído de Impacto', limiteTolerancia: '130 dB(Linear)', metodologia: 'NR-15' },
-    { agente: 'Calor (IBUTG)', limiteTolerancia: 'Ver Quadro 1, NR-15', metodologia: 'NHO-06 / NR-15' },
-    { agente: 'Vibração (Mãos e Braços - VMB)', limiteTolerancia: '5 m/s²', metodologia: 'NHO-09 / NR-15' },
-    { agente: 'Vibração (Corpo Inteiro - VCI)', limiteTolerancia: '1,15 m/s²', metodologia: 'NHO-10 / NR-15' },
-    { agente: 'Radiações Ionizantes', limiteTolerancia: 'Normas da CNEN', metodologia: 'CNEN' },
-    { agente: 'Radiações Não Ionizantes', limiteTolerancia: 'Ver NR-15, Anexo 7', metodologia: 'NR-15' },
-    { agente: 'Pressões Anormais', limiteTolerancia: 'Ver NR-15, Anexo 6', metodologia: 'NR-15' },
-].map(item => ({ ...item, fonteGeradora: '', instrumento: '', numeroSerie: '', resultado: '', conclusao: '' }));
-
 
 const epcsList = [
     { id: "enclausuramento", label: "Enclausuramento de fontes de ruído" },
@@ -132,7 +121,7 @@ const generateDefaultValues = (service: Service) => ({
     frequenciaExposicao: 'continua' as const,
     arranjoFisico: '',
     equipamentos: '',
-    agentesFisicos: defaultAgentesFisicos,
+    agentesFisicos: [],
     agentesQuimicos: [],
     agentesBiologicos: [],
     epcs: [],
@@ -165,6 +154,11 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
         defaultValues: fichaToEdit ? {} : generateDefaultValues(service),
     });
     
+    const { fields: agentesFisicosFields, append: appendAgenteFisico, remove: removeAgenteFisico } = useFieldArray({
+        control: form.control,
+        name: "agentesFisicos",
+    });
+
     const { fields: agentesQuimicosFields, append: appendAgenteQuimico, remove: removeAgenteQuimico } = useFieldArray({
         control: form.control,
         name: "agentesQuimicos",
@@ -183,7 +177,7 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
             form.reset({
                 ...fichaToEdit,
                 dataVistoria: fichaToEdit.dataVistoria?.seconds ? new Date(fichaToEdit.dataVistoria.seconds * 1000) : new Date(),
-                agentesFisicos: fichaToEdit.agentesFisicos || defaultAgentesFisicos,
+                agentesFisicos: fichaToEdit.agentesFisicos || [],
                 assinaturaResponsavelArea: assinatura,
             });
         } else {
@@ -352,10 +346,11 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
                         <div>
                             <h4 className="font-semibold text-md mb-4 border-b pb-2">A. Agentes Físicos</h4>
                             <div className="space-y-4">
-                                {form.getValues('agentesFisicos')?.map((_, index) => (
-                                    <div key={index} className="p-3 border rounded-md space-y-2">
-                                        <FormField name={`agentesFisicos.${index}.agente`} control={form.control} render={({ field }) => (
-                                            <FormItem><FormLabel>Agente</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>
+                                {agentesFisicosFields.map((field, index) => (
+                                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                                        <h5 className="font-semibold">Agente Físico {index + 1}</h5>
+                                         <FormField name={`agentesFisicos.${index}.agente`} control={form.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Agente</FormLabel><FormControl><Input placeholder="Ex: Ruído Contínuo" {...field} /></FormControl></FormItem>
                                         )} />
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                              <FormField name={`agentesFisicos.${index}.fonteGeradora`} control={form.control} render={({ field }) => (
@@ -371,9 +366,15 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
                                                 <FormItem><FormLabel>Resultado (Medição)</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
                                             )} />
                                         </div>
+                                         <Button type="button" variant="destructive" size="icon" className="absolute top-4 right-4" onClick={() => removeAgenteFisico(index)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 ))}
                             </div>
+                            <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAgenteFisico({})}>
+                                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Agente Físico
+                            </Button>
                         </div>
 
                         {/* Agentes Químicos */}
