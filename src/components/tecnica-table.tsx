@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, PlayCircle, Printer, Trash2, ClipboardList } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, PlayCircle, Printer, Trash2, ClipboardList, Undo2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -49,15 +49,21 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
     const { toast } = useToast();
     const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
     const [printingService, setPrintingService] = useState<Service | null>(null);
+    const [confirmAction, setConfirmAction] = useState<{service: Service, status: 'digitacao' | 'avaliacao'} | null>(null);
 
 
     const handleUpdateStatus = async (id: string, newStatus: string) => {
+        const descriptions = {
+            em_visita: 'Status do serviço atualizado para "Em Visita".',
+            digitacao: 'Serviço enviado para a Digitação.',
+            avaliacao: 'Serviço enviado para avaliação na Engenharia.'
+        }
         try {
             const serviceRef = doc(db, "servicos", id);
             await updateDoc(serviceRef, { status: newStatus });
             toast({
                 title: 'Sucesso!',
-                description: 'Status do serviço atualizado.',
+                description: descriptions[newStatus as keyof typeof descriptions] || 'Status atualizado.',
                 className: 'bg-accent text-accent-foreground',
             });
         } catch (error) {
@@ -66,6 +72,8 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                 title: 'Erro!',
                 description: 'Não foi possível atualizar o status do serviço.',
             });
+        } finally {
+            setConfirmAction(null);
         }
     }
     
@@ -85,6 +93,17 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
         } finally {
             setServiceToDelete(null);
         }
+    }
+    
+    const getConfirmationDialogDescription = () => {
+        if (!confirmAction) return '';
+        if (confirmAction.status === 'digitacao') {
+            return `Tem certeza que deseja concluir a visita e enviar o serviço da empresa ${confirmAction.service.nomeEmpresa} para a Digitação?`;
+        }
+        if (confirmAction.status === 'avaliacao') {
+             return `Tem certeza que deseja enviar o serviço da empresa ${confirmAction.service.nomeEmpresa} para avaliação na Engenharia?`;
+        }
+        return '';
     }
 
   if (services.length === 0) {
@@ -141,12 +160,20 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                               <PlayCircle className="mr-2 h-4 w-4" />
                               Iniciar Visita
                           </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem
-                              onClick={() => handleUpdateStatus(service.id, 'digitacao')}
+                              onClick={() => setConfirmAction({ service, status: 'avaliacao' })}
+                              disabled={service.status !== 'em_visita'}
+                          >
+                              <Undo2 className="mr-2 h-4 w-4" />
+                              Enviar p/ Avaliação
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                              onClick={() => setConfirmAction({ service, status: 'digitacao' })}
                               disabled={service.status !== 'em_visita'}
                           >
                               <CheckCircle2 className="mr-2 h-4 w-4" />
-                              Concluir (Enviar p/ Digitação)
+                              Enviar p/ Digitação
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                            <DropdownMenuItem 
@@ -186,6 +213,21 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
               <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction onClick={() => serviceToDelete && handleDelete(serviceToDelete)} className="bg-destructive hover:bg-destructive/90">Excluir</AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar Ação</AlertDialogTitle>
+              <AlertDialogDescription>
+                  {getConfirmationDialogDescription()}
+              </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={() => confirmAction && handleUpdateStatus(confirmAction.service.id, confirmAction.status)} className="bg-accent hover:bg-accent/90">Confirmar</AlertDialogAction>
               </AlertDialogFooter>
           </AlertDialogContent>
       </AlertDialog>
