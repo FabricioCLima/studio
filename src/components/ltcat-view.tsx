@@ -110,7 +110,7 @@ export function LtcatView({ serviceId, onBack }: LtcatViewProps) {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <Button variant="outline" onClick={onBack} className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar para lista
+            Voltar para Ficha de Visita
         </Button>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
             <div>

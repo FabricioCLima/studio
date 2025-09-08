@@ -50,8 +50,12 @@ export default function TecnicaPage() {
     return () => unsubscribe();
   }, [user]);
 
-  const handleSelectService = (service: Service, mode: ViewMode) => {
+  const handleSelectService = (service: Service) => {
       setSelectedService(service);
+      setViewMode('ficha_visita');
+  }
+  
+  const handleSwitchView = (mode: ViewMode) => {
       setViewMode(mode);
   }
 
@@ -80,15 +84,20 @@ export default function TecnicaPage() {
         return <FichaVisitaView 
                     serviceId={selectedService.id} 
                     onBack={handleBackToTable} 
-                    onSwitchToPgr={() => handleSelectService(selectedService, 'pgr')}
-                    onSwitchToLtcat={() => handleSelectService(selectedService, 'ltcat')}
+                    onSwitchView={handleSwitchView}
                 />;
     }
     if (viewMode === 'pgr') {
-        return <PgrView serviceId={selectedService.id} onBack={handleBackToTable} />;
+        return <PgrView 
+                    serviceId={selectedService.id} 
+                    onBack={() => handleSwitchView('ficha_visita')} 
+                />;
     }
     if (viewMode === 'ltcat') {
-        return <LtcatView serviceId={selectedService.id} onBack={handleBackToTable} />;
+        return <LtcatView 
+                    serviceId={selectedService.id} 
+                    onBack={() => handleSwitchView('ficha_visita')} 
+                />;
     }
   }
 

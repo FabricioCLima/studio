@@ -20,11 +20,10 @@ import { useToast } from '@/hooks/use-toast';
 interface FichaVisitaViewProps {
     serviceId: string;
     onBack: () => void;
-    onSwitchToPgr: () => void;
-    onSwitchToLtcat: () => void;
+    onSwitchView: (mode: 'pgr' | 'ltcat') => void;
 }
 
-export function FichaVisitaView({ serviceId, onBack, onSwitchToPgr, onSwitchToLtcat }: FichaVisitaViewProps) {
+export function FichaVisitaView({ serviceId, onBack, onSwitchView }: FichaVisitaViewProps) {
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingFicha, setEditingFicha] = useState<{ ficha: FichaVisita; index: number } | null>(null);
@@ -150,8 +149,12 @@ export function FichaVisitaView({ serviceId, onBack, onSwitchToPgr, onSwitchToLt
                 </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-end">
-                <Button onClick={onSwitchToLtcat} variant="secondary">
+                <Button onClick={() => onSwitchView('pgr')} variant="secondary">
                   <FileText className="mr-2 h-4 w-4" />
+                  Gerenciar Fichas PGR
+                </Button>
+                <Button onClick={() => onSwitchView('ltcat')} variant="secondary">
+                  <ShieldCheck className="mr-2 h-4 w-4" />
                   Gerenciar Fichas LTCAT
                 </Button>
                 <Button onClick={handleAddNew} variant="default" disabled={showForm}>
