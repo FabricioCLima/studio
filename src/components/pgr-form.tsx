@@ -255,11 +255,11 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
                         <h4 className="font-semibold text-md mb-4 border-b pb-2">{category}</h4>
                         <div className="space-y-4">
                             {items.map((item) => (
-                                <FormField key={item} control={form.control} name={`checklist.${item}.status`} render={({ field }) => (
+                                <FormField key={item} control={form.control} name={`checklist.${item}.status`}>
                                    <FormItem className="space-y-2 p-3 border rounded-md">
                                          <FormLabel className="text-sm font-medium">{item}</FormLabel>
                                          <FormControl>
-                                            <RadioGroup onValueChange={field.onChange} value={field.value} defaultValue="na" className="flex space-x-4">
+                                            <RadioGroup onValueChange={form.setValue.bind(form, `checklist.${item}.status`)} value={form.watch(`checklist.${item}.status`)} defaultValue="na" className="flex space-x-4">
                                                 <div className="flex items-center space-x-2 space-y-0">
                                                     <RadioGroupItem value="c" id={`${item}-c`}/>
                                                     <Label htmlFor={`${item}-c`} className="font-normal text-sm">C</Label>
@@ -276,7 +276,7 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
                                          </FormControl>
                                          <FormMessage />
                                    </FormItem>
-                                )}/>
+                                </FormField>
                             ))}
                         </div>
                     </div>
@@ -337,7 +337,13 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
                         </Button>
                     </div>
                 ))}
-                <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => append({ descricaoNaoConformidade: '', nivelRisco: 'baixo', acaoCorretiva: '', responsavel: '', prazo: new Date() })}>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => append({ descricaoNaoConformidade: '', nivelRisco: 'baixo', acaoCorretiva: '', responsavel: '', prazo: new Date(), registroFotografico: '' })}
+                >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Adicionar Ação Corretiva
                 </Button>
@@ -403,5 +409,3 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
     </>
   );
 }
-
-    
