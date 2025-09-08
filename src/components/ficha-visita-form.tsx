@@ -7,9 +7,9 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { Service } from '@/app/(main)/engenharia/page';
+import type { FichaVisita, Service } from '@/app/(main)/engenharia/page';
 import { Textarea } from './ui/textarea';
 import { useAuth } from '@/context/auth-context';
 import { Input } from './ui/input';
@@ -22,7 +22,7 @@ import { Calendar } from './ui/calendar';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const itemVerificacaoSchema = z.object({
     status: z.enum(['c', 'nc', 'na'], { required_error: 'Selecione uma opção.' }),
@@ -104,17 +104,40 @@ const generateDefaultValues = () => ({
 interface FichaVisitaFormProps {
     service: Service;
     onSave?: () => void;
+    onCancel?: () => void;
+    fichaToEdit?: FichaVisita;
+    fichaIndex?: number;
 }
 
-export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
+export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: FichaVisitaFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: generateDefaultValues(),
+    defaultValues: fichaToEdit ? {} : generateDefaultValues(),
   });
+
+  useEffect(() => {
+      if (fichaToEdit) {
+          const { dataPreenchimento, tecnico, ...restOfFicha } = fichaToEdit;
+          
+          // Convert firebase timestamps to JS Dates
+          const naoConformidadesWithDates = (restOfFicha.naoConformidades || []).map(nc => ({
+              ...nc,
+              prazo: nc.prazo.seconds ? new Date(nc.prazo.seconds * 1000) : nc.prazo
+          }));
+
+          form.reset({
+              ...restOfFicha,
+              dataVistoria: restOfFicha.dataVistoria.seconds ? new Date(restOfFicha.dataVistoria.seconds * 1000) : restOfFicha.dataVistoria,
+              naoConformidades: naoConformidadesWithDates,
+          });
+      } else {
+          form.reset(generateDefaultValues());
+      }
+  }, [fichaToEdit, form]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -127,21 +150,43 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
     try {
         const serviceRef = doc(db, 'servicos', service.id);
         
-        const newFicha = {
-            ...values,
-            dataPreenchimento: new Date(),
-            tecnico: service.tecnico || user?.displayName || 'Não identificado',
+        if (fichaToEdit !== undefined && fichaIndex !== undefined) {
+            // Update existing ficha
+            const docSnap = await getDoc(serviceRef);
+            if (docSnap.exists()) {
+                const serviceData = docSnap.data() as Service;
+                const fichas = [...(serviceData.fichasVisita || [])];
+                
+                const updatedFicha = {
+                    ...fichas[fichaIndex], // Preserve original data like dataPreenchimento
+                    ...values, // Overwrite with new form values
+                };
+                
+                fichas[fichaIndex] = updatedFicha;
+
+                await updateDoc(serviceRef, { fichasVisita: fichas });
+                 toast({
+                    title: 'Sucesso!',
+                    description: 'Ficha de visita atualizada com sucesso.',
+                    className: 'bg-accent text-accent-foreground',
+                });
+            }
+        } else {
+            // Add new ficha
+            const newFicha = {
+                ...values,
+                dataPreenchimento: new Date(),
+                tecnico: service.tecnico || user?.displayName || 'Não identificado',
+            }
+            await updateDoc(serviceRef, {
+                fichasVisita: arrayUnion(newFicha)
+            });
+            toast({
+                title: 'Sucesso!',
+                description: 'Ficha de visita salva com sucesso.',
+                className: 'bg-accent text-accent-foreground',
+            });
         }
-
-        await updateDoc(serviceRef, {
-            fichasVisita: arrayUnion(newFicha)
-        });
-
-        toast({
-            title: 'Sucesso!',
-            description: 'Ficha de visita salva com sucesso.',
-            className: 'bg-accent text-accent-foreground',
-        });
         
         form.reset(generateDefaultValues());
         onSave?.();
@@ -386,9 +431,10 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
             </CardContent>
         </Card>
         
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>Cancelar</Button>}
           <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90">
-            {isSubmitting ? 'Salvando Ficha...' : 'Salvar Ficha de Visita'}
+            {isSubmitting ? 'Salvando...' : (fichaToEdit ? 'Salvar Alterações' : 'Salvar Ficha')}
           </Button>
         </div>
       </form>

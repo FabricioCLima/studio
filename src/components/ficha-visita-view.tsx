@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Service } from '@/app/(main)/engenharia/page';
+import type { FichaVisita, Service } from '@/app/(main)/engenharia/page';
 import { FichaVisitaForm } from '@/components/ficha-visita-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { db } from '@/lib/firebase';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, CheckCircle2, PlusCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Pencil, PlusCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -25,7 +25,8 @@ interface FichaVisitaViewProps {
 export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [editingFicha, setEditingFicha] = useState<{ ficha: FichaVisita; index: number } | null>(null);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [isConfirmingFinish, setIsConfirmingFinish] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -39,7 +40,12 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
     const serviceRef = doc(db, 'servicos', serviceId);
     const unsubscribe = onSnapshot(serviceRef, (doc) => {
       if (doc.exists()) {
-        setService({ id: doc.id, ...doc.data() } as Service);
+        const serviceData = { id: doc.id, ...doc.data() } as Service;
+        // Ensure fichasVisita is an array
+        if (!Array.isArray(serviceData.fichasVisita)) {
+          serviceData.fichasVisita = [];
+        }
+        setService(serviceData);
       } else {
         console.error("No such document!");
         setService(null);
@@ -52,7 +58,7 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
 
     return () => unsubscribe();
   }, [user, serviceId]);
-  
+
   const handleFinishVisit = async () => {
     if (!service) return;
     try {
@@ -75,6 +81,20 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
     }
   }
 
+  const handleEdit = (ficha: FichaVisita, index: number) => {
+    setEditingFicha({ ficha, index });
+    setIsCreatingNew(false);
+  };
+  
+  const handleAddNew = () => {
+    setIsCreatingNew(true);
+    setEditingFicha(null);
+  }
+
+  const handleCancelForm = () => {
+      setIsCreatingNew(false);
+      setEditingFicha(null);
+  }
 
   if (loading) {
     return (
@@ -109,8 +129,9 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
   const sortedFichas = service.fichasVisita 
     ? [...service.fichasVisita].sort((a, b) => b.dataPreenchimento.seconds - a.dataPreenchimento.seconds) 
     : [];
-
-  const canFinish = service.status === 'aguardando_visita' || service.status === 'em_visita';
+  
+  const showForm = isCreatingNew || editingFicha;
+  const canFinish = (service.status === 'aguardando_visita' || service.status === 'em_visita') && sortedFichas.length > 0;
 
   return (
     <>
@@ -127,9 +148,9 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
                 </p>
             </div>
             <div className="flex items-center gap-2">
-                <Button onClick={() => setShowForm(!showForm)} variant={showForm ? 'secondary' : 'default'}>
+                <Button onClick={handleAddNew} variant="default" disabled={showForm}>
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    {showForm ? 'Cancelar Nova Ficha' : 'Adicionar Nova Ficha'}
+                    Adicionar Nova Ficha
                 </Button>
                 {canFinish && (
                     <Button onClick={() => setIsConfirmingFinish(true)} className="bg-accent hover:bg-accent/90">
@@ -143,11 +164,17 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
         {showForm && (
             <Card className="mt-4">
                 <CardHeader>
-                    <CardTitle>Nova Ficha de Inspeção</CardTitle>
-                    <CardDescription>Preencha os detalhes da inspeção de segurança.</CardDescription>
+                    <CardTitle>{editingFicha ? 'Editar Ficha de Inspeção' : 'Nova Ficha de Inspeção'}</CardTitle>
+                    <CardDescription>{editingFicha ? 'Altere os detalhes da inspeção abaixo.' : 'Preencha os detalhes da inspeção de segurança.'}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <FichaVisitaForm service={service} onSave={() => setShowForm(false)} />
+                    <FichaVisitaForm 
+                        service={service} 
+                        onSave={handleCancelForm}
+                        onCancel={handleCancelForm}
+                        fichaToEdit={editingFicha?.ficha}
+                        fichaIndex={editingFicha?.index}
+                    />
                 </CardContent>
             </Card>
         )}
@@ -157,16 +184,25 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
         <div className="space-y-4">
             <h2 className="text-2xl font-bold tracking-tight">Histórico de Fichas</h2>
             {sortedFichas.length > 0 ? (
-                sortedFichas.map((ficha, index) => (
+                sortedFichas.map((ficha, index) => {
+                  // The sortedFichas is reversed, so we need to find the original index
+                  const originalIndex = service.fichasVisita.findIndex(f => f.dataPreenchimento.seconds === ficha.dataPreenchimento.seconds);
+                  return (
                     <Card key={index}>
                         <CardHeader>
                             <CardTitle className="flex justify-between items-center text-lg">
                                 <span>
                                     Visita realizada por: <span className="font-semibold">{ficha.tecnico || 'Não informado'}</span>
                                 </span>
-                                <span className="text-sm font-normal text-muted-foreground">
-                                    {format(new Date(ficha.dataPreenchimento.seconds * 1000), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-normal text-muted-foreground">
+                                        {format(new Date(ficha.dataPreenchimento.seconds * 1000), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                    </span>
+                                    <Button variant="outline" size="sm" onClick={() => handleEdit(ficha, originalIndex)}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Editar
+                                    </Button>
+                                </div>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -187,7 +223,8 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
                            )}
                         </CardContent>
                     </Card>
-                ))
+                  )
+                })
             ) : (
                 <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
@@ -202,7 +239,7 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Finalização</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja finalizar a visita para a empresa <span className="font-bold">{service.nomeEmpresa}</span> e enviar para a Digitação?
+              Tem certeza que deseja finalizar a visita para a empresa <span className="font-bold">{service.nomeEmpresa}</span> e enviar para a Digitação? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
