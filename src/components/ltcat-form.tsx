@@ -177,6 +177,11 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
                 ...fichaToEdit,
                 dataVistoria: fichaToEdit.dataVistoria?.seconds ? new Date(fichaToEdit.dataVistoria.seconds * 1000) : new Date(),
                 agentesFisicos: fichaToEdit.agentesFisicos || [],
+                agentesQuimicos: fichaToEdit.agentesQuimicos || [],
+                agentesBiologicos: fichaToEdit.agentesBiologicos || [],
+                epcsOutros: fichaToEdit.epcsOutros || '',
+                episOutros: fichaToEdit.episOutros || '',
+                observacoes: fichaToEdit.observacoes || '',
                 assinaturaResponsavelArea: assinatura,
             });
         } else {
