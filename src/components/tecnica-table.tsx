@@ -166,7 +166,7 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                               disabled={service.status !== 'em_visita'}
                           >
                               <Undo2 className="mr-2 h-4 w-4" />
-                              Enviar p/ Avaliação
+                              Enviar p/ Engenharia
                           </DropdownMenuItem>
                           <DropdownMenuItem
                               onClick={() => setConfirmAction({ service, status: 'digitacao' })}
