@@ -92,7 +92,7 @@ const renderItensVerificacao = (ficha: FichaVisita) => {
 export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableServiceCardProps>(
   ({ service }, ref) => {
     const sortedFichas = service.fichasVisita 
-      ? [...service.fichasVisita].sort((a, b) => b.dataPreenchimento.seconds - a.dataPreenchimento.seconds) 
+      ? [...service.fichasVisita].sort((a, b) => (a.dataPreenchimento?.seconds ?? 0) - (b.dataPreenchimento?.seconds ?? 0)) 
       : [];
       
     const formatFichaDate = (date: any) => {
@@ -193,7 +193,6 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
               </div>
 
             </section>
-            {index < sortedFichas.length - 1 && <Separator className="my-6" />}
           </React.Fragment>
         ))}
 
