@@ -162,30 +162,189 @@ const FichaVisitaPrint = ({ ficha }: { ficha: FichaVisita }) => (
 
 
 const FichaPgrPrint = ({ ficha }: { ficha: FichaPGR }) => (
-  <section className="mb-6 no-break">
-      <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Vistoria de Riscos (PGR) - {formatFichaDate(ficha.dataPreenchimento)}</h2>
-      {/* Implement PGR printing logic here */}
-       <div className="text-sm">
-           <p><span className="font-semibold">Número da Vistoria:</span> {ficha.numeroVistoria}</p>
-           <p><span className="font-semibold">Setor:</span> {ficha.setor}</p>
-           <p><span className="font-semibold">Data:</span> {formatFichaDate(ficha.dataVistoria)} às {ficha.horario}</p>
-       </div>
-  </section>
-);
-
-
-const FichaLtcatPrint = ({ ficha }: { ficha: FichaLTCAT }) => (
     <section className="mb-6 no-break">
-         <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Campo LTCAT - {formatFichaDate(ficha.dataPreenchimento)}</h2>
-        {/* Implement LTCAT printing logic here */}
-        <div className="text-sm">
-            <p><span className="font-semibold">Setor:</span> {ficha.setor}</p>
-            <p><span className="font-semibold">GHE:</span> {ficha.ghe}</p>
-            <p><span className="font-semibold">Data:</span> {formatFichaDate(ficha.dataVistoria)} às {ficha.horario}</p>
+        <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Vistoria de Riscos (PGR) - {formatFichaDate(ficha.dataPreenchimento)}</h2>
+
+        <div className="mb-4 p-4 border rounded-lg">
+            <h3 className="font-bold mb-2 text-lg">1. Identificação da Inspeção</h3>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div><p className="font-medium">N° da Vistoria:</p><p>{ficha.numeroVistoria}</p></div>
+                <div><p className="font-medium">Data:</p><p>{formatFichaDate(ficha.dataVistoria)} às {ficha.horario}</p></div>
+                <div className="col-span-2"><p className="font-medium">Setor/Departamento:</p><p>{ficha.setor}</p></div>
+                <div className="col-span-2"><p className="font-medium">Atividade/Equipamento:</p><p>{ficha.atividade}</p></div>
+                <div><p className="font-medium">Responsável Vistoria:</p><p>{ficha.responsavelVistoria}</p></div>
+                <div><p className="font-medium">Acompanhante(s):</p><p>{ficha.acompanhantes}</p></div>
+            </div>
+        </div>
+
+        {ficha.planoAcao && ficha.planoAcao.length > 0 && (
+            <div className="mb-4 p-4 border rounded-lg no-break">
+                <h3 className="font-bold mb-2 text-lg">2. Plano de Ação</h3>
+                {ficha.planoAcao.map((acao, index) => (
+                    <div key={index} className="p-3 border-t mt-2 first:mt-0 first:border-t-0">
+                        <p className="font-semibold">Ação Corretiva {index + 1}</p>
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                            <div className="col-span-2"><p className="font-medium">Não Conformidade:</p><p>{acao.descricaoNaoConformidade}</p></div>
+                            <div className="col-span-2"><p className="font-medium">Ação Corretiva:</p><p>{acao.acaoCorretiva}</p></div>
+                            <div><p className="font-medium">Nível de Risco:</p><p className="capitalize">{acao.nivelRisco}</p></div>
+                            <div><p className="font-medium">Prazo:</p><p>{formatFichaDate(acao.prazo)}</p></div>
+                            <div><p className="font-medium">Responsável:</p><p>{acao.responsavel}</p></div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
+
+        <div className="p-4 border rounded-lg no-break">
+            <h3 className="font-bold mb-8 text-lg">3. Assinaturas</h3>
+            <div className="grid grid-cols-2 gap-8 pt-12">
+                <div className="text-center">
+                    <div className="border-t border-gray-400 w-full mx-auto"></div>
+                    <p className="mt-2 text-xs">Assinatura do Responsável pela Vistoria</p>
+                    <p className="text-xs font-semibold">{ficha.responsavelVistoria}</p>
+                </div>
+                <div className="text-center">
+                    <div className="border-t border-gray-400 w-full mx-auto"></div>
+                    <p className="mt-2 text-xs">Assinatura do Responsável pelo Setor/Área</p>
+                     <p className="text-xs font-semibold">{ficha.acompanhantes}</p>
+                </div>
+            </div>
         </div>
     </section>
 );
 
+const FichaLtcatPrint = ({ ficha, service }: { ficha: FichaLTCAT, service: Service }) => (
+    <section className="mb-6 no-break">
+        <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Ficha de Campo LTCAT - {formatFichaDate(ficha.dataPreenchimento)}</h2>
+
+        {/* Dados Gerais */}
+        <div className="mb-4 p-4 border rounded-lg">
+            <h3 className="font-bold mb-2 text-lg">1. DADOS GERAIS DA AVALIAÇÃO</h3>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div><p className="font-medium">Empresa:</p><p>{service.nomeEmpresa}</p></div>
+                <div><p className="font-medium">CNPJ:</p><p>{service.cnpj}</p></div>
+                <div className="col-span-2"><p className="font-medium">Endereço:</p><p>{`${service.endereco}, ${service.bairro} - ${service.cidade}`}</p></div>
+                <div><p className="font-medium">CNAE:</p><p>{ficha.cnae}</p></div>
+                <div><p className="font-medium">Data da Vistoria:</p><p>{formatFichaDate(ficha.dataVistoria)} às {ficha.horario}</p></div>
+                <div><p className="font-medium">Responsável Vistoria:</p><p>{ficha.responsavelVistoria}</p></div>
+                <div><p className="font-medium">Acompanhante:</p><p>{ficha.acompanhante}</p></div>
+            </div>
+        </div>
+
+        {/* Caracterização */}
+        <div className="mb-4 p-4 border rounded-lg no-break">
+            <h3 className="font-bold mb-2 text-lg">2. CARACTERIZAÇÃO DO AMBIENTE E DA FUNÇÃO</h3>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div><p className="font-medium">Setor/Departamento:</p><p>{ficha.setor}</p></div>
+                <div><p className="font-medium">GHE:</p><p>{ficha.ghe}</p></div>
+                <div className="col-span-2"><p className="font-medium">Função(ões):</p><p>{ficha.funcoes}</p></div>
+                <div><p className="font-medium">N° Trabalhadores:</p><p>H: {ficha.homens}, M: {ficha.mulheres}, Total: {ficha.totalTrabalhadores}</p></div>
+                <div><p className="font-medium">Jornada:</p><p>{ficha.jornadaTrabalho}</p></div>
+                <div><p className="font-medium">Frequência Exposição:</p><p className="capitalize">{ficha.frequenciaExposicao}</p></div>
+                <div className="col-span-2"><p className="font-medium">Descrição Atividades:</p><p className="whitespace-pre-wrap">{ficha.descricaoAtividades}</p></div>
+                <div className="col-span-2"><p className="font-medium">Arranjo Físico:</p><p className="whitespace-pre-wrap">{ficha.arranjoFisico}</p></div>
+                <div className="col-span-2"><p className="font-medium">Equipamentos:</p><p className="whitespace-pre-wrap">{ficha.equipamentos}</p></div>
+            </div>
+        </div>
+
+        {/* Agentes */}
+        <div className="mb-4 p-4 border rounded-lg no-break">
+             <h3 className="font-bold mb-2 text-lg">3. AVALIAÇÃO DE AGENTES NOCIVOS</h3>
+             
+             {/* Agentes Físicos */}
+             <h4 className="font-semibold mt-4 mb-2 text-base">A. Agentes Físicos</h4>
+             <table className="w-full border-collapse text-xs">
+                <thead><tr className="bg-gray-100">
+                    <th className="border p-1 text-left">Agente</th><th className="border p-1 text-left">Fonte</th><th className="border p-1 text-left">Instrumento</th><th className="border p-1 text-left">Resultado</th>
+                </tr></thead>
+                <tbody>
+                    {ficha.agentesFisicos?.filter(a => a.resultado).map((agente, i) => (
+                        <tr key={i}>
+                            <td className="border p-1">{agente.agente}</td>
+                            <td className="border p-1">{agente.fonteGeradora}</td>
+                            <td className="border p-1">{agente.instrumento}</td>
+                            <td className="border p-1">{agente.resultado}</td>
+                        </tr>
+                    ))}
+                </tbody>
+             </table>
+
+            {/* Agentes Químicos */}
+            {ficha.agentesQuimicos && ficha.agentesQuimicos.length > 0 && (
+                <>
+                    <h4 className="font-semibold mt-4 mb-2 text-base">B. Agentes Químicos</h4>
+                    <table className="w-full border-collapse text-xs">
+                         <thead><tr className="bg-gray-100">
+                            <th className="border p-1 text-left">Agente</th><th className="border p-1 text-left">Fonte</th><th className="border p-1 text-left">Resultado</th>
+                        </tr></thead>
+                        <tbody>
+                            {ficha.agentesQuimicos.filter(a => a.resultado).map((agente, i) => (
+                                <tr key={i}>
+                                    <td className="border p-1">{agente.agente}</td>
+                                    <td className="border p-1">{agente.fonteGeradora}</td>
+                                    <td className="border p-1">{agente.resultado}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </>
+            )}
+
+             {/* Agentes Biológicos */}
+            {ficha.agentesBiologicos && ficha.agentesBiologicos.length > 0 && (
+                 <>
+                    <h4 className="font-semibold mt-4 mb-2 text-base">C. Agentes Biológicos</h4>
+                     <table className="w-full border-collapse text-xs">
+                         <thead><tr className="bg-gray-100">
+                            <th className="border p-1 text-left">Descrição Atividade</th><th className="border p-1 text-left">Agente Provável</th><th className="border p-1 text-center">Enquadrado</th>
+                        </tr></thead>
+                        <tbody>
+                           {ficha.agentesBiologicos.filter(a => a.descricao).map((agente, i) => (
+                               <tr key={i}>
+                                   <td className="border p-1">{agente.descricao}</td>
+                                   <td className="border p-1">{agente.agenteProvavel}</td>
+                                   <td className="border p-1 text-center">{agente.enquadramento ? 'Sim' : 'Não'}</td>
+                               </tr>
+                           ))}
+                        </tbody>
+                    </table>
+                </>
+            )}
+        </div>
+        
+         {/* Medidas de Controle */}
+        <div className="mb-4 p-4 border rounded-lg no-break">
+            <h3 className="font-bold mb-2 text-lg">4. MEDIDAS DE CONTROLE EXISTENTES</h3>
+            <p className="text-sm"><span className="font-medium">EPCs Eficazes:</span> <span className="capitalize">{ficha.epcsEficaz}</span></p>
+            <p className="text-sm"><span className="font-medium">EPIs Eficazes:</span> <span className="capitalize">{ficha.episEficaz}</span></p>
+        </div>
+
+        {/* Observações */}
+        {ficha.observacoes && (
+             <div className="mb-4 p-4 border rounded-lg no-break">
+                <h3 className="font-bold mb-2 text-lg">5. OBSERVAÇÕES</h3>
+                <p className="text-sm whitespace-pre-wrap">{ficha.observacoes}</p>
+            </div>
+        )}
+
+        {/* Assinaturas */}
+        <div className="p-4 border rounded-lg no-break">
+            <h3 className="font-bold mb-8 text-lg">6. ASSINATURAS</h3>
+             <div className="grid grid-cols-2 gap-8 pt-12">
+                <div className="text-center">
+                    <div className="border-t border-gray-400 w-full mx-auto"></div>
+                    <p className="mt-2 text-xs">Técnico/Engenheiro Responsável</p>
+                    <p className="text-xs font-semibold">{ficha.responsavelVistoria}</p>
+                </div>
+                <div className="text-center">
+                    <div className="border-t border-gray-400 w-full mx-auto"></div>
+                    <p className="mt-2 text-xs">Responsável da Empresa</p>
+                    <p className="text-xs font-semibold">{ficha.acompanhante}</p>
+                </div>
+            </div>
+        </div>
+    </section>
+);
 
 
 export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableServiceCardProps>(
@@ -258,7 +417,7 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
         {sortedFichasLtcat.map((ficha, index) => (
             <React.Fragment key={`ltcat-${index}`}>
                 <div className="page-break"></div>
-                <FichaLtcatPrint ficha={ficha} />
+                <FichaLtcatPrint ficha={ficha} service={service} />
             </React.Fragment>
         ))}
 
