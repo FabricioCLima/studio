@@ -255,7 +255,7 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
                         <div className="space-y-4">
                             {items.map((item) => (
                                 <FormField key={item} control={form.control} name={`checklist.${item}`} render={({ field }) => (
-                                   <div className="space-y-2 p-3 border rounded-md">
+                                   <FormItem className="space-y-2 p-3 border rounded-md">
                                          <FormLabel className="text-sm font-medium">{item}</FormLabel>
                                          <FormControl>
                                             <RadioGroup onValueChange={(value) => field.onChange({ status: value })} value={field.value?.status || 'na'} className="flex space-x-4">
@@ -264,7 +264,7 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
                                                 <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="na" /></FormControl><FormLabel className="font-normal text-sm">NA</FormLabel></FormItem>
                                             </RadioGroup>
                                          </FormControl><FormMessage />
-                                   </div>
+                                   </FormItem>
                                 )}/>
                             ))}
                         </div>

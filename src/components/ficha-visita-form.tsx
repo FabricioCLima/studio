@@ -332,7 +332,7 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
                                     control={form.control}
                                     name={`itensVerificacao.${item}`}
                                     render={({ field }) => (
-                                       <div className="space-y-2 p-3 border rounded-md">
+                                       <FormItem className="space-y-2 p-3 border rounded-md">
                                              <FormLabel className="text-sm font-medium">{item}</FormLabel>
                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <FormControl>
@@ -355,7 +355,7 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
                                                 </FormControl>
                                              </div>
                                              <FormMessage />
-                                       </div>
+                                       </FormItem>
                                     )}
                                 />
                             ))}
