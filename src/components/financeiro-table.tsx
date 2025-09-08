@@ -68,6 +68,10 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
             setServiceToConclude(null);
         }
     }
+    
+    const calculateTotal = (servicos: { nome: string; valor: number }[]) => {
+        return servicos.reduce((total, servico) => total + (servico.valor || 0), 0);
+    }
 
 
   if (services.length === 0) {
@@ -89,6 +93,8 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
           <TableRow>
             <TableHead className="w-[50px]">Ações</TableHead>
             <TableHead>Empresa</TableHead>
+            <TableHead className="hidden lg:table-cell">Serviços</TableHead>
+            <TableHead className="hidden md:table-cell">Valor Total</TableHead>
             <TableHead className="hidden md:table-cell">Status</TableHead>
             <TableHead>Responsável Medicina</TableHead>
           </TableRow>
@@ -126,6 +132,16 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
                   </DropdownMenu>
               </TableCell>
               <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
+              <TableCell className="hidden lg:table-cell">
+                <div className="flex flex-col">
+                  {service.servicos.map((s, i) => (
+                    <span key={i} className="text-xs">{s.nome}</span>
+                  ))}
+                </div>
+              </TableCell>
+              <TableCell className="hidden md:table-cell font-mono">
+                {calculateTotal(service.servicos).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </TableCell>
               <TableCell className="hidden md:table-cell">
                 <StatusBadge service={service} />
               </TableCell>
