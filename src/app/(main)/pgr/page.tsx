@@ -22,7 +22,9 @@ export default function PgrPage() {
       return;
     }
 
+    // This query can be adjusted based on business logic for what services should appear here
     const q = query(collection(db, 'servicos'), where('status', '!=', 'arquivado'));
+    
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const servicesData: Service[] = [];
       querySnapshot.forEach((doc) => {

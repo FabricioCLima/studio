@@ -10,11 +10,16 @@ import type { Service } from '../engenharia/page';
 import { TecnicaTable } from '@/components/tecnica-table';
 import { useServiceNotification } from '@/context/service-notification-context';
 import { FichaVisitaView } from '@/components/ficha-visita-view';
+import { PgrView } from '@/components/pgr-view';
+
+type ViewMode = 'table' | 'ficha_visita' | 'pgr';
 
 export default function TecnicaPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
+
   const { user } = useAuth();
   const { resetTecnicaCount } = useServiceNotification();
   
@@ -44,9 +49,44 @@ export default function TecnicaPage() {
     return () => unsubscribe();
   }, [user]);
 
-  if (selectedService) {
-    return <FichaVisitaView serviceId={selectedService.id} onBack={() => setSelectedService(null)} />;
+  const handleSelectService = (service: Service, mode: 'ficha_visita' | 'pgr') => {
+      setSelectedService(service);
+      setViewMode(mode);
   }
+
+  const handleBackToTable = () => {
+      setSelectedService(null);
+      setViewMode('table');
+  }
+
+  if (loading) {
+     return (
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+          <div className="flex items-center justify-between space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Técnica</h1>
+          </div>
+          <div className="space-y-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+            </div>
+        </div>
+     )
+  }
+
+  if (selectedService) {
+    if (viewMode === 'ficha_visita') {
+        return <FichaVisitaView 
+                    serviceId={selectedService.id} 
+                    onBack={handleBackToTable} 
+                    onSwitchToPgr={() => handleSelectService(selectedService, 'pgr')}
+                />;
+    }
+    if (viewMode === 'pgr') {
+        return <PgrView serviceId={selectedService.id} onBack={handleBackToTable} />;
+    }
+  }
+
 
   return (
     <>
@@ -54,15 +94,7 @@ export default function TecnicaPage() {
         <div className="flex items-center justify-between space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Técnica</h1>
         </div>
-        {loading ? (
-          <div className="space-y-4">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-          </div>
-        ) : (
-          <TecnicaTable services={services} onSelectService={setSelectedService} />
-        )}
+        <TecnicaTable services={services} onSelectService={(service) => handleSelectService(service, 'ficha_visita')} />
       </div>
     </>
   );

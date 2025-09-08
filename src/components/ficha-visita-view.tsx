@@ -12,7 +12,7 @@ import { db } from '@/lib/firebase';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, CheckCircle2, Pencil, PlusCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Pencil, PlusCircle, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -20,9 +20,10 @@ import { useToast } from '@/hooks/use-toast';
 interface FichaVisitaViewProps {
     serviceId: string;
     onBack: () => void;
+    onSwitchToPgr: () => void;
 }
 
-export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
+export function FichaVisitaView({ serviceId, onBack, onSwitchToPgr }: FichaVisitaViewProps) {
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingFicha, setEditingFicha] = useState<{ ficha: FichaVisita; index: number } | null>(null);
@@ -148,6 +149,10 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
                 </p>
             </div>
             <div className="flex items-center gap-2">
+                <Button onClick={onSwitchToPgr} variant="secondary">
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    Gerenciar Fichas PGR
+                </Button>
                 <Button onClick={handleAddNew} variant="default" disabled={showForm}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Adicionar Nova Ficha
@@ -239,7 +244,7 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Finalização</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja finalizar a visita para a empresa <span className="font-bold">{service.nomeEmpresa}</span> e enviar para a Digitação? Esta ação não pode ser desfeita.
+              Tem certeza que deseja finalizar a visita para a empresa <span className="font-bold">{service?.nomeEmpresa}</span> e enviar para a Digitação? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -151,7 +151,7 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                           <DropdownMenuSeparator />
                            <DropdownMenuItem onClick={() => onSelectService(service)}>
                                 <ClipboardList className="mr-2 h-4 w-4" />
-                                Preencher Ficha de Visita
+                                Gerenciar Fichas
                           </DropdownMenuItem>
                           <DropdownMenuItem
                               onClick={() => handleUpdateStatus(service.id, 'em_visita')}
