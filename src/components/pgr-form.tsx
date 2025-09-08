@@ -255,28 +255,38 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
                         <h4 className="font-semibold text-md mb-4 border-b pb-2">{category}</h4>
                         <div className="space-y-4">
                             {items.map((item) => (
-                                <FormField key={item} control={form.control} name={`checklist.${item}.status`}>
-                                   <FormItem className="space-y-2 p-3 border rounded-md">
-                                         <FormLabel className="text-sm font-medium">{item}</FormLabel>
-                                         <FormControl>
-                                            <RadioGroup onValueChange={form.setValue.bind(form, `checklist.${item}.status`)} value={form.watch(`checklist.${item}.status`)} defaultValue="na" className="flex space-x-4">
-                                                <div className="flex items-center space-x-2 space-y-0">
-                                                    <RadioGroupItem value="c" id={`${item}-c`}/>
-                                                    <Label htmlFor={`${item}-c`} className="font-normal text-sm">C</Label>
-                                                </div>
-                                                <div className="flex items-center space-x-2 space-y-0">
-                                                    <RadioGroupItem value="nc" id={`${item}-nc`}/>
-                                                    <Label htmlFor={`${item}-nc`} className="font-normal text-sm">NC</Label>
-                                                </div>
-                                                <div className="flex items-center space-x-2 space-y-0">
-                                                    <RadioGroupItem value="na" id={`${item}-na`}/>
-                                                    <Label htmlFor={`${item}-na`} className="font-normal text-sm">NA</Label>
-                                                </div>
-                                            </RadioGroup>
-                                         </FormControl>
-                                         <FormMessage />
-                                   </FormItem>
-                                </FormField>
+                                <FormField
+                                    key={item}
+                                    control={form.control}
+                                    name={`checklist.${item}.status`}
+                                    render={({ field }) => (
+                                       <FormItem className="space-y-2 p-3 border rounded-md">
+                                             <FormLabel className="text-sm font-medium">{item}</FormLabel>
+                                             <FormControl>
+                                                <RadioGroup
+                                                    onValueChange={field.onChange}
+                                                    value={field.value}
+                                                    defaultValue="na"
+                                                    className="flex space-x-4"
+                                                >
+                                                    <div className="flex items-center space-x-2 space-y-0">
+                                                        <RadioGroupItem value="c" id={`${item}-c`}/>
+                                                        <Label htmlFor={`${item}-c`} className="font-normal text-sm">C</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2 space-y-0">
+                                                        <RadioGroupItem value="nc" id={`${item}-nc`}/>
+                                                        <Label htmlFor={`${item}-nc`} className="font-normal text-sm">NC</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2 space-y-0">
+                                                        <RadioGroupItem value="na" id={`${item}-na`}/>
+                                                        <Label htmlFor={`${item}-na`} className="font-normal text-sm">NA</Label>
+                                                    </div>
+                                                </RadioGroup>
+                                             </FormControl>
+                                             <FormMessage />
+                                       </FormItem>
+                                    )}
+                                />
                             ))}
                         </div>
                     </div>
@@ -409,3 +419,4 @@ export function PgrForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }: 
     </>
   );
 }
+
