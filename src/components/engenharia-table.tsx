@@ -41,6 +41,7 @@ import {
 } from './ui/dropdown-menu';
 import { PrintDialog } from './print-dialog';
 import { AssignResponsavelDialog } from './assign-responsavel-dialog';
+import { AssignDigitadorDialog } from './assign-digitador-dialog';
 
 interface EngenhariaTableProps {
   services: Service[];
@@ -53,6 +54,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
   const [serviceToUpdate, setServiceToUpdate] = useState<{service: Service, newStatus: 'digitacao' | 'arquivado' | 'concluido'} | null>(null);
   const [assigningResponsavelService, setAssigningResponsavelService] = useState<Service | null>(null);
+  const [assigningDigitadorService, setAssigningDigitadorService] = useState<Service | null>(null);
 
   const handleDelete = async (id: string) => {
     try {
@@ -173,6 +175,10 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                         <DropdownMenuItem onClick={() => setAssigningResponsavelService(service)}>
                           <Pencil className="mr-2 h-4 w-4" />
                           Atribuir Responsável
+                        </DropdownMenuItem>
+                         <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Atribuir Resp. Digitação
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditingService(service)}>
                           <Pencil className="mr-2 h-4 w-4" />
@@ -308,6 +314,14 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
             onOpenChange={(open) => !open && setAssigningResponsavelService(null)}
             service={assigningResponsavelService}
             onSuccess={() => setAssigningResponsavelService(null)}
+        />
+      )}
+       {assigningDigitadorService && (
+        <AssignDigitadorDialog
+            open={!!assigningDigitadorService}
+            onOpenChange={(open) => !open && setAssigningDigitadorService(null)}
+            service={assigningDigitadorService}
+            onSuccess={() => setAssigningDigitadorService(null)}
         />
       )}
     </>
