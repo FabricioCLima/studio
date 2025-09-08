@@ -55,11 +55,12 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
     try {
         const serviceRef = doc(db, 'servicos', service.id);
         await updateDoc(serviceRef, {
-            digitador: values.digitador
+            digitador: values.digitador,
+            status: 'digitacao'
         });
       toast({
         title: 'Sucesso!',
-        description: 'Responsável atribuído com sucesso.',
+        description: 'Responsável atribuído e serviço enviado para a Digitação.',
         className: 'bg-accent text-accent-foreground',
       });
       onSuccess();
@@ -68,7 +69,7 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
       toast({
         variant: 'destructive',
         title: 'Erro!',
-        description: 'Não foi possível atribuir o responsável.',
+        description: 'Não foi possível atribuir o responsável e enviar o serviço.',
       });
     } finally {
       setIsSubmitting(false);
@@ -80,9 +81,9 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Atribuir Responsável</DialogTitle>
+          <DialogTitle>Atribuir Responsável e Enviar para Digitação</DialogTitle>
           <DialogDescription>
-            Insira o nome do responsável para o serviço da empresa: <span className="font-semibold">{service.nomeEmpresa}</span>
+            Insira o nome do responsável e o serviço da empresa <span className="font-semibold">{service.nomeEmpresa}</span> será enviado para a Digitação.
           </DialogDescription>
         </DialogHeader>
         
@@ -104,7 +105,7 @@ export function AssignDigitadorDialog({ open, onOpenChange, service, onSuccess }
                  <DialogFooter>
                     <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
                     <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90">
-                        {isSubmitting ? 'Salvando...' : 'Salvar'}
+                        {isSubmitting ? 'Salvando...' : 'Salvar e Enviar'}
                     </Button>
                 </DialogFooter>
             </form>

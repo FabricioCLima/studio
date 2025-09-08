@@ -105,16 +105,9 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
     
     switch(serviceToUpdate.newStatus) {
         case 'digitacao':
-            if (serviceToUpdate.service.status === 'engenharia') {
-                 return {
-                    title: 'Confirmar Envio para Digitação',
-                    description: `Tem certeza que deseja enviar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa} diretamente para a Digitação? Esta ação deve ser usada quando não há necessidade de visita técnica.`
-                }
-            } else { // status === 'avaliacao'
-                 return {
-                    title: 'Confirmar Reenvio para Digitação',
-                    description: `Tem certeza que deseja reenviar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa} para a Digitação?`
-                }
+            return {
+                title: 'Confirmar Envio para Digitação',
+                description: `Tem certeza que deseja enviar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa} diretamente para a Digitação? Esta ação deve ser usada quando não há necessidade de visita técnica.`
             }
         case 'concluido':
             return {
@@ -183,8 +176,8 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                           Atribuir Responsável
                         </DropdownMenuItem>
                          <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Atribuir Resp. Digitação
+                          <Keyboard className="mr-2 h-4 w-4" />
+                          Enviar p/ Digitação
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditingService(service)}>
                           <Pencil className="mr-2 h-4 w-4" />
@@ -203,13 +196,13 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                          {service.status === 'engenharia' && (
                            <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'digitacao' })}>
                                 <Keyboard className="mr-2 h-4 w-4" />
-                                Enviar p/ Digitação
+                                Enviar p/ Digitação (Sem Resp.)
                             </DropdownMenuItem>
                          )}
                         
                          {service.status === 'avaliacao' && (
                             <>
-                                <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'digitacao' })}>
+                                <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
                                     <Keyboard className="mr-2 h-4 w-4" />
                                     Reenviar p/ Digitação
                                 </DropdownMenuItem>
