@@ -143,10 +143,6 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                           <DropdownMenuItem onClick={() => onSelectService(service, 'ficha_visita')}>
-                              <ClipboardList className="mr-2 h-4 w-4" />
-                              Gerenciar Fichas Visita
-                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onSelectService(service, 'pgr')}>
                                 <FileText className="mr-2 h-4 w-4" />
                                 Gerenciar Fichas PGR
@@ -253,3 +249,5 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
       </>
   );
 }
+
+    
