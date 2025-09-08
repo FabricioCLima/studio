@@ -125,9 +125,9 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
             <TableRow>
               <TableHead className="w-[50px]">Ações</TableHead>
               <TableHead>Empresa</TableHead>
-              <TableHead className="hidden md:table-cell">Responsável pela Visita</TableHead>
+              <TableHead>Responsável pela Visita</TableHead>
               <TableHead className="hidden lg:table-cell">Agendamento</TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead className="hidden sm:table-cell">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -143,6 +143,10 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                           <DropdownMenuItem onClick={() => onSelectService(service, 'ficha_visita')}>
+                                <ClipboardList className="mr-2 h-4 w-4" />
+                                Gerenciar Fichas Visita
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onSelectService(service, 'pgr')}>
                                 <FileText className="mr-2 h-4 w-4" />
                                 Gerenciar Fichas PGR
@@ -191,11 +195,11 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                   </DropdownMenu>
                 </TableCell>
                 <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-                <TableCell className="hidden md:table-cell">{service.tecnico || '-'}</TableCell>
+                <TableCell>{service.tecnico || '-'}</TableCell>
                  <TableCell className="hidden lg:table-cell">
                   {service.dataAgendamento ? format(new Date(service.dataAgendamento.seconds * 1000), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
+                <TableCell className="hidden sm:table-cell">
                   <StatusBadge service={service} />
                 </TableCell>
               </TableRow>
@@ -249,5 +253,3 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
       </>
   );
 }
-
-    
