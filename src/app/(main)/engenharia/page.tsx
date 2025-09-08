@@ -65,6 +65,64 @@ export type FichaPGR = {
     dataPreenchimento: { seconds: number; nanoseconds: number };
 };
 
+export type AgenteFisico = {
+    agente: string;
+    fonteGeradora: string;
+    instrumento: string;
+    numeroSerie: string;
+    resultado: string;
+    limiteTolerancia: string;
+    metodologia: string;
+    conclusao: string;
+};
+
+export type AgenteQuimico = {
+    agente: string;
+    fonteGeradora: string;
+    tipoAmostra: string;
+    tempoColeta: string;
+    resultado: string;
+    limiteTolerancia: string;
+    metodologia: string;
+    conclusao: string;
+};
+
+export type AgenteBiologico = {
+    descricao: string;
+    agenteProvavel: string;
+    enquadramento: boolean;
+};
+
+export type FichaLTCAT = {
+    cnae: string;
+    dataVistoria: { seconds: number; nanoseconds: number };
+    horario: string;
+    responsavelVistoria: string;
+    acompanhante: string;
+    setor: string;
+    ghe: string;
+    funcoes: string;
+    totalTrabalhadores: number;
+    homens: number;
+    mulheres: number;
+    descricaoAtividades: string;
+    jornadaTrabalho: string;
+    frequenciaExposicao: 'continua' | 'intermitente';
+    arranjoFisico: string;
+    equipamentos: string;
+    agentesFisicos?: AgenteFisico[];
+    agentesQuimicos?: AgenteQuimico[];
+    agentesBiologicos?: AgenteBiologico[];
+    epcs: string[];
+    epcsOutros: string;
+    epcsEficaz: 'sim' | 'nao' | 'parcialmente';
+    epis: string[];
+    episOutros: string;
+    episEficaz: 'sim' | 'nao' | 'na';
+    observacoes: string;
+    fotos: string[];
+    dataPreenchimento: { seconds: number; nanoseconds: number };
+};
 
 export type Service = {
   id: string;
@@ -78,7 +136,7 @@ export type Service = {
   telefone: string;
   contato: string;
   email?: string;
-  servicos: { nome: string; valor: number }[];
+  servicos: { nome: string; valor?: number }[];
   dataServico: {
     seconds: number;
     nanoseconds: number;
@@ -99,6 +157,7 @@ export type Service = {
   medicinaResponsavel?: string;
   fichasVisita?: FichaVisita[];
   fichasPGR?: FichaPGR[];
+  fichasLTCAT?: FichaLTCAT[];
 };
 
 export default function EngenhariaPage() {

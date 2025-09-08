@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, PlayCircle, Printer, Trash2, ClipboardList, Undo2 } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, PlayCircle, Printer, Trash2, ClipboardList, Undo2, FileText } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -42,7 +42,7 @@ import { PrintDialog } from './print-dialog';
 
 interface TecnicaTableProps {
   services: Service[];
-  onSelectService: (service: Service) => void;
+  onSelectService: (service: Service, mode: 'ficha_visita' | 'pgr' | 'ltcat') => void;
 }
 
 export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
@@ -149,9 +149,13 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                               Imprimir Ficha
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                           <DropdownMenuItem onClick={() => onSelectService(service)}>
+                           <DropdownMenuItem onClick={() => onSelectService(service, 'ficha_visita')}>
                                 <ClipboardList className="mr-2 h-4 w-4" />
-                                Gerenciar Fichas
+                                Gerenciar Fichas Visita
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onSelectService(service, 'ltcat')}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                Gerenciar Fichas LTCAT
                           </DropdownMenuItem>
                           <DropdownMenuItem
                               onClick={() => handleUpdateStatus(service.id, 'em_visita')}

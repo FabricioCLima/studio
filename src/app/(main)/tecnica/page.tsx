@@ -11,8 +11,9 @@ import { TecnicaTable } from '@/components/tecnica-table';
 import { useServiceNotification } from '@/context/service-notification-context';
 import { FichaVisitaView } from '@/components/ficha-visita-view';
 import { PgrView } from '@/components/pgr-view';
+import { LtcatView } from '@/components/ltcat-view';
 
-type ViewMode = 'table' | 'ficha_visita' | 'pgr';
+type ViewMode = 'table' | 'ficha_visita' | 'pgr' | 'ltcat';
 
 export default function TecnicaPage() {
   const [services, setServices] = useState<Service[]>([]);
@@ -49,7 +50,7 @@ export default function TecnicaPage() {
     return () => unsubscribe();
   }, [user]);
 
-  const handleSelectService = (service: Service, mode: 'ficha_visita' | 'pgr') => {
+  const handleSelectService = (service: Service, mode: ViewMode) => {
       setSelectedService(service);
       setViewMode(mode);
   }
@@ -80,10 +81,14 @@ export default function TecnicaPage() {
                     serviceId={selectedService.id} 
                     onBack={handleBackToTable} 
                     onSwitchToPgr={() => handleSelectService(selectedService, 'pgr')}
+                    onSwitchToLtcat={() => handleSelectService(selectedService, 'ltcat')}
                 />;
     }
     if (viewMode === 'pgr') {
         return <PgrView serviceId={selectedService.id} onBack={handleBackToTable} />;
+    }
+    if (viewMode === 'ltcat') {
+        return <LtcatView serviceId={selectedService.id} onBack={handleBackToTable} />;
     }
   }
 
@@ -94,7 +99,7 @@ export default function TecnicaPage() {
         <div className="flex items-center justify-between space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Técnica</h1>
         </div>
-        <TecnicaTable services={services} onSelectService={(service) => handleSelectService(service, 'ficha_visita')} />
+        <TecnicaTable services={services} onSelectService={handleSelectService} />
       </div>
     </>
   );
