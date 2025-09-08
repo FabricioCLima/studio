@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, Pencil, Printer, Undo2 } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, Printer, Undo2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -36,7 +36,6 @@ import {
 import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { AssignDigitadorDialog } from './assign-digitador-dialog';
 import { PrintDialog } from './print-dialog';
 
 interface DigitacaoTableProps {
@@ -47,7 +46,6 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
     const [serviceToReturn, setServiceToReturn] = useState<Service | null>(null);
-    const [assigningDigitadorService, setAssigningDigitadorService] = useState<Service | null>(null);
     const [printingService, setPrintingService] = useState<Service | null>(null);
 
     const handleUpdateStatus = async (service: Service, newStatus: 'medicina' | 'avaliacao') => {
@@ -111,10 +109,6 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                     <DropdownMenuContent align="start">
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Atribuir Responsável
-                      </DropdownMenuItem>
                        <DropdownMenuItem
                         onClick={() => setPrintingService(service)}
                         disabled={!service.fichasVisita || service.fichasVisita.length === 0}
@@ -176,14 +170,6 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {assigningDigitadorService && (
-        <AssignDigitadorDialog
-            open={!!assigningDigitadorService}
-            onOpenChange={(open) => !open && setAssigningDigitadorService(null)}
-            service={assigningDigitadorService}
-            onSuccess={() => setAssigningDigitadorService(null)}
-        />
-      )}
       {printingService && (
         <PrintDialog
           service={printingService}
