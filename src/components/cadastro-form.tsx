@@ -7,8 +7,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarPopover } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
 import { addYears, format } from 'date-fns';
@@ -222,18 +221,14 @@ export function CadastroForm({ onSave }: CadastroFormProps) {
             <div className="space-y-4">
                 <FormField control={form.control} name="dataServico" render={({ field }) => (
                     <FormItem className="flex flex-col"><FormLabel>Data de Cadastro</FormLabel>
-                      <Popover><PopoverTrigger asChild>
-                          <FormControl>
+                      <CalendarPopover mode="single" selected={field.value} onSelect={field.onChange}>
+                         <FormControl>
                             <Button variant={'outline'} className={cn('w-[240px] pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
                               {field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                        </PopoverContent>
-                      </Popover>
+                      </CalendarPopover>
                       <FormMessage />
                     </FormItem>
                   )}/>

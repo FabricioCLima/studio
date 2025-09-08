@@ -13,11 +13,10 @@ import type { FichaLTCAT, Service } from '@/app/(main)/engenharia/page';
 import { Textarea } from './ui/textarea';
 import { Input } from './ui/input';
 import { CalendarIcon, PlusCircle, Signature, Trash2 } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar } from './ui/calendar';
+import { CalendarPopover } from './ui/calendar';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
@@ -266,16 +265,12 @@ export function LtcatForm({ service, onSave, onCancel, fichaToEdit, fichaIndex }
                         
                          <FormField control={form.control} name="dataVistoria" render={({ field }) => (
                             <FormItem className="flex flex-col"><FormLabel>Data da Vistoria</FormLabel>
-                                <Popover><PopoverTrigger asChild>
+                                <CalendarPopover mode="single" selected={field.value} onSelect={field.onChange}>
                                     <FormControl><Button variant={'outline'} className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
                                         {field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
                                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                     </Button></FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                                </PopoverContent>
-                                </Popover><FormMessage />
+                                </CalendarPopover><FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="horario" render={({ field }) => (
