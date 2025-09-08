@@ -171,7 +171,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                         </DropdownMenuItem>
                          <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
                           <Keyboard className="mr-2 h-4 w-4" />
-                          Enviar p/ Digitação
+                          Atribuir Resp/Digitação
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditingService(service)}>
                           <Pencil className="mr-2 h-4 w-4" />
@@ -189,10 +189,6 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                                                  
                          {service.status === 'avaliacao' && (
                             <>
-                                <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
-                                    <Keyboard className="mr-2 h-4 w-4" />
-                                    Reenviar p/ Digitação
-                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'concluido' })}>
                                     <CheckCircle2 className="mr-2 h-4 w-4" />
                                     Finalizar Serviço
