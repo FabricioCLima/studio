@@ -168,13 +168,6 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                               <Undo2 className="mr-2 h-4 w-4" />
                               Enviar p/ Engenharia
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                              onClick={() => setConfirmAction({ service, status: 'digitacao' })}
-                              disabled={service.status !== 'em_visita'}
-                          >
-                              <CheckCircle2 className="mr-2 h-4 w-4" />
-                              Enviar p/ Digitação
-                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                            <DropdownMenuItem 
                               onClick={() => setServiceToDelete(service.id)}
