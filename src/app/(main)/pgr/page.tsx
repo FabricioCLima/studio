@@ -8,13 +8,13 @@ import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import type { Service } from '../engenharia/page';
 import { PgrTable } from '@/components/pgr-table';
-import { PgrView } from '@/components/pgr-view';
+import { useRouter } from 'next/navigation';
 
 export default function PgrPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const { user } = useAuth();
+  const router = useRouter();
   
   useEffect(() => {
     if (!user) {
@@ -22,7 +22,6 @@ export default function PgrPage() {
       return;
     }
 
-    // This query can be adjusted based on business logic for what services should appear here
     const q = query(collection(db, 'servicos'), where('status', '!=', 'arquivado'));
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -40,15 +39,15 @@ export default function PgrPage() {
     return () => unsubscribe();
   }, [user]);
 
-  if (selectedService) {
-    return <PgrView serviceId={selectedService.id} onBack={() => setSelectedService(null)} />;
+  const handleSelectCompany = (cnpj: string) => {
+      router.push(`/empresa/${cnpj}`);
   }
 
   return (
     <>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">PGR - Gerenciamento de Riscos</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Empresas</h1>
         </div>
         {loading ? (
           <div className="space-y-4">
@@ -57,7 +56,7 @@ export default function PgrPage() {
               <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <PgrTable services={services} onSelectService={setSelectedService} />
+          <PgrTable services={services} onSelectCompany={handleSelectCompany} />
         )}
       </div>
     </>

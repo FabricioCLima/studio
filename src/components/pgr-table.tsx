@@ -16,16 +16,23 @@ import { Card, CardContent } from './ui/card';
 
 interface PgrTableProps {
   services: Service[];
-  onSelectService: (service: Service) => void;
+  onSelectCompany: (cnpj: string) => void;
 }
 
-export function PgrTable({ services, onSelectService }: PgrTableProps) {
+export function PgrTable({ services, onSelectCompany }: PgrTableProps) {
+    
+  const uniqueCompanies = services.reduce((acc, service) => {
+      if (service.cnpj && !acc.some(s => s.cnpj === service.cnpj)) {
+          acc.push(service);
+      }
+      return acc;
+  }, [] as Service[]);
 
-  if (services.length === 0) {
+  if (uniqueCompanies.length === 0) {
     return (
         <Card>
             <CardContent className="p-8 text-center text-muted-foreground">
-                <p>Nenhum serviço ativo encontrado.</p>
+                <p>Nenhuma empresa com serviços ativos encontrada.</p>
             </CardContent>
         </Card>
     )
@@ -38,22 +45,22 @@ export function PgrTable({ services, onSelectService }: PgrTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Ações</TableHead>
+              <TableHead className="w-[120px]">Ações</TableHead>
               <TableHead>Empresa</TableHead>
-              <TableHead className="hidden md:table-cell">CNPJ</TableHead>
+              <TableHead>CNPJ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {services.map((service) => (
-              <TableRow key={service.id}>
+            {uniqueCompanies.map((service) => (
+              <TableRow key={service.cnpj}>
                 <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => onSelectService(service)}>
+                    <Button variant="outline" size="sm" onClick={() => onSelectCompany(service.cnpj)}>
                         <FileText className="mr-2 h-4 w-4" />
                         Gerenciar
                     </Button>
                 </TableCell>
                 <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
-                <TableCell className="hidden md:table-cell">{service.cnpj}</TableCell>
+                <TableCell>{service.cnpj}</TableCell>
               </TableRow>
             ))}
           </TableBody>
