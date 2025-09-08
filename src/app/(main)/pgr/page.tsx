@@ -36,7 +36,8 @@ export default function PgrPage() {
       });
       
       const uniqueCompanies = servicesData.reduce((acc, service) => {
-        if (service.cnpj && !acc.some(s => s.cnpj === service.cnpj)) {
+        // Filtra por CNPJs que parecem válidos (pelo menos 14 chars com máscara)
+        if (service.cnpj && service.cnpj.length >= 14 && !acc.some(s => s.cnpj === service.cnpj)) {
             acc.push(service);
         }
         return acc;
