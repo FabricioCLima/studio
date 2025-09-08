@@ -13,7 +13,6 @@ import { Button } from './ui/button';
 import { FileText } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { Card, CardContent } from './ui/card';
-import { Badge } from './ui/badge';
 
 interface PgrTableProps {
   services: Service[];
@@ -42,7 +41,6 @@ export function PgrTable({ services, onSelectService }: PgrTableProps) {
               <TableHead className="w-[100px]">Ações</TableHead>
               <TableHead>Empresa</TableHead>
               <TableHead className="hidden md:table-cell">CNPJ</TableHead>
-              <TableHead>Fichas PGR</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -56,11 +54,6 @@ export function PgrTable({ services, onSelectService }: PgrTableProps) {
                 </TableCell>
                 <TableCell className="font-medium">{service.nomeEmpresa}</TableCell>
                 <TableCell className="hidden md:table-cell">{service.cnpj}</TableCell>
-                <TableCell>
-                    <Badge variant={service.fichasPGR && service.fichasPGR.length > 0 ? 'success' : 'secondary'}>
-                        {service.fichasPGR?.length || 0}
-                    </Badge>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
