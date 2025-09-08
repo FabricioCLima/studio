@@ -51,7 +51,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [printingService, setPrintingService] = useState<Service | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
-  const [serviceToUpdate, setServiceToUpdate] = useState<{service: Service, newStatus: 'digitacao' | 'arquivado'} | null>(null);
+  const [serviceToUpdate, setServiceToUpdate] = useState<{service: Service, newStatus: 'digitacao' | 'arquivado' | 'concluido'} | null>(null);
   const [assigningResponsavelService, setAssigningResponsavelService] = useState<Service | null>(null);
 
   const handleDelete = async (id: string) => {
@@ -72,13 +72,19 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
     }
   };
 
-  const handleUpdateStatus = async (id: string, newStatus: 'digitacao' | 'arquivado') => {
+  const handleUpdateStatus = async (id: string, newStatus: 'digitacao' | 'arquivado' | 'concluido') => {
     try {
         const serviceRef = doc(db, 'servicos', id);
         await updateDoc(serviceRef, { status: newStatus });
+        
+        let description = 'Status do serviço atualizado.';
+        if (newStatus === 'digitacao') description = 'Serviço enviado para Digitação.';
+        if (newStatus === 'arquivado') description = 'Serviço movido para Arquivo Morto.';
+        if (newStatus === 'concluido') description = 'Serviço finalizado com sucesso.';
+
         toast({
             title: 'Sucesso!',
-            description: `Serviço movido para ${newStatus === 'digitacao' ? 'Digitação' : 'Arquivo Morto'}.`,
+            description: description,
             className: 'bg-accent text-accent-foreground',
         });
     } catch (error) {
@@ -94,19 +100,33 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
   
   const getConfirmationDialogContent = () => {
     if (!serviceToUpdate) return { title: '', description: '' };
-    if (serviceToUpdate.newStatus === 'digitacao') {
-        return {
-            title: 'Confirmar Envio para Digitação',
-            description: `Tem certeza que deseja enviar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa} diretamente para a Digitação? Esta ação deve ser usada quando não há necessidade de visita técnica.`
-        }
+    
+    switch(serviceToUpdate.newStatus) {
+        case 'digitacao':
+            if (serviceToUpdate.service.status === 'engenharia') {
+                 return {
+                    title: 'Confirmar Envio para Digitação',
+                    description: `Tem certeza que deseja enviar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa} diretamente para a Digitação? Esta ação deve ser usada quando não há necessidade de visita técnica.`
+                }
+            } else { // status === 'avaliacao'
+                 return {
+                    title: 'Confirmar Reenvio para Digitação',
+                    description: `Tem certeza que deseja reenviar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa} para a Digitação?`
+                }
+            }
+        case 'concluido':
+            return {
+                title: 'Confirmar Finalização de Serviço',
+                description: `Tem certeza que deseja finalizar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa}? O status será alterado para Concluído.`
+            }
+        case 'arquivado':
+            return {
+                title: 'Confirmar Baixa de Serviço',
+                description: `Tem certeza que deseja dar baixa no serviço da empresa ${serviceToUpdate.service.nomeEmpresa}? Esta ação moverá o serviço para o Arquivo Morto.`
+            }
+        default:
+            return { title: '', description: '' };
     }
-     if (serviceToUpdate.newStatus === 'arquivado') {
-        return {
-            title: 'Confirmar Baixa de Serviço',
-            description: `Tem certeza que deseja dar baixa no serviço da empresa ${serviceToUpdate.service.nomeEmpresa}? Esta ação moverá o serviço para o Arquivo Morto.`
-        }
-    }
-    return { title: '', description: '' };
   }
 
   if (services.length === 0) {
@@ -173,6 +193,19 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                                 <Keyboard className="mr-2 h-4 w-4" />
                                 Enviar p/ Digitação
                             </DropdownMenuItem>
+                         )}
+                        
+                         {service.status === 'avaliacao' && (
+                            <>
+                                <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'digitacao' })}>
+                                    <Keyboard className="mr-2 h-4 w-4" />
+                                    Reenviar p/ Digitação
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'concluido' })}>
+                                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                                    Finalizar Serviço
+                                </DropdownMenuItem>
+                            </>
                          )}
 
                          {service.status === 'concluido' && (
