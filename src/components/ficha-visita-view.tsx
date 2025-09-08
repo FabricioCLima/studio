@@ -149,10 +149,6 @@ export function FichaVisitaView({ serviceId, onBack, onSwitchToPgr }: FichaVisit
                 </p>
             </div>
             <div className="flex items-center gap-2">
-                <Button onClick={onSwitchToPgr} variant="secondary">
-                    <ShieldCheck className="mr-2 h-4 w-4" />
-                    Gerenciar Fichas PGR
-                </Button>
                 <Button onClick={handleAddNew} variant="default" disabled={showForm}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Adicionar Nova Ficha
