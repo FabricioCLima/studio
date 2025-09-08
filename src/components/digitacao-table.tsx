@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, Pencil, Printer } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, Pencil, Printer, Undo2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -46,28 +46,30 @@ interface DigitacaoTableProps {
 export function DigitacaoTable({ services }: DigitacaoTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
+    const [serviceToReturn, setServiceToReturn] = useState<Service | null>(null);
     const [assigningDigitadorService, setAssigningDigitadorService] = useState<Service | null>(null);
     const [printingService, setPrintingService] = useState<Service | null>(null);
 
-    const handleConclude = async (serviceId: string) => {
+    const handleUpdateStatus = async (service: Service, newStatus: 'medicina' | 'engenharia') => {
         try {
-            const serviceRef = doc(db, 'servicos', serviceId);
+            const serviceRef = doc(db, 'servicos', service.id);
             await updateDoc(serviceRef, {
-                status: 'medicina'
+                status: newStatus
             });
             toast({
                 title: 'Sucesso!',
-                description: 'Serviço enviado para a Medicina.',
+                description: `Serviço enviado para a ${newStatus === 'medicina' ? 'Medicina' : 'Engenharia'}.`,
                 className: 'bg-accent text-accent-foreground',
             });
         } catch (error) {
              toast({
                 variant: 'destructive',
                 title: 'Erro!',
-                description: 'Não foi possível concluir o serviço.',
+                description: 'Não foi possível atualizar o status do serviço.',
             });
         } finally {
             setServiceToConclude(null);
+            setServiceToReturn(null);
         }
     }
 
@@ -113,16 +115,19 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                         <Pencil className="mr-2 h-4 w-4" />
                         Atribuir Responsável
                       </DropdownMenuItem>
-                       <DropdownMenuItem 
-                        onClick={() => setPrintingService(service)} 
+                       <DropdownMenuItem
+                        onClick={() => setPrintingService(service)}
                         disabled={!service.fichasVisita || service.fichasVisita.length === 0}
                       >
                         <Printer className="mr-2 h-4 w-4" />
                         Visualizar Ficha
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setServiceToConclude(service)}
-                        disabled={service.status === 'concluido' || service.status === 'medicina'}>
+                      <DropdownMenuItem onClick={() => setServiceToReturn(service)}>
+                        <Undo2 className="mr-2 h-4 w-4" />
+                        Enviar para Engenharia
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setServiceToConclude(service)}>
                         <CheckCircle2 className="mr-2 h-4 w-4" />
                         Enviar para Medicina
                       </DropdownMenuItem>
@@ -144,14 +149,29 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
       <AlertDialog open={!!serviceToConclude} onOpenChange={(open) => !open && setServiceToConclude(null)}>
         <AlertDialogContent>
             <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Ação</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar Envio</AlertDialogTitle>
             <AlertDialogDescription>
                 Você tem certeza que deseja concluir a digitação para a empresa <span className='font-bold'>{serviceToConclude?.nomeEmpresa}</span> e enviar para a Medicina?
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => serviceToConclude && handleConclude(serviceToConclude.id)} className="bg-accent hover:bg-accent/90">Confirmar</AlertDialogAction>
+            <AlertDialogAction onClick={() => serviceToConclude && handleUpdateStatus(serviceToConclude, 'medicina')} className="bg-accent hover:bg-accent/90">Confirmar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+       <AlertDialog open={!!serviceToReturn} onOpenChange={(open) => !open && setServiceToReturn(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Retorno</AlertDialogTitle>
+            <AlertDialogDescription>
+                Você tem certeza que deseja retornar o serviço da empresa <span className='font-bold'>{serviceToReturn?.nomeEmpresa}</span> para a Engenharia?
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => serviceToReturn && handleUpdateStatus(serviceToReturn, 'engenharia')} className="bg-primary hover:bg-primary/90">Confirmar</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
