@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 export default function FichaVisitaPage() {
   const params = useParams();
   const router = useRouter();
-  const { id } = params;
+  const id = params.id;
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
