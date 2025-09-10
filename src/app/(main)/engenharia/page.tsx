@@ -47,18 +47,21 @@ export type PgrAcaoCorretiva = {
     prazo: Date;
 };
 
-// Tipos para Ficha de Visita base
-export type NaoConformidade = {
-  descricao: string;
-  riscoAssociado: string;
-  recomendacao: string;
-  prazo: Date;
-  responsavelAcao: string;
-};
-
-export type ItemVerificacao = {
+// Tipos para a nova Ficha de Visita Detalhada
+export type ChecklistItem = {
   status: 'c' | 'nc' | 'na';
   observacoes: string;
+  evidencia?: string; // para upload de foto/doc
+};
+
+export type NaoConformidadeDetalhada = {
+  id: string; // Gerado automaticamente
+  descricao: string;
+  riscoAssociado: 'baixo' | 'medio' | 'alto';
+  normaRegulamentadora: string;
+  recomendacao: string;
+  prazo: Date;
+  responsavel: string;
 };
 
 export type Assinatura = {
@@ -68,31 +71,53 @@ export type Assinatura = {
 
 // Tipo FichaVisita Unificado
 export type FichaVisita = {
-  // Campos Originais da Ficha de Visita
-  setorInspecionado: string;
-  dataVistoria: { seconds: number; nanoseconds: number; };
-  horario: string;
-  acompanhante: string;
-  tipoInspecao: 'rotina' | 'denuncia' | 'especifica' | 'oficial';
-  itensVerificacao: { [key: string]: ItemVerificacao; };
-  naoConformidades: NaoConformidade[];
-  dataPreenchimento: { seconds: number; nanoseconds: number; };
-  tecnico?: string;
-  assinaturaResponsavelArea?: Assinatura | null;
+  // Seção 1: Identificação
+  id: string; // Gerado automaticamente
+  dataVisita: { seconds: number; nanoseconds: number; };
+  horaInicio: string;
+  horaTermino: string;
+  tecnicoResponsavel: string;
+  tipoVisita: 'rotina' | 'investigacao' | 'auditoria' | 'fiscalizacao' | 'outro';
+  objetivoVisita: string;
 
-  // Campos do PGR
+  // Seção 2: Dados da Empresa
+  setorInspecionado: string;
+  responsavelEmpresa: string;
+  cargoResponsavel: string;
+  contatoResponsavel: string;
+
+  // Seção 3: Checklist de Conformidade
+  checklist: { [key: string]: ChecklistItem };
+
+  // Seção 4: Registro de Não Conformidades
+  naoConformidades: NaoConformidadeDetalhada[];
+  
+  // Seção 5: Observações Gerais
+  pontosPositivos: string;
+  outrasObservacoes: string;
+  parecerTecnico: string;
+
+  // Seção 6: Finalização
+  assinaturaTecnico?: Assinatura | null;
+  assinaturaResponsavel?: Assinatura | null;
+  localData: string;
+  
+  dataPreenchimento: { seconds: number; nanoseconds: number; }; // Mantido para ordenação
+
+  // Seções Opcionais
   pgr?: {
+    preencher: boolean; // Usado apenas no form
     numeroVistoria: string;
     atividade: string;
     responsavelVistoria: string;
     acompanhantes?: string;
-    checklist: { [key: string]: { status: 'c' | 'nc' | 'na' }; };
+    checklistPGR: { [key: string]: { status: 'c' | 'nc' | 'na' }; };
     planoAcao?: PgrAcaoCorretiva[];
     assinaturaResponsavelArea?: Assinatura | null;
   };
   
-  // Campos do LTCAT
   ltcat?: {
+    preencher: boolean; // Usado apenas no form
     cnae: string;
     responsavelVistoria: string;
     setor: string;

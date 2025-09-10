@@ -41,7 +41,6 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
     const unsubscribe = onSnapshot(serviceRef, (doc) => {
       if (doc.exists()) {
         const serviceData = { id: doc.id, ...doc.data() } as Service;
-        // Ensure fichasVisita is an array
         if (!Array.isArray(serviceData.fichasVisita)) {
           serviceData.fichasVisita = [];
         }
@@ -127,7 +126,7 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
   }
   
   const sortedFichas = service.fichasVisita 
-    ? [...service.fichasVisita].sort((a, b) => b.dataPreenchimento.seconds - a.dataPreenchimento.seconds) 
+    ? [...service.fichasVisita].sort((a, b) => (b.dataPreenchimento?.seconds ?? 0) - (a.dataPreenchimento?.seconds ?? 0)) 
     : [];
   
   const showForm = isCreatingNew || editingFicha;
@@ -142,7 +141,7 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
         </Button>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
             <div>
-                 <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Fichas</h1>
+                 <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Fichas de Visita</h1>
                 <p className="text-muted-foreground">
                     Empresa: <span className="font-semibold">{service.nomeEmpresa}</span>
                 </p>
@@ -164,8 +163,8 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
         {showForm && (
             <Card className="mt-4">
                 <CardHeader>
-                    <CardTitle>{editingFicha ? 'Editar Ficha de Vistoria' : 'Nova Ficha de Vistoria Unificada'}</CardTitle>
-                    <CardDescription>{editingFicha ? 'Altere os detalhes da vistoria abaixo.' : 'Preencha os detalhes da vistoria, incluindo seções de PGR e LTCAT se necessário.'}</CardDescription>
+                    <CardTitle>{editingFicha ? 'Editar Ficha de Visita' : 'Nova Ficha de Visita'}</CardTitle>
+                    <CardDescription>{editingFicha ? 'Altere os detalhes da vistoria abaixo.' : 'Preencha o formulário detalhado da vistoria.'}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <FichaVisitaForm 
@@ -184,19 +183,19 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
         <div className="space-y-4">
             <h2 className="text-2xl font-bold tracking-tight">Histórico de Fichas</h2>
             {sortedFichas.length > 0 ? (
-                sortedFichas.map((ficha, index) => {
+                sortedFichas.map((ficha) => {
                   // The sortedFichas is reversed, so we need to find the original index
-                  const originalIndex = (service.fichasVisita || []).findIndex(f => f.dataPreenchimento.seconds === ficha.dataPreenchimento.seconds);
+                  const originalIndex = (service.fichasVisita || []).findIndex(f => f.id === ficha.id);
                   return (
-                    <Card key={index}>
+                    <Card key={ficha.id}>
                         <CardHeader>
                             <CardTitle className="flex justify-between items-center text-lg">
                                 <span>
-                                    Visita realizada por: <span className="font-semibold">{ficha.tecnico || 'Não informado'}</span>
+                                    Visita em: <span className="font-semibold">{format(new Date(ficha.dataVisita.seconds * 1000), "dd/MM/yyyy", { locale: ptBR })}</span> por <span className="font-semibold">{ficha.tecnicoResponsavel || 'Não informado'}</span>
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-normal text-muted-foreground">
-                                        {format(new Date(ficha.dataPreenchimento.seconds * 1000), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                        Registrado em {format(new Date(ficha.dataPreenchimento.seconds * 1000), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}
                                     </span>
                                     <Button variant="outline" size="sm" onClick={() => handleEdit(ficha, originalIndex)}>
                                         <Pencil className="mr-2 h-4 w-4" />
@@ -209,32 +208,23 @@ export function FichaVisitaView({ serviceId, onBack }: FichaVisitaViewProps) {
                            <div>
                                 <h4 className="font-semibold mb-2">Detalhes da Inspeção:</h4>
                                <p className="text-sm"><span className="font-medium">Setor:</span> {ficha.setorInspecionado}</p>
-                               <p className="text-sm"><span className="font-medium">Acompanhante:</span> {ficha.acompanhante}</p>
+                               <p className="text-sm"><span className="font-medium">Acompanhante:</span> {ficha.responsavelEmpresa}</p>
+                               <p className="text-sm"><span className="font-medium">Objetivo:</span> {ficha.objetivoVisita || 'Não informado'}</p>
                            </div>
                            {(ficha.naoConformidades && ficha.naoConformidades.length > 0) && (
                              <div>
-                                <h4 className="font-semibold mb-2 mt-4">Não Conformidades (Ficha de Visita):</h4>
+                                <h4 className="font-semibold mb-2 mt-4">Não Conformidades Registradas:</h4>
                                 <ul className="list-disc list-inside space-y-1">
-                                    {ficha.naoConformidades.map((nc, i) => (
-                                        <li key={i} className="text-sm">{nc.descricao}</li>
+                                    {ficha.naoConformidades.map((nc) => (
+                                        <li key={nc.id} className="text-sm">{nc.descricao}</li>
                                     ))}
                                 </ul>
                             </div>
                            )}
-                           {(ficha.pgr?.planoAcao && ficha.pgr.planoAcao.length > 0) && (
+                           {(ficha.parecerTecnico) && (
                              <div>
-                                <h4 className="font-semibold mb-2 mt-4">Plano de Ação (PGR):</h4>
-                                <ul className="list-disc list-inside space-y-1">
-                                    {ficha.pgr.planoAcao.map((nc, i) => (
-                                        <li key={i} className="text-sm">{nc.descricaoNaoConformidade}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                           )}
-                            {(ficha.ltcat?.observacoes) && (
-                             <div>
-                                <h4 className="font-semibold mb-2 mt-4">Observações (LTCAT):</h4>
-                               <p className="text-sm">{ficha.ltcat.observacoes}</p>
+                                <h4 className="font-semibold mb-2 mt-4">Parecer Técnico:</h4>
+                               <p className="text-sm italic">"{ficha.parecerTecnico}"</p>
                             </div>
                            )}
                         </CardContent>

@@ -7,9 +7,9 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { AgenteBiologico, AgenteFisico, AgenteQuimico, Assinatura, FichaVisita, PgrAcaoCorretiva, Service } from '@/app/(main)/engenharia/page';
+import type { AgenteBiologico, AgenteFisico, AgenteQuimico, Assinatura, FichaVisita, PgrAcaoCorretiva, Service, NaoConformidadeDetalhada, ChecklistItem } from '@/app/(main)/engenharia/page';
 import { Textarea } from './ui/textarea';
 import { useAuth } from '@/context/auth-context';
 import { Input } from './ui/input';
@@ -27,18 +27,21 @@ import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
-// Schemas para as seções unificadas
-const itemVerificacaoSchema = z.object({
+// Schemas para a nova Ficha Detalhada
+const checklistItemSchema = z.object({
     status: z.enum(['c', 'nc', 'na'], { required_error: 'Selecione uma opção.' }),
     observacoes: z.string().optional(),
+    evidencia: z.string().optional(),
 });
 
-const naoConformidadeSchema = z.object({
-    descricao: z.string().min(1, 'Descrição é obrigatória.'),
-    riscoAssociado: z.string().min(1, 'Risco é obrigatório.'),
-    recomendacao: z.string().min(1, 'Recomendação é obrigatória.'),
-    prazo: z.date({ required_error: 'Prazo é obrigatório.' }),
-    responsavelAcao: z.string().min(1, 'Responsável é obrigatório.'),
+const naoConformidadeDetalhadaSchema = z.object({
+  id: z.string(),
+  descricao: z.string().min(1, 'Descrição é obrigatória.'),
+  riscoAssociado: z.enum(['baixo', 'medio', 'alto'], { required_error: 'Nível de risco é obrigatório.' }),
+  normaRegulamentadora: z.string().min(1, 'NR é obrigatória.'),
+  recomendacao: z.string().min(1, 'Recomendação é obrigatória.'),
+  prazo: z.date({ required_error: 'Prazo é obrigatório.' }),
+  responsavel: z.string().min(1, 'Responsável é obrigatório.'),
 });
 
 const assinaturaSchema = z.object({
@@ -46,7 +49,7 @@ const assinaturaSchema = z.object({
     data: z.date(),
 }).nullable().optional();
 
-// Schemas PGR
+// Schemas PGR (mantidos para sub-seção)
 const planoAcaoSchema = z.object({
     descricaoNaoConformidade: z.string().min(1, 'Descrição é obrigatória.'),
     registroFotografico: z.string().optional(),
@@ -62,13 +65,12 @@ const pgrSchema = z.object({
     atividade: z.string().optional(),
     responsavelVistoria: z.string().optional(),
     acompanhantes: z.string().optional(),
-    checklist: z.record(z.object({ status: z.enum(['c', 'nc', 'na']) })).optional(),
+    checklistPGR: z.record(z.object({ status: z.enum(['c', 'nc', 'na']) })).optional(),
     planoAcao: z.array(planoAcaoSchema).optional(),
     assinaturaResponsavelArea: assinaturaSchema,
 }).optional();
 
-
-// Schemas LTCAT
+// Schemas LTCAT (mantidos para sub-seção)
 const agenteFisicoSchema = z.object({
     agente: z.string().optional(), fonteGeradora: z.string().optional(), instrumento: z.string().optional(), numeroSerie: z.string().optional(), resultado: z.string().optional(), limiteTolerancia: z.string().optional(), metodologia: z.string().optional(), conclusao: z.string().optional(),
 });
@@ -99,7 +101,6 @@ const ltcatSchema = z.object({
     agentesBiologicos: z.array(agenteBiologicoSchema).optional(),
     epcs: z.array(z.string()).optional(),
     epcsOutros: z.string().optional(),
-    epcsEficaz: z.enum(['sim', 'nao', 'parcialmente']).optional(),
     epis: z.array(z.string()).optional(),
     episOutros: z.string().optional(),
     episEficaz: z.enum(['sim', 'nao', 'na']).optional(),
@@ -110,51 +111,45 @@ const ltcatSchema = z.object({
 
 // Schema principal do formulário
 const formSchema = z.object({
+  id: z.string(),
+  dataVisita: z.date({ required_error: 'Data é obrigatória.' }),
+  horaInicio: z.string().min(1, 'Horário de início é obrigatório.'),
+  horaTermino: z.string().optional(),
+  tecnicoResponsavel: z.string(),
+  tipoVisita: z.enum(['rotina', 'investigacao', 'auditoria', 'fiscalizacao', 'outro'], { required_error: 'Selecione o tipo de visita.' }),
+  objetivoVisita: z.string().optional(),
+  
   setorInspecionado: z.string().min(1, 'Setor é obrigatório.'),
-  dataVistoria: z.date({ required_error: 'Data é obrigatória.' }),
-  horario: z.string().min(1, 'Horário é obrigatório.'),
-  acompanhante: z.string().min(1, 'Acompanhante é obrigatório.'),
-  tipoInspecao: z.enum(['rotina', 'denuncia', 'especifica', 'oficial'], { required_error: 'Selecione o tipo de inspeção.' }),
-  itensVerificacao: z.record(itemVerificacaoSchema),
-  naoConformidades: z.array(naoConformidadeSchema).optional(),
-  assinaturaResponsavelArea: assinaturaSchema,
+  responsavelEmpresa: z.string().min(1, 'Acompanhante é obrigatório.'),
+  cargoResponsavel: z.string().optional(),
+  contatoResponsavel: z.string().optional(),
+
+  checklist: z.record(checklistItemSchema),
+  naoConformidades: z.array(naoConformidadeDetalhadaSchema).optional(),
+
+  pontosPositivos: z.string().optional(),
+  outrasObservacoes: z.string().optional(),
+  parecerTecnico: z.string().optional(),
+
+  assinaturaTecnico: assinaturaSchema,
+  assinaturaResponsavel: assinaturaSchema,
+
   pgr: pgrSchema,
   ltcat: ltcatSchema,
 });
 
-
-// Listas de Itens e Valores Padrão
+// Listas de Itens
 const checklistItems = {
-    'Organização e Limpeza': [
-        'O local está limpo e organizado?',
-        'Corredores e passagens estão desobstruídos?',
-    ],
-    'Sinalização de Segurança': [
-        'As saídas de emergência estão sinalizadas e desobstruídas?',
-        'Placas de advertência (risco elétrico, piso molhado, etc.) estão visíveis?',
-        'A sinalização de extintores e hidrantes está adequada?',
-    ],
-    'Equipamentos de Proteção Coletiva (EPC)': [
-        'Guarda-corpos e rodapés estão em bom estado?',
-        'Sistemas de ventilação/exaustão estão funcionando corretamente?',
-    ],
-    'Equipamentos de Combate a Incêndio': [
-        'Extintores estão dentro da validade e com lacre intacto?',
-        'Os acessos aos hidrantes e extintores estão livres?',
-    ],
-    'Instalações Elétricas': [
-        'Fios e cabos elétricos estão protegidos e organizados?',
-        'Quadros de energia estão sinalizados e com acesso restrito?',
-    ],
-    'Equipamentos de Proteção Individual (EPI)': [
-        'Os colaboradores estão utilizando os EPIs necessários para a função?',
-        'Os EPIs fornecidos estão em bom estado de conservação?',
-    ],
-    'Máquinas e Equipamentos': [
-        'As máquinas possuem proteções de partes móveis?',
-        'Dispositivos de parada de emergência estão acessíveis e funcionando?',
-    ],
+    'Documentação (NR-1)': [ 'PPRA/PGR e PCMSO estão atualizados e implementados?', 'ASO (Atestado de Saúde Ocupacional) dos trabalhadores em dia?', 'CIPA constituída e atuante (atas de reunião, mapa de riscos)?'],
+    'EPIs (NR-6)': ['Fornecimento de EPIs adequado à função e com C.A. válido?', 'Fichas de entrega de EPIs devidamente preenchidas e assinadas?', 'Trabalhadores utilizando os EPIs corretamente?'],
+    'Máquinas (NR-12)': ['Proteções fixas e móveis em bom estado e funcionais?', 'Dispositivos de parada de emergência acessíveis e operantes?', 'Manutenção preventiva das máquinas em dia?'],
+    'Instalações Elétricas (NR-10)': ['Quadros elétricos sinalizados, trancados e sem materiais próximos?', 'Fiações e cabos protegidos contra danos mecânicos?'],
+    'Combate a Incêndio (NR-23)': ['Extintores inspecionados, com carga válida e bem localizados?', 'Saídas de emergência e rotas de fuga desobstruídas e sinalizadas?'],
+    'Sinalização (NR-26)': ['Sinalização de segurança (riscos, EPIs, rotas) visível e adequada?'],
+    'Trabalho em Altura (NR-35)': ['Equipamentos (andaimes, escadas, cintos) em bom estado?', 'Análise de Risco (AR) e Permissão de Trabalho (PT) emitidas?'],
+    'Ambiente Geral': ['Organização, limpeza e arrumação (5S) do local?', 'Iluminação e ventilação adequadas para a atividade?'],
 };
+
 const checklistItemsPGR = {
     'Riscos Físicos': [ 'Ruído: Fontes de ruído identificadas? Proteção auditiva disponível e em uso?', 'Calor/Frio: Ambiente com temperatura controlada? EPIs para condições térmicas extremas?', 'Vibrações: Equipamentos que geram vibração (mãos/braços, corpo inteiro) estão com manutenção em dia?', 'Radiações (Ionizantes/Não Ionizantes): Fontes de radiação isoladas? Sinalização adequada?'],
     'Riscos Químicos': [ 'Produtos Químicos: Armazenamento correto (longe de calor, ventilado)?', 'FISPQ/FDS: Ficha de Informação de Segurança de Produtos Químicos disponível e acessível a todos?', 'EPIs: Trabalhadores usam luvas, máscaras e óculos adequados para os produtos manuseados?', 'Ventilação: Sistema de exaustão/ventilação funcionando corretamente?'],
@@ -165,25 +160,35 @@ const checklistItemsPGR = {
 const epcsList = ["Enclausuramento acústico", "Ventilação local exaustora", "Proteção de partes móveis", "Corrimão", "Guarda-corpo e rodapé"];
 const episList = ["Capacete", "Óculos de segurança", "Protetor facial", "Protetor auricular", "Respirador", "Luvas de segurança", "Mangas de proteção", "Calçados de segurança", "Cinturão de segurança"];
 
-const generateInitialItensVerificacao = () => Object.values(checklistItems).flat().reduce((acc, item) => ({ ...acc, [item]: { status: 'na', observacoes: '' } }), {});
+const generateInitialChecklist = () => Object.values(checklistItems).flat().reduce((acc, item) => ({ ...acc, [item]: { status: 'na', observacoes: '', evidencia: '' } }), {});
 const generateInitialChecklistPGR = () => Object.values(checklistItemsPGR).flat().reduce((acc, item) => ({ ...acc, [item]: { status: 'na' } }), {});
 
-const generateDefaultValues = (service: Service | null) => ({
+const generateDefaultValues = (service: Service | null, user: any) => ({
+    id: `VISITA-${Date.now()}`,
+    dataVisita: new Date(),
+    horaInicio: new Date().toTimeString().slice(0, 5),
+    horaTermino: '',
+    tecnicoResponsavel: service?.tecnico || user?.displayName || 'Não identificado',
+    tipoVisita: 'rotina' as const,
+    objetivoVisita: '',
     setorInspecionado: '',
-    dataVistoria: new Date(),
-    horario: new Date().toTimeString().slice(0, 5),
-    acompanhante: '',
-    tipoInspecao: 'rotina' as const,
-    itensVerificacao: generateInitialItensVerificacao(),
+    responsavelEmpresa: '',
+    cargoResponsavel: '',
+    contatoResponsavel: '',
+    checklist: generateInitialChecklist(),
     naoConformidades: [],
-    assinaturaResponsavelArea: null,
+    pontosPositivos: '',
+    outrasObservacoes: '',
+    parecerTecnico: '',
+    assinaturaTecnico: null,
+    assinaturaResponsavel: null,
     pgr: {
         preencher: false,
         numeroVistoria: '',
         atividade: '',
         responsavelVistoria: service?.tecnico || '',
         acompanhantes: '',
-        checklist: generateInitialChecklistPGR(),
+        checklistPGR: generateInitialChecklistPGR(),
         planoAcao: [],
         assinaturaResponsavelArea: null,
     },
@@ -207,7 +212,6 @@ const generateDefaultValues = (service: Service | null) => ({
         agentesBiologicos: [],
         epcs: [],
         epcsOutros: '',
-        epcsEficaz: 'nao' as const,
         epis: [],
         episOutros: '',
         episEficaz: 'na' as const,
@@ -230,7 +234,7 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
-  const [signatureFor, setSignatureFor] = useState<'responsavel' | 'pgr' | 'ltcat' | null>(null);
+  const [signatureFor, setSignatureFor] = useState<'tecnico' | 'responsavel' | 'pgr' | 'ltcat' | null>(null);
   const [signatureName, setSignatureName] = useState('');
 
   const { user } = useAuth();
@@ -247,8 +251,7 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
 
   useEffect(() => {
     if (fichaToEdit) {
-      // Logic to populate form with existing data
-      const defaultData = generateDefaultValues(service);
+      const defaultData = generateDefaultValues(service, user);
       
       const pgrData = fichaToEdit.pgr ? {
           ...defaultData.pgr,
@@ -266,23 +269,33 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
       } : defaultData.ltcat;
 
       form.reset({
+        ...defaultData,
         ...fichaToEdit,
-        dataVistoria: new Date(fichaToEdit.dataVistoria.seconds * 1000),
+        horaTermino: fichaToEdit.horaTermino || '',
+        objetivoVisita: fichaToEdit.objetivoVisita || '',
+        cargoResponsavel: fichaToEdit.cargoResponsavel || '',
+        contatoResponsavel: fichaToEdit.contatoResponsavel || '',
+        pontosPositivos: fichaToEdit.pontosPositivos || '',
+        outrasObservacoes: fichaToEdit.outrasObservacoes || '',
+        parecerTecnico: fichaToEdit.parecerTecnico || '',
+        dataVisita: new Date(fichaToEdit.dataVisita.seconds * 1000),
         naoConformidades: (fichaToEdit.naoConformidades || []).map(nc => ({...nc, prazo: new Date((nc.prazo as any).seconds * 1000)})),
-        assinaturaResponsavelArea: fichaToEdit.assinaturaResponsavelArea ? { ...fichaToEdit.assinaturaResponsavelArea, data: new Date((fichaToEdit.assinaturaResponsavelArea.data as any).seconds * 1000) } : null,
+        assinaturaTecnico: fichaToEdit.assinaturaTecnico ? { ...fichaToEdit.assinaturaTecnico, data: new Date((fichaToEdit.assinaturaTecnico.data as any).seconds * 1000) } : null,
+        assinaturaResponsavel: fichaToEdit.assinaturaResponsavel ? { ...fichaToEdit.assinaturaResponsavel, data: new Date((fichaToEdit.assinaturaResponsavel.data as any).seconds * 1000) } : null,
         pgr: pgrData,
         ltcat: ltcatData,
       });
     } else {
-      form.reset(generateDefaultValues(service));
+      form.reset(generateDefaultValues(service, user));
     }
-  }, [fichaToEdit, form, service]);
+  }, [fichaToEdit, form, service, user]);
 
 
   const handleSign = () => {
     if (signatureName && signatureFor) {
         const signature = { nome: signatureName, data: new Date() };
-        if (signatureFor === 'responsavel') form.setValue('assinaturaResponsavelArea', signature);
+        if (signatureFor === 'tecnico') form.setValue('assinaturaTecnico', signature);
+        if (signatureFor === 'responsavel') form.setValue('assinaturaResponsavel', signature);
         if (signatureFor === 'pgr') form.setValue('pgr.assinaturaResponsavelArea', signature);
         if (signatureFor === 'ltcat') form.setValue('ltcat.assinaturaResponsavelArea', signature);
         setSignatureFor(null);
@@ -301,10 +314,10 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
             pgr: values.pgr?.preencher ? values.pgr : undefined,
             ltcat: values.ltcat?.preencher ? values.ltcat : undefined,
             dataPreenchimento: new Date(),
-            tecnico: service.tecnico || user?.displayName || 'Não identificado',
+            tecnicoResponsavel: service.tecnico || user?.displayName || 'Não identificado',
+            localData: `Realizado em ${service.cidade}, ${format(new Date(), 'dd/MM/yyyy')}`
         };
         
-        // remove preencher flags
         if (dataToSave.pgr) delete (dataToSave.pgr as any).preencher;
         if (dataToSave.ltcat) delete (dataToSave.ltcat as any).preencher;
 
@@ -316,10 +329,8 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
         let currentFichas = currentServiceDoc.data().fichasVisita || [];
 
         if (typeof fichaIndex === 'number' && fichaIndex >= 0) {
-            // Edit existing ficha
             currentFichas[fichaIndex] = dataToSave;
         } else {
-            // Add new ficha
             currentFichas.push(dataToSave);
         }
 
@@ -350,91 +361,132 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pt-4">
             
-            {/* Seção Ficha de Visita Base */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Ficha de Inspeção de Segurança</CardTitle>
-                    <CardDescription>Preencha os dados da inspeção realizada.</CardDescription>
+                    <CardTitle>Seção 1: Identificação da Visita</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <FormField control={form.control} name="setorInspecionado" render={({ field }) => ( <FormItem><FormLabel>Setor Inspecionado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                        <FormField control={form.control} name="dataVistoria" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Data da Vistoria</FormLabel><CalendarPopover mode="single" selected={field.value} onSelect={field.onChange}><FormControl><Button variant={'outline'} className={cn('w-full justify-start text-left font-normal',!field.value && 'text-muted-foreground')}>{field.value ? (format(field.value, 'PPP', { locale: ptBR })) : (<span>Escolha a data</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></CalendarPopover><FormMessage /></FormItem>)}/>
-                        <FormField control={form.control} name="horario" render={({ field }) => ( <FormItem><FormLabel>Horário</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                        <FormField control={form.control} name="acompanhante" render={({ field }) => ( <FormItem><FormLabel>Acompanhante(s)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                        <FormField control={form.control} name="tipoInspecao" render={({ field }) => (
-                        <FormItem className="space-y-3 lg:col-span-2"><FormLabel>Tipo de Inspeção</FormLabel>
-                            <FormControl>
-                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                                <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="rotina" /></FormControl><FormLabel className="font-normal">Rotina</FormLabel></FormItem>
-                                <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="denuncia" /></FormControl><FormLabel className="font-normal">Denúncia</FormLabel></FormItem>
-                                <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="especifica" /></FormControl><FormLabel className="font-normal">Específica</FormLabel></FormItem>
-                                <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="oficial" /></FormControl><FormLabel className="font-normal">Oficial</FormLabel></FormItem>
-                            </RadioGroup>
-                            </FormControl><FormMessage />
-                        </FormItem>)}/>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div>
-                        <h3 className="text-lg font-medium mb-4">Checklist de Verificação</h3>
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                        {Object.entries(checklistItems).map(([category, items]) => (
-                            <div key={category}>
-                                <h4 className="font-semibold mb-2">{category}</h4>
-                                <div className="space-y-3">
-                                {items.map((item) => (
-                                    <FormField key={item} control={form.control} name={`itensVerificacao.${item}`} render={({ field }) => (
-                                        <FormItem className="space-y-2 p-3 border rounded-md">
-                                            <FormLabel className="text-sm font-normal">{item}</FormLabel>
-                                            <FormControl>
-                                                <RadioGroup onValueChange={(value) => field.onChange({ ...field.value, status: value })} value={field.value?.status || 'na'} className="flex space-x-4">
-                                                    <div className="flex items-center space-x-2 space-y-0"><RadioGroupItem value="c"/><Label className="font-normal text-sm">C</Label></div>
-                                                    <div className="flex items-center space-x-2 space-y-0"><RadioGroupItem value="nc"/><Label className="font-normal text-sm">NC</Label></div>
-                                                    <div className="flex items-center space-x-2 space-y-0"><RadioGroupItem value="na"/><Label className="font-normal text-sm">NA</Label></div>
-                                                </RadioGroup>
-                                            </FormControl>
-                                            {field.value?.status === 'nc' && (
-                                                <Textarea placeholder="Observações / Ações corretivas" onChange={(e) => field.onChange({ ...field.value, observacoes: e.target.value })} value={field.value?.observacoes || ''} />
-                                            )}
-                                        </FormItem>
-                                    )}/>
-                                ))}
-                                </div>
-                            </div>
-                        ))}
-                        </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-medium">Não Conformidades</h3>
-                            <Button type="button" variant="outline" size="sm" onClick={() => appendNc({ descricao: '', riscoAssociado: '', recomendacao: '', prazo: new Date(), responsavelAcao: ''})}><PlusCircle className="mr-2"/> Adicionar</Button>
-                        </div>
-                         {ncFields.map((field, index) => (
-                            <Card key={field.id} className="mb-4 p-4 relative">
-                                <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeNc(index)}><Trash2 className="h-4 w-4" /></Button>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField control={form.control} name={`naoConformidades.${index}.descricao`} render={({ field }) => ( <FormItem><FormLabel>Descrição</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                                    <FormField control={form.control} name={`naoConformidades.${index}.riscoAssociado`} render={({ field }) => ( <FormItem><FormLabel>Risco Associado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                                    <FormField control={form.control} name={`naoConformidades.${index}.recomendacao`} render={({ field }) => ( <FormItem><FormLabel>Recomendação</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                                    <FormField control={form.control} name={`naoConformidades.${index}.prazo`} render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Prazo</FormLabel><CalendarPopover mode="single" selected={field.value} onSelect={field.onChange}><FormControl><Button variant={'outline'} className={cn('w-full justify-start text-left font-normal',!field.value && 'text-muted-foreground')}>{field.value ? (format(field.value, 'PPP', { locale: ptBR })) : (<span>Escolha o prazo</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></CalendarPopover><FormMessage /></FormItem>)}/>
-                                    <FormField control={form.control} name={`naoConformidades.${index}.responsavelAcao`} render={({ field }) => ( <FormItem><FormLabel>Responsável pela Ação</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                                </div>
-                            </Card>
-                        ))}
-                        {ncFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nenhuma não conformidade adicionada.</p>}
+                        <FormField control={form.control} name="dataVisita" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Data da Visita</FormLabel><CalendarPopover mode="single" selected={field.value} onSelect={field.onChange}><FormControl><Button variant={'outline'} className={cn('w-full justify-start text-left font-normal',!field.value && 'text-muted-foreground')}>{field.value ? (format(field.value, 'PPP', { locale: ptBR })) : (<span>Escolha a data</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></CalendarPopover><FormMessage /></FormItem>)}/>
+                        <FormField control={form.control} name="horaInicio" render={({ field }) => ( <FormItem><FormLabel>Hora de Início</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                        <FormField control={form.control} name="horaTermino" render={({ field }) => ( <FormItem><FormLabel>Hora de Término</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                        <FormField control={form.control} name="tipoVisita" render={({ field }) => (
+                          <FormItem><FormLabel>Tipo de Visita</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Selecione o tipo" /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                <SelectItem value="rotina">Rotina</SelectItem>
+                                <SelectItem value="investigacao">Investigação de Acidente/Incidente</SelectItem>
+                                <SelectItem value="auditoria">Auditoria</SelectItem>
+                                <SelectItem value="fiscalizacao">Atendimento à Fiscalização</SelectItem>
+                                <SelectItem value="outro">Outro</SelectItem>
+                              </SelectContent>
+                            </Select><FormMessage />
+                          </FormItem>
+                        )}/>
+                        <FormField control={form.control} name="objetivoVisita" render={({ field }) => ( <FormItem className="lg:col-span-2"><FormLabel>Objetivo da Visita</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
                     </div>
                 </CardContent>
             </Card>
 
-          {/* Seção PGR */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Seção 2: Dados da Empresa Inspecionada</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormItem><FormLabel>Razão Social</FormLabel><Input value={service.nomeEmpresa} disabled /></FormItem>
+                      <FormItem><FormLabel>CNPJ</FormLabel><Input value={service.cnpj} disabled /></FormItem>
+                      <FormField control={form.control} name="setorInspecionado" render={({ field }) => ( <FormItem><FormLabel>Setor/Área Inspecionada</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                      <FormField control={form.control} name="responsavelEmpresa" render={({ field }) => ( <FormItem><FormLabel>Responsável da Empresa (Acompanhante)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                      <FormField control={form.control} name="cargoResponsavel" render={({ field }) => ( <FormItem><FormLabel>Cargo do Responsável</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                      <FormField control={form.control} name="contatoResponsavel" render={({ field }) => ( <FormItem><FormLabel>Contato (Telefone/E-mail)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                    </div>
+                </CardContent>
+            </Card>
+            
+            <Card>
+                <CardHeader><CardTitle>Seção 3: Checklist de Conformidade</CardTitle></CardHeader>
+                <CardContent>
+                    <div className="space-y-6">
+                    {Object.entries(checklistItems).map(([category, items]) => (
+                        <div key={category}>
+                            <h4 className="font-semibold mb-3 text-base">{category}</h4>
+                            <div className="space-y-4">
+                            {items.map((item) => (
+                                <FormField key={item} control={form.control} name={`checklist.${item}`} render={({ field }) => (
+                                    <FormItem className="space-y-2 p-4 border rounded-md shadow-sm">
+                                        <FormLabel className="text-sm font-normal">{item}</FormLabel>
+                                        <FormControl>
+                                            <RadioGroup onValueChange={(value) => field.onChange({ ...field.value, status: value })} value={field.value?.status || 'na'} className="flex flex-wrap gap-x-6 gap-y-2">
+                                                <div className="flex items-center space-x-2 space-y-0"><RadioGroupItem value="c"/><Label className="font-normal text-sm">C</Label></div>
+                                                <div className="flex items-center space-x-2 space-y-0"><RadioGroupItem value="nc"/><Label className="font-normal text-sm">NC</Label></div>
+                                                <div className="flex items-center space-x-2 space-y-0"><RadioGroupItem value="na"/><Label className="font-normal text-sm">NA</Label></div>
+                                            </RadioGroup>
+                                        </FormControl>
+                                        {field.value?.status === 'nc' && (
+                                            <div className="space-y-2 pt-2">
+                                              <Label>Observações / Ação Imediata</Label>
+                                              <Textarea placeholder="Descreva a não conformidade e ações tomadas..." onChange={(e) => field.onChange({ ...field.value, observacoes: e.target.value })} value={field.value?.observacoes || ''} />
+                                              <Label>Anexar Evidência (URL da Imagem)</Label>
+                                              <Input placeholder="https://exemplo.com/foto.jpg" onChange={(e) => field.onChange({ ...field.value, evidencia: e.target.value })} value={field.value?.evidencia || ''}/>
+                                            </div>
+                                        )}
+                                    </FormItem>
+                                )}/>
+                            ))}
+                            </div>
+                        </div>
+                    ))}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                  <CardTitle>Seção 4: Registro de Não Conformidades</CardTitle>
+                   <CardDescription>Adicione aqui um registro detalhado para cada item marcado como "Não Conforme" (NC) no checklist acima.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <div className="flex justify-end mb-4">
+                        <Button type="button" variant="outline" size="sm" onClick={() => appendNc({ id: `NC-${Date.now()}`, descricao: '', riscoAssociado: 'baixo', normaRegulamentadora: '', recomendacao: '', prazo: new Date(), responsavel: ''})}><PlusCircle className="mr-2"/> Adicionar NC</Button>
+                    </div>
+                     {ncFields.map((field, index) => (
+                        <Card key={field.id} className="mb-4 p-4 relative">
+                            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeNc(index)}><Trash2 className="h-4 w-4" /></Button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField control={form.control} name={`naoConformidades.${index}.descricao`} render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Descrição da Não Conformidade</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                                <FormField control={form.control} name={`naoConformidades.${index}.riscoAssociado`} render={({ field }) => (
+                                  <FormItem><FormLabel>Risco Associado</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <FormControl><SelectTrigger><SelectValue placeholder="Selecione o risco" /></SelectTrigger></FormControl>
+                                      <SelectContent><SelectItem value="baixo">Baixo</SelectItem><SelectItem value="medio">Médio</SelectItem><SelectItem value="alto">Alto</SelectItem></SelectContent>
+                                    </Select><FormMessage />
+                                  </FormItem>
+                                )}/>
+                                <FormField control={form.control} name={`naoConformidades.${index}.normaRegulamentadora`} render={({ field }) => ( <FormItem><FormLabel>Norma Regulamentadora (NR)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                                <FormField control={form.control} name={`naoConformidades.${index}.recomendacao`} render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Recomendação / Ação Corretiva</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                                <FormField control={form.control} name={`naoConformidades.${index}.prazo`} render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Prazo Sugerido</FormLabel><CalendarPopover mode="single" selected={field.value} onSelect={field.onChange}><FormControl><Button variant={'outline'} className={cn('w-full justify-start text-left font-normal',!field.value && 'text-muted-foreground')}>{field.value ? (format(field.value, 'PPP', { locale: ptBR })) : (<span>Escolha o prazo</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></CalendarPopover><FormMessage /></FormItem>)}/>
+                                <FormField control={form.control} name={`naoConformidades.${index}.responsavel`} render={({ field }) => ( <FormItem><FormLabel>Responsável (Empresa)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                            </div>
+                        </Card>
+                    ))}
+                    {ncFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nenhuma não conformidade adicionada.</p>}
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader><CardTitle>Seção 5: Observações Gerais e Conclusão</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <FormField control={form.control} name="pontosPositivos" render={({ field }) => ( <FormItem><FormLabel>Pontos Positivos Observados</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                  <FormField control={form.control} name="outrasObservacoes" render={({ field }) => ( <FormItem><FormLabel>Outras Observações e Comentários</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                  <FormField control={form.control} name="parecerTecnico" render={({ field }) => ( <FormItem><FormLabel>Parecer Geral do Técnico</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                </CardContent>
+            </Card>
+
           <Card>
             <CardHeader>
-              <CardTitle>Avaliação de Riscos (PGR)</CardTitle>
+              <CardTitle>Seção Opcional: Avaliação de Riscos (PGR)</CardTitle>
               <FormField control={form.control} name="pgr.preencher" render={({ field }) => (
                 <FormItem className="flex flex-row items-center space-x-3 space-y-0 mt-4">
                   <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
@@ -445,14 +497,14 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
             {pgrValues?.preencher && (
               <CardContent className="space-y-6">
                  {/* FORMULÁRIO DO PGR AQUI */}
+                 <p className="text-sm text-muted-foreground">Formulário PGR será exibido aqui...</p>
               </CardContent>
             )}
           </Card>
 
-          {/* Seção LTCAT */}
           <Card>
             <CardHeader>
-              <CardTitle>Caracterização Ambiental (LTCAT)</CardTitle>
+              <CardTitle>Seção Opcional: Caracterização Ambiental (LTCAT)</CardTitle>
               <FormField control={form.control} name="ltcat.preencher" render={({ field }) => (
                 <FormItem className="flex flex-row items-center space-x-3 space-y-0 mt-4">
                   <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
@@ -477,7 +529,7 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
                               <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.numeroSerie`} render={({ field }) => ( <FormItem><FormLabel>Nº de Série</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
                               <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.resultado`} render={({ field }) => ( <FormItem><FormLabel>Resultado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
                               <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.limiteTolerancia`} render={({ field }) => ( <FormItem><FormLabel>Limite Tolerância</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.metodologia`} render={({ field }) => ( <FormItem><FormLabel>Metodologia</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.metodologia`} render={({ field }) => ( <FormItem><FormLabel>Metodologia</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormMessage> </FormItem> )}/>
                               <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.conclusao`} render={({ field }) => ( <FormItem><FormLabel>Conclusão</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
                           </div>
                       </Card>
@@ -526,27 +578,30 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
           
           <Card>
              <CardHeader>
-                <CardTitle>Assinaturas</CardTitle>
-                <CardDescription>Colete as assinaturas dos responsáveis.</CardDescription>
+                <CardTitle>Seção 6: Finalização e Assinaturas</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
                 <div className="text-center space-y-2">
-                    <p className="font-medium">Responsável pela Vistoria</p>
-                    <div className="bg-muted h-24 rounded-md flex items-center justify-center">
-                        <p className="text-lg font-serif">{service.tecnico || user?.displayName}</p>
+                    <p className="font-medium">Técnico Responsável</p>
+                     <div className="bg-muted h-24 rounded-md flex items-center justify-center">
+                        {form.watch('assinaturaTecnico') ? (
+                             <p className="text-lg font-serif">{form.watch('assinaturaTecnico')?.nome}</p>
+                        ) : (
+                             <Button type="button" variant="outline" onClick={() => { setSignatureFor('tecnico'); setIsSigning(true); }}><Signature className="mr-2" />Coletar Assinatura</Button>
+                        )}
                     </div>
-                    <p className="text-xs text-muted-foreground">{service.tecnico || user?.displayName}</p>
+                    <p className="text-xs text-muted-foreground">{form.watch('assinaturaTecnico')?.nome || form.watch('tecnicoResponsavel')}</p>
                 </div>
                 <div className="text-center space-y-2">
-                    <p className="font-medium">Responsável pela Área/Empresa</p>
+                    <p className="font-medium">Responsável pela Empresa</p>
                      <div className="bg-muted h-24 rounded-md flex items-center justify-center">
-                        {form.watch('assinaturaResponsavelArea') ? (
-                             <p className="text-lg font-serif">{form.watch('assinaturaResponsavelArea')?.nome}</p>
+                        {form.watch('assinaturaResponsavel') ? (
+                             <p className="text-lg font-serif">{form.watch('assinaturaResponsavel')?.nome}</p>
                         ) : (
                              <Button type="button" variant="outline" onClick={() => { setSignatureFor('responsavel'); setIsSigning(true); }}><Signature className="mr-2" />Coletar Assinatura</Button>
                         )}
                     </div>
-                    <p className="text-xs text-muted-foreground">{form.watch('assinaturaResponsavelArea')?.nome || 'Assinatura pendente'}</p>
+                    <p className="text-xs text-muted-foreground">{form.watch('assinaturaResponsavel')?.nome || 'Assinatura pendente'}</p>
                 </div>
             </CardContent>
           </Card>
@@ -579,5 +634,3 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
     </>
   );
 }
-
-    
