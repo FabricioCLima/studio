@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, Printer, Undo2 } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, Undo2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -36,7 +36,6 @@ import {
 import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { PrintDialog } from './print-dialog';
 
 interface DigitacaoTableProps {
   services: Service[];
@@ -46,7 +45,6 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
     const [serviceToReturn, setServiceToReturn] = useState<Service | null>(null);
-    const [printingService, setPrintingService] = useState<Service | null>(null);
 
     const handleUpdateStatus = async (service: Service, newStatus: 'medicina' | 'avaliacao') => {
         try {
@@ -69,10 +67,6 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
             setServiceToConclude(null);
             setServiceToReturn(null);
         }
-    }
-    
-    const hasAnyFicha = (service: Service) => {
-      return (service.fichasVisita && service.fichasVisita.length > 0);
     }
 
 
@@ -112,14 +106,6 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                       <DropdownMenuItem
-                        onClick={() => setPrintingService(service)}
-                        disabled={!hasAnyFicha(service)}
-                      >
-                        <Printer className="mr-2 h-4 w-4" />
-                        Ficha Vistoria
-                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => setServiceToReturn(service)}>
                         <Undo2 className="mr-2 h-4 w-4" />
@@ -173,18 +159,6 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {printingService && (
-        <PrintDialog
-          service={printingService}
-          open={!!printingService}
-          onOpenChange={(open) => {
-            if (!open) {
-              setPrintingService(null);
-            }
-          }}
-        />
-      )}
     </>
   );
 }

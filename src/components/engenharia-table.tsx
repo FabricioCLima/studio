@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from './ui/button';
-import { CheckCircle2, Keyboard, MoreHorizontal, Pencil, Printer, Trash2 } from 'lucide-react';
+import { CheckCircle2, Keyboard, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -39,7 +39,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { PrintDialog } from './print-dialog';
 import { AssignResponsavelDialog } from './assign-responsavel-dialog';
 import { AssignDigitadorDialog } from './assign-digitador-dialog';
 
@@ -50,7 +49,6 @@ interface EngenhariaTableProps {
 export function EngenhariaTable({ services }: EngenhariaTableProps) {
   const { toast } = useToast();
   const [editingService, setEditingService] = useState<Service | null>(null);
-  const [printingService, setPrintingService] = useState<Service | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
   const [serviceToUpdate, setServiceToUpdate] = useState<{service: Service, newStatus: 'arquivado' | 'concluido'} | null>(null);
   const [assigningResponsavelService, setAssigningResponsavelService] = useState<Service | null>(null);
@@ -118,12 +116,6 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
     }
   }
 
-  const hasAnyFicha = (service: Service) => {
-      return (service.fichasVisita && service.fichasVisita.length > 0) ||
-             (service.fichasPGR && service.fichasPGR.length > 0) ||
-             (service.fichasLTCAT && service.fichasLTCAT.length > 0);
-  }
-
   if (services.length === 0) {
     return (
       <Card>
@@ -176,13 +168,6 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                         <DropdownMenuItem onClick={() => setEditingService(service)}>
                           <Pencil className="mr-2 h-4 w-4" />
                           Editar Agendamento
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setPrintingService(service)}
-                          disabled={!hasAnyFicha(service)}
-                        >
-                          <Printer className="mr-2 h-4 w-4" />
-                          Ficha Vistoria
                         </DropdownMenuItem>
                          
                          <DropdownMenuSeparator />
@@ -275,17 +260,6 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
           onOpenChange={(open) => {
             if (!open) {
               setEditingService(null);
-            }
-          }}
-        />
-      )}
-       {printingService && (
-        <PrintDialog
-          service={printingService}
-          open={!!printingService}
-          onOpenChange={(open) => {
-            if (!open) {
-              setPrintingService(null);
             }
           }}
         />

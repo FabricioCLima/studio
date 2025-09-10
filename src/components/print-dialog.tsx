@@ -30,16 +30,13 @@ export function PrintDialog({ open, onOpenChange, service }: PrintDialogProps) {
     documentTitle: `Ficha-Visita-${service.nomeEmpresa.replace(/\s/g, '-')}`,
   });
 
-  const hasAnyFicha = (service.fichasVisita && service.fichasVisita.length > 0);
-
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Imprimir Ficha de Vistoria</DialogTitle>
+          <DialogTitle>Imprimir</DialogTitle>
           <DialogDescription>
-            Revise as informações abaixo. Todas as fichas (Visita, PGR, LTCAT) serão incluídas.
+            Revise as informações abaixo.
           </DialogDescription>
         </DialogHeader>
 
@@ -49,8 +46,8 @@ export function PrintDialog({ open, onOpenChange, service }: PrintDialogProps) {
 
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Fechar</Button>
-          <Button onClick={handlePrint} disabled={!hasAnyFicha}>
-            <Printer className="mr-2 h-4 w-4" /> Imprimir Ficha de Vistoria
+          <Button onClick={handlePrint}>
+            <Printer className="mr-2 h-4 w-4" /> Imprimir
           </Button>
         </DialogFooter>
       </DialogContent>

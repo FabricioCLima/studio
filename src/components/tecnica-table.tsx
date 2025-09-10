@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, PlayCircle, Printer, Trash2, ClipboardList, Undo2 } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, PlayCircle, Trash2, Undo2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -38,17 +38,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
-import { PrintDialog } from './print-dialog';
 
 interface TecnicaTableProps {
   services: Service[];
-  onSelectService: (service: Service) => void;
 }
 
-export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
+export function TecnicaTable({ services }: TecnicaTableProps) {
     const { toast } = useToast();
     const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
-    const [printingService, setPrintingService] = useState<Service | null>(null);
     const [confirmAction, setConfirmAction] = useState<{service: Service, status: 'digitacao' | 'avaliacao'} | null>(null);
 
 
@@ -88,7 +85,7 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
             toast({
                 variant: 'destructive',
                 title: 'Erro!',
-                description: 'Não foi possível excluir o serviço.',
+                description: 'Não foi possível excluir o técnico.',
             });
         } finally {
             setServiceToDelete(null);
@@ -143,22 +140,19 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                           <DropdownMenuItem onClick={() => onSelectService(service)}>
-                                <ClipboardList className="mr-2 h-4 w-4" />
-                                Gerenciar Fichas
-                          </DropdownMenuItem>
-                           <DropdownMenuSeparator />
-                           <DropdownMenuItem onClick={() => setPrintingService(service)}>
-                              <Printer className="mr-2 h-4 w-4" />
-                              Ficha Vistoria
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
                           <DropdownMenuItem
                               onClick={() => handleUpdateStatus(service.id, 'em_visita')}
                               disabled={service.status === 'em_visita' || service.status === 'digitacao'}
                           >
                               <PlayCircle className="mr-2 h-4 w-4" />
                               Iniciar Visita
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                              onClick={() => setConfirmAction({ service, status: 'digitacao' })}
+                              disabled={service.status !== 'em_visita'}
+                          >
+                              <CheckCircle2 className="mr-2 h-4 w-4" />
+                              Finalizar Visita
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -223,18 +217,6 @@ export function TecnicaTable({ services, onSelectService }: TecnicaTableProps) {
               </AlertDialogFooter>
           </AlertDialogContent>
       </AlertDialog>
-
-      {printingService && (
-        <PrintDialog
-          service={printingService}
-          open={!!printingService}
-          onOpenChange={(open) => {
-            if (!open) {
-              setPrintingService(null);
-            }
-          }}
-        />
-      )}
       </>
   );
 }

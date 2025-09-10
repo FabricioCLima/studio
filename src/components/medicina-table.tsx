@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, Pencil, Printer } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, Pencil } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -37,7 +37,6 @@ import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AssignMedicinaDialog } from './assign-medicina-dialog';
-import { PrintDialog } from './print-dialog';
 
 interface MedicinaTableProps {
   services: Service[];
@@ -47,7 +46,6 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
     const [assigningMedicinaService, setAssigningMedicinaService] = useState<Service | null>(null);
-    const [printingService, setPrintingService] = useState<Service | null>(null);
 
     const handleConclude = async (serviceId: string) => {
         try {
@@ -69,10 +67,6 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
         } finally {
             setServiceToConclude(null);
         }
-    }
-    
-    const hasAnyFicha = (service: Service) => {
-      return (service.fichasVisita && service.fichasVisita.length > 0);
     }
 
 
@@ -116,13 +110,6 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
                       <DropdownMenuItem onClick={() => setAssigningMedicinaService(service)}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Atribuir Responsável
-                      </DropdownMenuItem>
-                       <DropdownMenuItem 
-                        onClick={() => setPrintingService(service)} 
-                        disabled={!hasAnyFicha(service)}
-                      >
-                        <Printer className="mr-2 h-4 w-4" />
-                        Ficha Vistoria
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
@@ -168,17 +155,6 @@ export function MedicinaTable({ services }: MedicinaTableProps) {
             onOpenChange={(open) => !open && setAssigningMedicinaService(null)}
             service={assigningMedicinaService}
             onSuccess={() => setAssigningMedicinaService(null)}
-        />
-      )}
-      {printingService && (
-        <PrintDialog
-          service={printingService}
-          open={!!printingService}
-          onOpenChange={(open) => {
-            if (!open) {
-              setPrintingService(null);
-            }
-          }}
         />
       )}
     </>

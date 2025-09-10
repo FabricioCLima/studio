@@ -9,16 +9,11 @@ import { useEffect, useState } from 'react';
 import type { Service } from '../engenharia/page';
 import { TecnicaTable } from '@/components/tecnica-table';
 import { useServiceNotification } from '@/context/service-notification-context';
-import { FichaVisitaView } from '@/components/ficha-visita-view';
-
-type ViewMode = 'table' | 'ficha_visita';
 
 export default function TecnicaPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
-
+  
   const { user } = useAuth();
   const { resetTecnicaCount } = useServiceNotification();
   
@@ -48,16 +43,6 @@ export default function TecnicaPage() {
     return () => unsubscribe();
   }, [user]);
 
-  const handleSelectService = (service: Service) => {
-      setSelectedService(service);
-      setViewMode('ficha_visita');
-  }
-
-  const handleBackToTable = () => {
-      setSelectedService(null);
-      setViewMode('table');
-  }
-
   if (loading) {
      return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -73,21 +58,13 @@ export default function TecnicaPage() {
      )
   }
 
-  if (viewMode === 'ficha_visita' && selectedService) {
-    return <FichaVisitaView 
-                serviceId={selectedService.id} 
-                onBack={handleBackToTable} 
-            />;
-  }
-
-
   return (
     <>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Técnica</h1>
         </div>
-        <TecnicaTable services={services} onSelectService={handleSelectService} />
+        <TecnicaTable services={services} />
       </div>
     </>
   );

@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, Printer } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -36,7 +36,6 @@ import {
 import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { PrintDialog } from './print-dialog';
 
 interface FinanceiroTableProps {
   services: Service[];
@@ -45,7 +44,6 @@ interface FinanceiroTableProps {
 export function FinanceiroTable({ services }: FinanceiroTableProps) {
     const { toast } = useToast();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
-    const [printingService, setPrintingService] = useState<Service | null>(null);
 
     const handleConclude = async (serviceId: string) => {
         try {
@@ -71,10 +69,6 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
     
     const calculateTotal = (servicos: { nome: string; valor?: number }[]) => {
         return servicos.reduce((total, servico) => total + (servico.valor || 0), 0);
-    }
-    
-    const hasAnyFicha = (service: Service) => {
-      return (service.fichasVisita && service.fichasVisita.length > 0);
     }
 
 
@@ -116,14 +110,6 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                       <DropdownMenuItem 
-                        onClick={() => setPrintingService(service)} 
-                        disabled={!hasAnyFicha(service)}
-                      >
-                        <Printer className="mr-2 h-4 w-4" />
-                        Ficha Vistoria
-                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={() => setServiceToConclude(service)}
@@ -171,18 +157,6 @@ export function FinanceiroTable({ services }: FinanceiroTableProps) {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {printingService && (
-        <PrintDialog
-          service={printingService}
-          open={!!printingService}
-          onOpenChange={(open) => {
-            if (!open) {
-              setPrintingService(null);
-            }
-          }}
-        />
-      )}
     </>
   );
 }
