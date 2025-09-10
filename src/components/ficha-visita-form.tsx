@@ -501,7 +501,7 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
               </CardContent>
             )}
           </Card>
-
+          
           <Card>
             <CardHeader>
               <CardTitle>Seção Opcional: Caracterização Ambiental (LTCAT)</CardTitle>
