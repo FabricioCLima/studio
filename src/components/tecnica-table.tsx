@@ -41,8 +41,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
-import { FichaVisitaDialog } from './ficha-visita-dialog';
 import { PrintDialog } from './print-dialog';
+import { useRouter } from 'next/navigation';
 
 interface TecnicaTableProps {
   services: Service[];
@@ -50,9 +50,9 @@ interface TecnicaTableProps {
 
 export function TecnicaTable({ services }: TecnicaTableProps) {
     const { toast } = useToast();
+    const router = useRouter();
     const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
     const [confirmAction, setConfirmAction] = useState<{service: Service, status: 'digitacao' | 'avaliacao'} | null>(null);
-    const [fichaVisitaService, setFichaVisitaService] = useState<Service | null>(null);
     const [printingService, setPrintingService] = useState<Service | null>(null);
 
 
@@ -147,13 +147,13 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuSub>
+                             <DropdownMenuSub>
                                 <DropdownMenuSubTrigger>
                                     <FileText className="mr-2 h-4 w-4" />
                                     Ficha
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuSubContent>
-                                    <DropdownMenuItem onClick={() => setFichaVisitaService(service)}>
+                                    <DropdownMenuItem onClick={() => router.push(`/tecnica/${service.id}`)}>
                                         <FileText className="mr-2 h-4 w-4" />
                                         Abrir Ficha
                                     </DropdownMenuItem>
@@ -243,14 +243,6 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
           </AlertDialogContent>
       </AlertDialog>
 
-      {fichaVisitaService && (
-        <FichaVisitaDialog
-            open={!!fichaVisitaService}
-            onOpenChange={(open) => !open && setFichaVisitaService(null)}
-            service={fichaVisitaService}
-            onSuccess={() => setFichaVisitaService(null)}
-        />
-      )}
        {printingService && (
         <PrintDialog
           service={printingService}

@@ -3,20 +3,19 @@
 
 import type { Service } from '@/app/(main)/engenharia/page';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useFieldArray, useForm, Controller } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Checkbox } from './ui/checkbox';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Separator } from './ui/separator';
 
 const gseSchema = z.object({
@@ -73,33 +72,40 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   const form = useForm<FichaVisitaFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      gse: [{ setor: '', funcao: '', totalTrabalhadores: 0, trabalhadoresExpostos: 0 }],
+      gse: [{ setor: '', funcao: '', totalTrabalhadores: 0, trabalhadoresExpostos: 0, jornadaTrabalho: '', descricaoAtividades: '' }],
       ltcat: {
         preencher: false,
         fisicos: [{}],
         quimicos: [{}],
         biologicos: [{}],
         associacao: [{}],
+        conclusao: '',
       },
       pgr: {
         preencher: false,
+        introducao: '',
+        identificacaoPerigos: '',
+        inventarioRiscos: '',
+        planoAcao: '',
       }
     },
   });
+
+  useEffect(() => {
+    if (service && service.fichaVisita) {
+      // @ts-ignore
+      form.reset(service.fichaVisita);
+    }
+  }, [service, form]);
   
-  // @ts-ignore
   const { fields: gseFields, append: gseAppend, remove: gseRemove } = useFieldArray({ control: form.control, name: 'gse' });
-  // @ts-ignore
   const { fields: ltcatFisicosFields, append: ltcatFisicosAppend, remove: ltcatFisicosRemove } = useFieldArray({ control: form.control, name: 'ltcat.fisicos' });
-  // @ts-ignore
   const { fields: ltcatQuimicosFields, append: ltcatQuimicosAppend, remove: ltcatQuimicosRemove } = useFieldArray({ control: form.control, name: 'ltcat.quimicos' });
-  // @ts-ignore
   const { fields: ltcatBiologicosFields, append: ltcatBiologicosAppend, remove: ltcatBiologicosRemove } = useFieldArray({ control: form.control, name: 'ltcat.biologicos' });
-  // @ts-ignore
   const { fields: ltcatAssociacaoFields, append: ltcatAssociacaoAppend, remove: ltcatAssociacaoRemove } = useFieldArray({ control: form.control, name: 'ltcat.associacao' });
   
-  const ltcatValues = form.watch('ltcat');
-  const pgrValues = form.watch('pgr');
+  const ltcatPreencher = form.watch('ltcat.preencher');
+  const pgrPreencher = form.watch('pgr.preencher');
 
   async function onSubmit(values: FichaVisitaFormValues) {
     setIsSubmitting(true);
@@ -107,7 +113,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
         const serviceRef = doc(db, 'servicos', service.id);
 
         const dataToUpdate = {
-            'fichaVisita': values
+            fichaVisita: values
         };
 
         await updateDoc(serviceRef, dataToUpdate);
@@ -132,7 +138,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
     }
   }
 
-  const renderAgenteNocivoFields = (namePrefix, fields, append, remove, title) => {
+  const renderAgenteNocivoFields = (namePrefix: string, fields: any[], append: (obj: any) => void, remove: (index: number) => void, title: string) => {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between mb-4">
@@ -141,11 +147,11 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
             </div>
             {fields.map((field, index) => (
                 <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 p-4 border rounded-md relative">
-                    <FormField control={form.control} name={`${namePrefix}.${index}.agente`} render={({ field }) => (<FormItem><FormLabel>Agente</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                    <FormField control={form.control} name={`${namePrefix}.${index}.fonteGeradora`} render={({ field }) => (<FormItem><FormLabel>Fonte Geradora</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                    <FormField control={form.control} name={`${namePrefix}.${index}.intensidade`} render={({ field }) => (<FormItem><FormLabel>Intensidade</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                    <FormField control={form.control} name={`${namePrefix}.${index}.tecnicaUtilizada`} render={({ field }) => (<FormItem><FormLabel>Técnica</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                    <FormField control={form.control} name={`${namePrefix}.${index}.epiEpc`} render={({ field }) => (<FormItem><FormLabel>EPI/EPC</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name={`${namePrefix}.${index}.agente` as const} render={({ field }) => (<FormItem><FormLabel>Agente</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name={`${namePrefix}.${index}.fonteGeradora` as const} render={({ field }) => (<FormItem><FormLabel>Fonte Geradora</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name={`${namePrefix}.${index}.intensidade` as const} render={({ field }) => (<FormItem><FormLabel>Intensidade</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name={`${namePrefix}.${index}.tecnicaUtilizada` as const} render={({ field }) => (<FormItem><FormLabel>Técnica</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name={`${namePrefix}.${index}.epiEpc` as const} render={({ field }) => (<FormItem><FormLabel>EPI/EPC</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                     <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
             ))}
@@ -176,7 +182,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                          <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => gseRemove(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
                 ))}
-                 <Button type="button" variant="outline" size="sm" onClick={() => gseAppend({ setor: '', funcao: '', totalTrabalhadores: 0, trabalhadoresExpostos: 0  })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar GSE</Button>
+                 <Button type="button" variant="outline" size="sm" onClick={() => gseAppend({ setor: '', funcao: '', totalTrabalhadores: 0, trabalhadoresExpostos: 0, descricaoAtividades: '', jornadaTrabalho: '' })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar GSE</Button>
             </CardContent>
         </Card>
         
@@ -201,12 +207,12 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                     />
                 </div>
             </CardHeader>
-            {ltcatValues?.preencher && (
+            {ltcatPreencher && (
               <CardContent className="space-y-6">
-                {renderAgenteNocivoFields('ltcat.fisicos', ltcatFisicosFields, ltcatFisicosAppend, ltcatFisicosRemove, 'Agentes Nocivos - Físicos')}
-                {renderAgenteNocivoFields('ltcat.quimicos', ltcatQuimicosFields, ltcatQuimicosAppend, ltcatQuimicosRemove, 'Agentes Nocivos - Químicos')}
-                {renderAgenteNocivoFields('ltcat.biologicos', ltcatBiologicosFields, ltcatBiologicosAppend, ltcatBiologicosRemove, 'Agentes Nocivos - Biológicos')}
-                {renderAgenteNocivoFields('ltcat.associacao', ltcatAssociacaoFields, ltcatAssociacaoAppend, ltcatAssociacaoRemove, 'Associação de Agentes')}
+                {renderAgenteNocivoFields('ltcat.fisicos', ltcatFisicosFields, () => ltcatFisicosAppend({}), ltcatFisicosRemove, 'Agentes Nocivos - Físicos')}
+                {renderAgenteNocivoFields('ltcat.quimicos', ltcatQuimicosFields, () => ltcatQuimicosAppend({}), ltcatQuimicosRemove, 'Agentes Nocivos - Químicos')}
+                {renderAgenteNocivoFields('ltcat.biologicos', ltcatBiologicosFields, () => ltcatBiologicosAppend({}), ltcatBiologicosRemove, 'Agentes Nocivos - Biológicos')}
+                {renderAgenteNocivoFields('ltcat.associacao', ltcatAssociacaoFields, () => ltcatAssociacaoAppend({}), ltcatAssociacaoRemove, 'Associação de Agentes')}
                 
                 <Separator />
 
@@ -237,7 +243,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                     />
                 </div>
             </CardHeader>
-             {pgrValues?.preencher && (
+             {pgrPreencher && (
                 <CardContent className="space-y-4">
                     <FormField control={form.control} name="pgr.introducao" render={({ field }) => (<FormItem><FormLabel>Introdução</FormLabel><FormControl><Textarea {...field} rows={5} /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="pgr.identificacaoPerigos" render={({ field }) => (<FormItem><FormLabel>Identificação de Perigos</FormLabel><FormControl><Textarea {...field} rows={5} /></FormControl></FormItem>)} />

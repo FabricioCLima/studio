@@ -18,6 +18,7 @@ interface FichaVisitaDialogProps {
   onSuccess: () => void;
 }
 
+// This component is no longer used and can be removed in a future cleanup.
 export function FichaVisitaDialog({ open, onOpenChange, service, onSuccess }: FichaVisitaDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
