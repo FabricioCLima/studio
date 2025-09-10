@@ -513,66 +513,66 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
               )}/>
             </CardHeader>
             {ltcatValues?.preencher && (
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium">Agentes Nocivos - Físicos</h3>
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendAf({ agente: '', fonteGeradora: '', instrumento: '', numeroSerie: '', resultado: '', limiteTolerancia: '', metodologia: '', conclusao: '' })}><PlusCircle className="mr-2"/> Adicionar</Button>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-medium">Agentes Nocivos - Físicos</h3>
+                      <Button type="button" variant="outline" size="sm" onClick={() => appendAf({ agente: '', fonteGeradora: '', instrumento: '', numeroSerie: '', resultado: '', limiteTolerancia: '', metodologia: '', conclusao: '' })}><PlusCircle className="mr-2"/> Adicionar</Button>
+                  </div>
+                  {afFields.map((field, index) => (
+                      <Card key={field.id} className="p-4 relative">
+                          <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeAf(index)}><Trash2 className="h-4 w-4" /></Button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.agente`} render={({ field }) => ( <FormItem><FormLabel>Agente</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.fonteGeradora`} render={({ field }) => ( <FormItem><FormLabel>Fonte Geradora</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.instrumento`} render={({ field }) => ( <FormItem><FormLabel>Instrumento</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.numeroSerie`} render={({ field }) => ( <FormItem><FormLabel>Nº de Série</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.resultado`} render={({ field }) => ( <FormItem><FormLabel>Resultado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.limiteTolerancia`} render={({ field }) => ( <FormItem><FormLabel>Limite Tolerância</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.metodologia`} render={({ field }) => ( <FormItem><FormLabel>Metodologia</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormMessage> </FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.conclusao`} render={({ field }) => ( <FormItem><FormLabel>Conclusão</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                          </div>
+                      </Card>
+                  ))}
                 </div>
-                {afFields.map((field, index) => (
-                    <Card key={field.id} className="p-4 relative">
-                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeAf(index)}><Trash2 className="h-4 w-4" /></Button>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.agente`} render={({ field }) => ( <FormItem><FormLabel>Agente</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.fonteGeradora`} render={({ field }) => ( <FormItem><FormLabel>Fonte Geradora</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.instrumento`} render={({ field }) => ( <FormItem><FormLabel>Instrumento</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.numeroSerie`} render={({ field }) => ( <FormItem><FormLabel>Nº de Série</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.resultado`} render={({ field }) => ( <FormItem><FormLabel>Resultado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.limiteTolerancia`} render={({ field }) => ( <FormItem><FormLabel>Limite Tolerância</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.metodologia`} render={({ field }) => ( <FormItem><FormLabel>Metodologia</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormMessage> </FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesFisicos.${index}.conclusao`} render={({ field }) => ( <FormItem><FormLabel>Conclusão</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                        </div>
-                    </Card>
-                ))}
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium">Agentes Nocivos - Químicos</h3>
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendAq({ agente: '', fonteGeradora: '', tipoAmostra: '', tempoColeta: '', resultado: '', limiteTolerancia: '', metodologia: '', conclusao: ''})}><PlusCircle className="mr-2"/> Adicionar</Button>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-medium">Agentes Nocivos - Químicos</h3>
+                      <Button type="button" variant="outline" size="sm" onClick={() => appendAq({ agente: '', fonteGeradora: '', tipoAmostra: '', tempoColeta: '', resultado: '', limiteTolerancia: '', metodologia: '', conclusao: ''})}><PlusCircle className="mr-2"/> Adicionar</Button>
+                  </div>
+                  {aqFields.map((field, index) => (
+                      <Card key={field.id} className="p-4 relative">
+                          <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeAq(index)}><Trash2 className="h-4 w-4" /></Button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.agente`} render={({ field }) => ( <FormItem><FormLabel>Agente</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.fonteGeradora`} render={({ field }) => ( <FormItem><FormLabel>Fonte Geradora</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.tipoAmostra`} render={({ field }) => ( <FormItem><FormLabel>Tipo Amostra</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.tempoColeta`} render={({ field }) => ( <FormItem><FormLabel>Tempo Coleta</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.resultado`} render={({ field }) => ( <FormItem><FormLabel>Resultado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.limiteTolerancia`} render={({ field }) => ( <FormItem><FormLabel>Limite Tolerância</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.metodologia`} render={({ field }) => ( <FormItem><FormLabel>Metodologia</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.conclusao`} render={({ field }) => ( <FormItem><FormLabel>Conclusão</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                          </div>
+                      </Card>
+                  ))}
                 </div>
-                {aqFields.map((field, index) => (
-                    <Card key={field.id} className="p-4 relative">
-                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeAq(index)}><Trash2 className="h-4 w-4" /></Button>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.agente`} render={({ field }) => ( <FormItem><FormLabel>Agente</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.fonteGeradora`} render={({ field }) => ( <FormItem><FormLabel>Fonte Geradora</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.tipoAmostra`} render={({ field }) => ( <FormItem><FormLabel>Tipo Amostra</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.tempoColeta`} render={({ field }) => ( <FormItem><FormLabel>Tempo Coleta</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.resultado`} render={({ field }) => ( <FormItem><FormLabel>Resultado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.limiteTolerancia`} render={({ field }) => ( <FormItem><FormLabel>Limite Tolerância</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.metodologia`} render={({ field }) => ( <FormItem><FormLabel>Metodologia</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesQuimicos.${index}.conclusao`} render={({ field }) => ( <FormItem><FormLabel>Conclusão</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                        </div>
-                    </Card>
-                ))}
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium">Agentes Nocivos - Biológicos</h3>
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendAb({ descricao: '', agenteProvavel: '', enquadramento: false })}><PlusCircle className="mr-2"/> Adicionar</Button>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-medium">Agentes Nocivos - Biológicos</h3>
+                      <Button type="button" variant="outline" size="sm" onClick={() => appendAb({ descricao: '', agenteProvavel: '', enquadramento: false })}><PlusCircle className="mr-2"/> Adicionar</Button>
+                  </div>
+                  {abFields.map((field, index) => (
+                      <Card key={field.id} className="p-4 relative">
+                          <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeAb(index)}><Trash2 className="h-4 w-4" /></Button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <FormField control={form.control} name={`ltcat.agentesBiologicos.${index}.descricao`} render={({ field }) => ( <FormItem><FormLabel>Descrição Atividade</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesBiologicos.${index}.agenteProvavel`} render={({ field }) => ( <FormItem><FormLabel>Agente Provável</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                              <FormField control={form.control} name={`ltcat.agentesBiologicos.${index}.enquadramento`} render={({ field }) => ( <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 col-span-full"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Enquadramento Legal (Anexo 14, NR-15)</FormLabel></div></FormItem> )}/>
+                          </div>
+                      </Card>
+                  ))}
                 </div>
-                {abFields.map((field, index) => (
-                    <Card key={field.id} className="p-4 relative">
-                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeAb(index)}><Trash2 className="h-4 w-4" /></Button>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField control={form.control} name={`ltcat.agentesBiologicos.${index}.descricao`} render={({ field }) => ( <FormItem><FormLabel>Descrição Atividade</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesBiologicos.${index}.agenteProvavel`} render={({ field }) => ( <FormItem><FormLabel>Agente Provável</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )}/>
-                            <FormField control={form.control} name={`ltcat.agentesBiologicos.${index}.enquadramento`} render={({ field }) => ( <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 col-span-full"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>Enquadramento Legal (Anexo 14, NR-15)</FormLabel></div></FormItem> )}/>
-                        </div>
-                    </Card>
-                ))}
-              </div>
-            </CardContent>
+              </CardContent>
             )}
           </Card>
           
@@ -634,5 +634,3 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
     </>
   );
 }
-
-    
