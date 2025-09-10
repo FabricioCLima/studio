@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, FileText, MoreHorizontal, PlayCircle, Trash2, Undo2 } from 'lucide-react';
+import { CheckCircle2, FileText, MoreHorizontal, PlayCircle, Printer, Trash2, Undo2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,10 +35,14 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { FichaVisitaDialog } from './ficha-visita-dialog';
+import { PrintDialog } from './print-dialog';
 
 interface TecnicaTableProps {
   services: Service[];
@@ -49,6 +53,7 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
     const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
     const [confirmAction, setConfirmAction] = useState<{service: Service, status: 'digitacao' | 'avaliacao'} | null>(null);
     const [fichaVisitaService, setFichaVisitaService] = useState<Service | null>(null);
+    const [printingService, setPrintingService] = useState<Service | null>(null);
 
 
     const handleUpdateStatus = async (id: string, newStatus: string) => {
@@ -142,10 +147,23 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => setFichaVisitaService(service)}>
-                              <FileText className="mr-2 h-4 w-4" />
-                              Ficha
-                            </DropdownMenuItem>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Ficha
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuItem onClick={() => setFichaVisitaService(service)}>
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        Abrir Ficha
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setPrintingService(service)}>
+                                        <Printer className="mr-2 h-4 w-4" />
+                                        Imprimir Ficha
+                                    </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => handleUpdateStatus(service.id, 'em_visita')}
@@ -231,6 +249,17 @@ export function TecnicaTable({ services }: TecnicaTableProps) {
             onOpenChange={(open) => !open && setFichaVisitaService(null)}
             service={fichaVisitaService}
             onSuccess={() => setFichaVisitaService(null)}
+        />
+      )}
+       {printingService && (
+        <PrintDialog
+          service={printingService}
+          open={!!printingService}
+          onOpenChange={(open) => {
+            if (!open) {
+              setPrintingService(null);
+            }
+          }}
         />
       )}
     </>
