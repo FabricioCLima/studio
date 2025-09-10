@@ -251,6 +251,7 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
       const defaultData = generateDefaultValues(service);
       
       const pgrData = fichaToEdit.pgr ? {
+          ...defaultData.pgr,
           ...fichaToEdit.pgr,
           preencher: true,
           planoAcao: (fichaToEdit.pgr.planoAcao || []).map(pa => ({ ...pa, prazo: new Date((pa.prazo as any).seconds * 1000) })),
@@ -258,6 +259,7 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
       } : defaultData.pgr;
 
       const ltcatData = fichaToEdit.ltcat ? {
+        ...defaultData.ltcat,
         ...fichaToEdit.ltcat,
         preencher: true,
         assinaturaResponsavelArea: fichaToEdit.ltcat.assinaturaResponsavelArea ? { ...fichaToEdit.ltcat.assinaturaResponsavelArea, data: new Date((fichaToEdit.ltcat.assinaturaResponsavelArea.data as any).seconds * 1000) } : null,
@@ -577,3 +579,5 @@ export function FichaVisitaForm({ service, onSave, onCancel, fichaToEdit, fichaI
     </>
   );
 }
+
+    
