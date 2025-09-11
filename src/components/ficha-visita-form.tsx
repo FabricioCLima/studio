@@ -13,12 +13,13 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { Keyboard, PlusCircle, Trash2 } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Separator } from './ui/separator';
 import { Label } from './ui/label';
+import { AssignDigitadorDialog } from './assign-digitador-dialog';
 
 // Section 3: PGR
 const pgrRiscoSchema = z.object({
@@ -104,6 +105,7 @@ interface FichaVisitaFormProps {
 export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   const form = useForm<FichaVisitaFormValues>({
     resolver: zodResolver(formSchema),
@@ -192,6 +194,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   );
 
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Accordion type="multiple" defaultValue={['item-1']} className="w-full">
@@ -363,14 +366,33 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
 
         </Accordion>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+           <Button type="button" variant="outline" onClick={() => setIsAssigning(true)} disabled={isSubmitting}>
+             <Keyboard className="mr-2 h-4 w-4" />
+             Atribuir para Digitação
+           </Button>
           <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90">
             {isSubmitting ? 'Salvando...' : 'Salvar Ficha'}
           </Button>
         </div>
       </form>
     </Form>
+    {isAssigning && (
+        <AssignDigitadorDialog
+            open={isAssigning}
+            onOpenChange={setIsAssigning}
+            service={service}
+            onSuccess={() => {
+                setIsAssigning(false);
+                toast({
+                    title: 'Sucesso!',
+                    description: 'Serviço enviado para a Digitação.',
+                    className: 'bg-accent text-accent-foreground',
+                });
+                onSave?.();
+            }}
+        />
+    )}
+    </>
   );
 }
-
-    
