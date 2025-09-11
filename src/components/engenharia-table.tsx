@@ -163,10 +163,6 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                           <Pencil className="mr-2 h-4 w-4" />
                           Atribuir Responsável
                         </DropdownMenuItem>
-                         <DropdownMenuItem onClick={() => setAssigningDigitadorService(service)}>
-                          <Keyboard className="mr-2 h-4 w-4" />
-                          Atribuir Resp/Digitação
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditingService(service)}>
                           <Pencil className="mr-2 h-4 w-4" />
                           Editar Agendamento
