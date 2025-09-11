@@ -12,13 +12,13 @@ import { useToast } from '@/hooks/use-toast';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Checkbox } from './ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Separator } from './ui/separator';
+import { Label } from './ui/label';
 
 // Section 3: PGR
 const pgrRiscoSchema = z.object({
@@ -122,6 +122,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   });
 
   useEffect(() => {
+    // @ts-ignore
     if (service && service.fichaVisita) {
       // @ts-ignore
       form.reset(service.fichaVisita);
