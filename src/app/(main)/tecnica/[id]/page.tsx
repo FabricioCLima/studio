@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, use } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Service } from '@/app/(main)/engenharia/page';
@@ -13,9 +13,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function FichaVisitaPage({ params }: { params: { id: string } }) {
+export default function FichaVisitaPage() {
   const router = useRouter();
-  const { id } = params;
+  const params = use(useParams());
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
   
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
