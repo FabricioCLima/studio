@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from './ui/button';
-import { CheckCircle2, MoreHorizontal, Undo2 } from 'lucide-react';
+import { CheckCircle2, FileText, MoreHorizontal, Undo2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
@@ -36,6 +36,7 @@ import {
 import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 interface DigitacaoTableProps {
   services: Service[];
@@ -43,6 +44,7 @@ interface DigitacaoTableProps {
 
 export function DigitacaoTable({ services }: DigitacaoTableProps) {
     const { toast } = useToast();
+    const router = useRouter();
     const [serviceToConclude, setServiceToConclude] = useState<Service | null>(null);
     const [serviceToReturn, setServiceToReturn] = useState<Service | null>(null);
 
@@ -106,6 +108,11 @@ export function DigitacaoTable({ services }: DigitacaoTableProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => router.push(`/tecnica/${service.id}`)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Ver Ficha
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => setServiceToReturn(service)}>
                         <Undo2 className="mr-2 h-4 w-4" />
