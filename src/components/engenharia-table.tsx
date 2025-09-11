@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from './ui/button';
-import { CheckCircle2, Keyboard, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { CheckCircle2, FileText, Keyboard, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import type { Service } from '@/app/(main)/engenharia/page';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -41,6 +41,7 @@ import {
 } from './ui/dropdown-menu';
 import { AssignResponsavelDialog } from './assign-responsavel-dialog';
 import { AssignDigitadorDialog } from './assign-digitador-dialog';
+import { useRouter } from 'next/navigation';
 
 interface EngenhariaTableProps {
   services: Service[];
@@ -48,6 +49,7 @@ interface EngenhariaTableProps {
 
 export function EngenhariaTable({ services }: EngenhariaTableProps) {
   const { toast } = useToast();
+  const router = useRouter();
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
   const [serviceToUpdate, setServiceToUpdate] = useState<{service: Service, newStatus: 'arquivado' | 'concluido'} | null>(null);
@@ -168,6 +170,10 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                         <DropdownMenuItem onClick={() => setEditingService(service)}>
                           <Pencil className="mr-2 h-4 w-4" />
                           Editar Agendamento
+                        </DropdownMenuItem>
+                         <DropdownMenuItem onClick={() => router.push(`/tecnica/${service.id}`)}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            Ver Ficha Preenchida
                         </DropdownMenuItem>
                          
                          <DropdownMenuSeparator />
