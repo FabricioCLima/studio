@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, use } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Service } from '@/app/(main)/engenharia/page';
@@ -13,21 +13,22 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function FichaVisitaPage({ params }: { params: { id: string } }) {
+export default function FichaVisitaPage() {
   const router = useRouter();
+  const params = use(useParams());
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
-    const id = params.id;
     if (!user || !id) {
       setLoading(false);
       return;
     }
 
-    const serviceId = id;
-    const serviceRef = doc(db, 'servicos', serviceId);
+    const serviceRef = doc(db, 'servicos', id);
 
     const unsubscribe = onSnapshot(serviceRef, (doc) => {
       if (doc.exists()) {
@@ -43,7 +44,7 @@ export default function FichaVisitaPage({ params }: { params: { id: string } }) 
     });
 
     return () => unsubscribe();
-  }, [user, params]);
+  }, [user, id]);
 
   if (loading) {
     return (
