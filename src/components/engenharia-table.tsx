@@ -110,8 +110,8 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
             }
         case 'arquivado':
             return {
-                title: 'Confirmar Baixa de Serviço',
-                description: `Tem certeza que deseja dar baixa no serviço da empresa ${serviceToUpdate.service.nomeEmpresa}? Esta ação moverá o serviço para o Arquivo Morto.`
+                title: 'Confirmar Finalização e Arquivamento',
+                description: `Tem certeza que deseja finalizar e arquivar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa}? Esta ação moverá o serviço para o Arquivo Morto.`
             }
         default:
             return { title: '', description: '' };
@@ -176,7 +176,7 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                                                  
                          {service.status === 'avaliacao' && (
                             <>
-                                <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'concluido' })}>
+                                <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'arquivado' })}>
                                     <CheckCircle2 className="mr-2 h-4 w-4" />
                                     Finalizar Serviço
                                 </DropdownMenuItem>
