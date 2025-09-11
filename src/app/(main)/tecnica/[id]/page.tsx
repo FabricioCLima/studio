@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Service } from '@/app/(main)/engenharia/page';
@@ -13,8 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function FichaVisitaPage() {
-  const params = useParams();
+export default function FichaVisitaPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const id = params.id;
   const [service, setService] = useState<Service | null>(null);
@@ -27,7 +26,7 @@ export default function FichaVisitaPage() {
       return;
     }
 
-    const serviceId = Array.isArray(id) ? id[0] : id;
+    const serviceId = id;
     const serviceRef = doc(db, 'servicos', serviceId);
 
     const unsubscribe = onSnapshot(serviceRef, (doc) => {
