@@ -108,16 +108,33 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   const form = useForm<FichaVisitaFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      pgrRiscos: [{}],
-      ltcatAgentes: [{}],
+      horaTermino: '',
+      tipoVisita: '',
+      objetivoPrincipal: '',
+      setorInspecionado: '',
+      responsavelEmpresa: '',
+      cargoResponsavel: '',
+      descricaoAmbiente: '',
+      descricaoProcessos: '',
+      populacaoExposta: 0,
+      funcoesPresentes: '',
+      mudancaLayout: 'nao',
+      descricaoAtividadeLTCAT: '',
+      eficaciaEPC: '',
+      eficaciaEPI: '',
+      observacoesEPI: '',
+      parecerTecnico: '',
+      pendencias: '',
+      pgrRiscos: [{ perigo: '', fonte: '', risco: '', funcoesExpostas: '', controles: '' }],
+      ltcatAgentes: [{ agente: '', tipo: '', analise: '', equipamento: '', resultado: '', limite: '', conclusao: '' }],
       checklist: [
-        { categoria: 'NR-12 (Máquinas)', item: 'Proteções de partes móveis estão instaladas e funcionais?', status: 'NA' },
-        { categoria: 'NR-12 (Máquinas)', item: 'Dispositivos de parada de emergência estão acessíveis?', status: 'NA' },
-        { categoria: 'NR-10 (Elétrica)', item: 'Quadros elétricos estão sinalizados e trancados?', status: 'NA' },
-        { categoria: 'NR-23 (Incêndio)', item: 'Extintores com validade em dia e desobstruídos?', status: 'NA' },
-        { categoria: 'NR-35 (Altura)', item: 'Análise de Risco e Permissão de Trabalho emitidas?', status: 'NA' },
+        { categoria: 'NR-12 (Máquinas)', item: 'Proteções de partes móveis estão instaladas e funcionais?', status: 'NA', observacoes: '' },
+        { categoria: 'NR-12 (Máquinas)', item: 'Dispositivos de parada de emergência estão acessíveis?', status: 'NA', observacoes: '' },
+        { categoria: 'NR-10 (Elétrica)', item: 'Quadros elétricos estão sinalizados e trancados?', status: 'NA', observacoes: '' },
+        { categoria: 'NR-23 (Incêndio)', item: 'Extintores com validade em dia e desobstruídos?', status: 'NA', observacoes: '' },
+        { categoria: 'NR-35 (Altura)', item: 'Análise de Risco e Permissão de Trabalho emitidas?', status: 'NA', observacoes: '' },
       ],
-      planoAcao: [{}],
+      planoAcao: [{ descricao: '', risco: '', recomendacao: '', prazo: '', responsavel: '' }],
     },
   });
 
@@ -177,7 +194,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Accordion type="multiple" defaultValue={['item-1', 'item-2']} className="w-full">
+        <Accordion type="multiple" defaultValue={['item-1']} className="w-full">
           {/* Section 1 & 2 */}
           <AccordionItem value="item-1">
             <AccordionTrigger>Seção 1 e 2: Identificação da Visita e Dados do Cliente</AccordionTrigger>
@@ -240,7 +257,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                   </div>
                 </Card>
               ))}
-              <Button type="button" variant="outline" size="sm" onClick={() => pgrRiscosAppend({})}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Risco</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => pgrRiscosAppend({ perigo: '', fonte: '', risco: '', funcoesExpostas: '', controles: '' })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Risco</Button>
             </AccordionContent>
           </AccordionItem>
 
@@ -270,7 +287,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                          </div>
                     </Card>
                  ))}
-                 <Button type="button" variant="outline" size="sm" onClick={() => ltcatAgentesAppend({})}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Agente</Button>
+                 <Button type="button" variant="outline" size="sm" onClick={() => ltcatAgentesAppend({ agente: '', tipo: '', analise: '', equipamento: '', resultado: '', limite: '', conclusao: '' })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Agente</Button>
                  <Separator />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="eficaciaEPC" render={({ field }) => (<FormItem><FormLabel>Eficácia do EPC</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="eficaz">Eficaz</SelectItem><SelectItem value="parcial">Parcialmente Eficaz</SelectItem><SelectItem value="ineficaz">Ineficaz</SelectItem><SelectItem value="inexistente">Inexistente</SelectItem></SelectContent></Select></FormItem>)} />
@@ -297,7 +314,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                     </div>
                  ))}
               </div>
-               <Button type="button" variant="outline" size="sm" onClick={() => checklistAppend({})}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Item ao Checklist</Button>
+               <Button type="button" variant="outline" size="sm" onClick={() => checklistAppend({ categoria: '', item: '', status: 'NA', observacoes: ''})}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Item ao Checklist</Button>
             </AccordionContent>
           </AccordionItem>
 
@@ -317,7 +334,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                          </div>
                     </Card>
                  ))}
-                 <Button type="button" variant="outline" size="sm" onClick={() => planoAcaoAppend({})}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Não Conformidade</Button>
+                 <Button type="button" variant="outline" size="sm" onClick={() => planoAcaoAppend({ descricao: '', risco: '', recomendacao: '', prazo: '', responsavel: '' })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Não Conformidade</Button>
             </AccordionContent>
           </AccordionItem>
 
