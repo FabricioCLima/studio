@@ -12,10 +12,6 @@ interface PrintableServiceCardProps {
   service: Service;
 }
 
-// @ts-ignore
-const FichaData = service.fichaVisita || {};
-
-
 const statusChecklist: { 
     [key: string]: { 
         label: string; 
@@ -79,7 +75,7 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
                 <div><p className="font-medium text-gray-600">Funções no Setor:</p><p>{ficha.funcoesPresentes || '-'}</p></div>
               </div>
             </div>
-            {ficha.pgrRiscos && ficha.pgrRiscos.length > 0 && (
+            {ficha.pgrRiscos && ficha.pgrRiscos.length > 0 && ficha.pgrRiscos.some((r:any) => r.perigo) && (
               <div className="mt-4 no-break">
                 <h3 className="mb-2 font-semibold text-gray-700">Identificação de Perigos e Avaliação de Riscos</h3>
                 <table className="w-full text-left text-sm">
@@ -89,7 +85,7 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
                     </tr>
                   </thead>
                   <tbody>
-                    {ficha.pgrRiscos.map((risco: any, index: number) => (
+                    {ficha.pgrRiscos.filter((r:any) => r.perigo).map((risco: any, index: number) => (
                       <tr key={index} className="border-b">
                         <td className="p-2">{risco.perigo}</td><td className="p-2">{risco.fonte}</td><td className="p-2">{risco.risco}</td><td className="p-2">{risco.funcoesExpostas}</td><td className="p-2">{risco.controles}</td>
                       </tr>
@@ -114,7 +110,7 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
               </div>
               <div><p className="font-medium text-gray-600">Observações sobre EPI:</p><p>{ficha.observacoesEPI || 'Não informado.'}</p></div>
             </div>
-            {ficha.ltcatAgentes && ficha.ltcatAgentes.length > 0 && (
+            {ficha.ltcatAgentes && ficha.ltcatAgentes.length > 0 && ficha.ltcatAgentes.some((a:any) => a.agente) && (
               <div className="mt-4 no-break">
                 <h3 className="mb-2 font-semibold text-gray-700">Avaliação de Agentes Nocivos</h3>
                 <table className="w-full text-left text-sm">
@@ -124,7 +120,7 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
                     </tr>
                   </thead>
                   <tbody>
-                    {ficha.ltcatAgentes.map((agente: any, index: number) => (
+                    {ficha.ltcatAgentes.filter((a:any) => a.agente).map((agente: any, index: number) => (
                       <tr key={index} className="border-b">
                         <td className="p-2">{agente.agente}</td><td className="p-2">{agente.analise}</td><td className="p-2">{agente.resultado}</td><td className="p-2">{agente.limite}</td><td className="p-2 capitalize">{agente.conclusao}</td>
                       </tr>
@@ -135,55 +131,55 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
             )}
         </section>
 
-        <Separator className="my-8" />
+        { (ficha.checklist && ficha.checklist.length > 0) && <Separator className="my-8 page-break" /> }
         
         {/* SEÇÃO 5: CHECKLIST */}
-        <section className="mb-6 page-break">
-            <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Seção 5: Checklist Geral de Conformidade</h2>
-            {ficha.checklist && ficha.checklist.length > 0 && (
-              <div className="mt-4 no-break">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="p-2 w-[20%]">Categoria</th><th className="p-2 w-[40%]">Item</th><th className="p-2">Status</th><th className="p-2">Observações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ficha.checklist.map((item: any, index: number) => (
-                      <tr key={index} className="border-b">
-                        <td className="p-2">{item.categoria}</td><td className="p-2">{item.item}</td><td className="p-2"><Badge variant={item.status === 'C' ? 'success' : item.status === 'NC' ? 'destructive' : 'secondary'}>{statusChecklist[item.status]?.label || item.status}</Badge></td><td className="p-2">{item.observacoes}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-        </section>
+         {ficha.checklist && ficha.checklist.length > 0 && (
+            <section className="mb-6 no-break">
+                <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Seção 5: Checklist Geral de Conformidade</h2>
+                <div className="mt-4 no-break">
+                    <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-100">
+                        <tr>
+                        <th className="p-2 w-[20%]">Categoria</th><th className="p-2 w-[40%]">Item</th><th className="p-2">Status</th><th className="p-2">Observações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {ficha.checklist.map((item: any, index: number) => (
+                        <tr key={index} className="border-b">
+                            <td className="p-2">{item.categoria}</td><td className="p-2">{item.item}</td><td className="p-2"><Badge variant={item.status === 'C' ? 'success' : item.status === 'NC' ? 'destructive' : 'secondary'}>{statusChecklist[item.status]?.label || item.status}</Badge></td><td className="p-2">{item.observacoes}</td>
+                        </tr>
+                        ))}
+                    </tbody>
+                    </table>
+                </div>
+            </section>
+        )}
 
         <Separator className="my-8" />
 
         {/* SEÇÃO 6: PLANO DE AÇÃO */}
-        <section className="mb-6 no-break">
-            <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Seção 6: Plano de Ação (Não Conformidades)</h2>
-            {ficha.planoAcao && ficha.planoAcao.length > 0 && (
-              <div className="mt-4 no-break">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="p-2">Descrição</th><th className="p-2">Risco</th><th className="p-2">Recomendação</th><th className="p-2">Prazo</th><th className="p-2">Responsável</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ficha.planoAcao.map((item: any, index: number) => (
-                      <tr key={index} className="border-b">
-                        <td className="p-2">{item.descricao}</td><td className="p-2 capitalize">{item.risco}</td><td className="p-2">{item.recomendacao}</td><td className="p-2">{item.prazo ? format(new Date(item.prazo), 'dd/MM/yyyy') : '-'}</td><td className="p-2">{item.responsavel}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-        </section>
+        {ficha.planoAcao && ficha.planoAcao.length > 0 && ficha.planoAcao.some((p:any) => p.descricao) && (
+            <section className="mb-6 no-break">
+                <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Seção 6: Plano de Ação (Não Conformidades)</h2>
+                <div className="mt-4 no-break">
+                    <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-100">
+                        <tr>
+                        <th className="p-2">Descrição</th><th className="p-2">Risco</th><th className="p-2">Recomendação</th><th className="p-2">Prazo</th><th className="p-2">Responsável</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {ficha.planoAcao.filter((p:any) => p.descricao).map((item: any, index: number) => (
+                        <tr key={index} className="border-b">
+                            <td className="p-2">{item.descricao}</td><td className="p-2 capitalize">{item.risco}</td><td className="p-2">{item.recomendacao}</td><td className="p-2">{item.prazo ? format(new Date(item.prazo), 'dd/MM/yyyy') : '-'}</td><td className="p-2">{item.responsavel}</td>
+                        </tr>
+                        ))}
+                    </tbody>
+                    </table>
+                </div>
+            </section>
+        )}
 
         <Separator className="my-8" />
 
