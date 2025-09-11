@@ -13,13 +13,14 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function FichaVisitaPage({ params: { id } }: { params: { id: string } }) {
+export default function FichaVisitaPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
+    const id = params.id;
     if (!user || !id) {
       setLoading(false);
       return;
@@ -42,7 +43,7 @@ export default function FichaVisitaPage({ params: { id } }: { params: { id: stri
     });
 
     return () => unsubscribe();
-  }, [user, id]);
+  }, [user, params]);
 
   if (loading) {
     return (
