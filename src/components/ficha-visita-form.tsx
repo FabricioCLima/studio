@@ -386,7 +386,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                 setIsAssigning(false);
                 toast({
                     title: 'Sucesso!',
-                    description: 'Serviço enviado para a Digitação.',
+                    description: 'Serviço enviado para a Digitação com sucesso.',
                     className: 'bg-accent text-accent-foreground',
                 });
                 onSave?.();
