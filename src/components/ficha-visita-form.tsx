@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Service } from '@/app/(main)/engenharia/page';
@@ -9,11 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc } from 'firebase/firestore';
+import { arrayRemove, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { FileUp, Keyboard, PlusCircle, Trash2 } from 'lucide-react';
+import { FileUp, Keyboard, PlusCircle, Trash2, Download } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
@@ -21,6 +22,7 @@ import { Separator } from './ui/separator';
 import { Label } from './ui/label';
 import { AssignDigitadorDialog } from './assign-digitador-dialog';
 import { UploadFilesDialog } from './upload-files-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 
 // Section 3: PGR
 const pgrRiscoSchema = z.object({
@@ -108,6 +110,8 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<any | null>(null);
+
 
   const form = useForm<FichaVisitaFormValues>({
     resolver: zodResolver(formSchema),
@@ -177,6 +181,28 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
         });
     } finally {
         setIsSubmitting(false);
+    }
+  }
+
+  const handleDeleteFile = async () => {
+    if (!fileToDelete) return;
+    try {
+        const serviceRef = doc(db, 'servicos', service.id);
+        await updateDoc(serviceRef, {
+            anexos: arrayRemove(fileToDelete)
+        });
+        toast({
+            title: 'Sucesso!',
+            description: 'Anexo removido com sucesso.'
+        });
+    } catch (error) {
+         toast({
+            variant: 'destructive',
+            title: 'Erro!',
+            description: 'Não foi possível remover o anexo.',
+        });
+    } finally {
+        setFileToDelete(null);
     }
   }
 
@@ -365,7 +391,44 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                  </div>
             </AccordionContent>
           </AccordionItem>
-
+          {/* Anexos Section */}
+            {service.anexos && service.anexos.length > 0 && (
+                <AccordionItem value="item-8">
+                    <AccordionTrigger>Seção 8: Anexos</AccordionTrigger>
+                    <AccordionContent className="space-y-4 pt-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Arquivos Anexados</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-2">
+                                    {service.anexos.map((anexo, index) => (
+                                        <li key={index} className="flex items-center justify-between rounded-md border p-2">
+                                            <a 
+                                                href={anexo.data} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                                            >
+                                                <Download className="h-4 w-4" />
+                                                {anexo.name}
+                                            </a>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-8 w-8"
+                                                onClick={() => setFileToDelete(anexo)}
+                                            >
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                        </Card>
+                    </AccordionContent>
+                </AccordionItem>
+            )}
         </Accordion>
 
         <div className="flex justify-end gap-2">
@@ -414,8 +477,26 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
             }}
         />
     )}
+     <AlertDialog open={!!fileToDelete} onOpenChange={(open) => !open && setFileToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Anexo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você tem certeza que deseja excluir o arquivo <span className="font-bold">{fileToDelete?.name}</span>? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteFile} className="bg-destructive hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
+
+    
 
     
