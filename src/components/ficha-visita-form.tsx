@@ -406,8 +406,7 @@ export function FichaVisitaForm({ service, onSave }: FichaVisitaFormProps) {
                                         <li key={index} className="flex items-center justify-between rounded-md border p-2">
                                             <a 
                                                 href={anexo.data} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
+                                                download={anexo.name}
                                                 className="flex items-center gap-2 text-sm font-medium text-primary hover:underline"
                                             >
                                                 <Download className="h-4 w-4" />
