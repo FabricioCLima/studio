@@ -7,6 +7,7 @@ import { ptBR } from 'date-fns/locale';
 import React from 'react';
 import { Separator } from './ui/separator';
 import { Badge } from './ui/badge';
+import Image from 'next/image';
 
 interface PrintableServiceCardProps {
   service: Service;
@@ -27,6 +28,8 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
   ({ service }, ref) => {
     // @ts-ignore
     const ficha = service.fichaVisita || {};
+    const anexos = service.anexos || [];
+    const imageAnexos = anexos.filter(anexo => anexo.type.startsWith('image/'));
 
     return (
       <div ref={ref} className="p-4 sm:p-6 font-sans text-gray-800 bg-white">
@@ -201,6 +204,23 @@ export const PrintableServiceCard = React.forwardRef<HTMLDivElement, PrintableSe
                 </div>
             </div>
         </section>
+
+        {/* SEÇÃO 8: ANEXOS */}
+        {imageAnexos.length > 0 && (
+          <section className="page-break no-break">
+            <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-gray-800">Seção 8: Anexos Fotográficos</h2>
+            <div className="grid grid-cols-1 gap-4">
+              {imageAnexos.map((anexo, index) => (
+                <div key={index} className="no-break">
+                  <p className="mb-2 text-sm font-semibold">{anexo.name}</p>
+                  <div className="relative w-full h-auto border">
+                     <img src={anexo.data} alt={anexo.name} className="object-contain" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
         
         <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-500 no-break">
             <p>Documento gerado por Service Flow Dashboard em {format(new Date(), "'em' dd/MM/yyyy 'às' HH:mm")}</p>
