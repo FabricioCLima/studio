@@ -1,0 +1,9 @@
+
+{
+  "framework": "nextjs",
+  "functions": {
+    "src/app/api/genkit/[[...slug]]/route.ts": {
+      "memory": 1024
+    }
+  }
+}
