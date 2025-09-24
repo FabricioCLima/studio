@@ -62,9 +62,9 @@ export default function FichaVisitaPage() {
   if (!service) {
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-             <Button variant="outline" onClick={() => router.push('/tecnica')}>
+             <Button variant="outline" onClick={() => router.back()}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar para Técnica
+                Voltar
             </Button>
             <Card className="mt-4">
                 <CardContent className="p-8 text-center text-muted-foreground">
@@ -84,14 +84,14 @@ export default function FichaVisitaPage() {
                 Editando informações para a empresa: <span className="font-semibold">{service.nomeEmpresa}</span>
             </p>
         </div>
-        <Button variant="outline" onClick={() => router.push('/tecnica')}>
+        <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
         </Button>
       </div>
       <FichaVisitaForm 
         service={service} 
-        onSave={() => router.push('/tecnica')} 
+        onSave={() => router.back()} 
       />
     </div>
   );
