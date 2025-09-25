@@ -23,7 +23,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }
   }, [user, loading, router]);
 
-  if (loading || !user) {
+  if (loading) {
     return (
        <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="flex items-center space-x-2">
@@ -32,6 +32,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    // Redirecionamento está em andamento no useEffect
+    return null;
   }
   
   if (permissions.length === 0 && !permissions.includes('admin')) {
