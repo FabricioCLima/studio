@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -10,7 +10,7 @@ import { useAuth } from '@/context/auth-context';
 import { FichaVisitaForm } from '@/components/ficha-visita-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldAlert } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function FichaVisitaPage() {
@@ -20,7 +20,8 @@ export default function FichaVisitaPage() {
   
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const [hasPermission, setHasPermission] = useState(false);
+  const { user, permissions } = useAuth();
 
   useEffect(() => {
     if (!user || !id) {
@@ -32,7 +33,20 @@ export default function FichaVisitaPage() {
 
     const unsubscribe = onSnapshot(serviceRef, (doc) => {
       if (doc.exists()) {
-        setService({ id: doc.id, ...doc.data() } as Service);
+        const serviceData = { id: doc.id, ...doc.data() } as Service;
+        
+        // Security Check: Does the user have permission to view this service?
+        const isAdmin = permissions.includes('admin');
+        const isTecnicoAssigned = serviceData.tecnico === user.displayName;
+        const hasTecnicaPermission = permissions.includes('tecnica');
+
+        if (isAdmin || (hasTecnicaPermission && isTecnicoAssigned)) {
+            setService(serviceData);
+            setHasPermission(true);
+        } else {
+            setService(null);
+            setHasPermission(false);
+        }
       } else {
         console.error('No such document!');
         setService(null);
@@ -44,7 +58,7 @@ export default function FichaVisitaPage() {
     });
 
     return () => unsubscribe();
-  }, [user, id]);
+  }, [user, id, permissions]);
 
   if (loading) {
     return (
@@ -57,6 +71,26 @@ export default function FichaVisitaPage() {
         </div>
       </div>
     );
+  }
+
+  if (!hasPermission && !loading) {
+     return (
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+             <Button variant="outline" onClick={() => router.back()}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar
+            </Button>
+            <Card className="mt-4 border-destructive">
+                <CardHeader>
+                    <CardTitle className='flex items-center gap-2 text-destructive'><ShieldAlert />Acesso Negado</CardTitle>
+                    <CardDescription className='text-destructive'>Você não tem permissão para visualizar esta ficha de visita.</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center text-muted-foreground">
+                    <p>Verifique se você é o técnico designado para este serviço ou entre em contato com um administrador.</p>
+                </CardContent>
+            </Card>
+        </div>
+    )
   }
 
   if (!service) {

@@ -55,20 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            // Corrigido para buscar 'permissoes' (sem til) como no Firestore
-            let userPermissions = userData.permissoes || [];
+            const userPermissions = userData.permissões || [];
             
-            if (typeof userPermissions === 'string') {
-              userPermissions = [userPermissions];
-            }
-
             if (userPermissions.includes('admin')) {
               setPermissions(['admin', ...ALL_PERMISSIONS]);
             } else {
               setPermissions(userPermissions);
             }
           } else {
-            setPermissions([]); 
+            setPermissions([]);
           }
         } catch (error) {
           console.error("Error fetching user permissions:", error);

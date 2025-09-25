@@ -103,14 +103,9 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
     if (!serviceToUpdate) return { title: '', description: '' };
     
     switch(serviceToUpdate.newStatus) {
-        case 'concluido':
-            return {
-                title: 'Confirmar Finalização de Serviço',
-                description: `Tem certeza que deseja finalizar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa}? O status será alterado para Concluído.`
-            }
         case 'arquivado':
             return {
-                title: 'Confirmar Finalização e Arquivamento',
+                title: 'Confirmar Arquivamento',
                 description: `Tem certeza que deseja finalizar e arquivar o serviço da empresa ${serviceToUpdate.service.nomeEmpresa}? Esta ação moverá o serviço para o Arquivo Morto.`
             }
         default:
@@ -174,19 +169,10 @@ export function EngenhariaTable({ services }: EngenhariaTableProps) {
                          
                          <DropdownMenuSeparator />
                                                  
-                         {service.status === 'avaliacao' && (
-                            <>
-                                <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'arquivado' })}>
-                                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                                    Finalizar Serviço
-                                </DropdownMenuItem>
-                            </>
-                         )}
-
-                         {service.status === 'concluido' && (
+                         {(service.status === 'avaliacao' || service.status === 'concluido') && (
                             <DropdownMenuItem onClick={() => setServiceToUpdate({ service, newStatus: 'arquivado' })}>
                                 <CheckCircle2 className="mr-2 h-4 w-4" />
-                                Dar Baixa (Arquivar)
+                                {service.status === 'concluido' ? 'Dar Baixa (Arquivar)' : 'Finalizar e Arquivar'}
                             </DropdownMenuItem>
                          )}
 
