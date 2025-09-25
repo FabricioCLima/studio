@@ -11,8 +11,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Evita inicializar mais de uma vez
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-// Exporta serviços
-export const db = getFirestore(app);
+export const initFirebase = () => {
+  if (typeof window === "undefined") return null; // não roda no servidor
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  return {
+    app,
+    db: getFirestore(app),
+  };
+};
