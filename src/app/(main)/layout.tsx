@@ -35,7 +35,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }
 
   if (!user) {
-    // Redirecionamento está em andamento no useEffect, não renderiza nada
     return null;
   }
   
