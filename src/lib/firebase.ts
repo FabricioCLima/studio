@@ -2,6 +2,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
+// Configuração do Firebase
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -11,11 +12,8 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-export const initFirebase = () => {
-  if (typeof window === "undefined") return null; // não roda no servidor
-  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  return {
-    app,
-    db: getFirestore(app),
-  };
-};
+// Garante que só inicializa uma vez
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+// Exporta Firestore pronto
+export const db = getFirestore(app);
