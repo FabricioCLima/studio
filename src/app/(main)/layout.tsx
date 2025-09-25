@@ -23,7 +23,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  if (loading || !user) {
     return (
        <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="flex items-center space-x-2">
@@ -33,12 +33,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </div>
     );
   }
-
-  if (!user) {
-     return null;
-  }
   
-  if (!permissions.includes('admin') && permissions.length === 0) {
+  if (permissions.length === 0 && !permissions.includes('admin')) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-secondary p-4">
             <Card className="w-full max-w-md">
