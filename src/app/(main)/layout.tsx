@@ -38,7 +38,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     return null;
   }
   
-  if (permissions.length === 0 && !permissions.includes('admin')) {
+  if (permissions.length === 0) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-secondary p-4">
             <Card className="w-full max-w-md">

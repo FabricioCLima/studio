@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ShieldAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -10,6 +10,8 @@ import { useAuth } from '@/context/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TecnicoDialog } from '@/components/tecnico-dialog';
 import { TecnicosTable } from '@/components/tecnicos-table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
 
 export type Tecnico = {
   id: string;
@@ -22,13 +24,16 @@ export default function TecnicosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tecnicos, setTecnicos] = useState<Tecnico[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, permissions, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    if (!user) {
+    if (authLoading) return;
+    if (!user || !permissions.includes('admin')) {
       setLoading(false);
       return;
     }
+
     setLoading(true);
     const q = query(collection(db, 'tecnicos'));
     const unsubscribe = onSnapshot(
@@ -48,7 +53,40 @@ export default function TecnicosPage() {
     );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, permissions, authLoading]);
+  
+  if (authLoading || loading) {
+     return (
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+          <div className="flex items-center justify-between space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Técnicos
+            </h1>
+          </div>
+            <div className="space-y-4 pt-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+        </div>
+     )
+  }
+
+  if (!permissions.includes('admin')) {
+    return (
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+             <Card className="mt-4 border-destructive">
+                <CardHeader>
+                    <CardTitle className='flex items-center gap-2 text-destructive'><ShieldAlert />Acesso Negado</CardTitle>
+                    <CardDescription className='text-destructive'>Você não tem permissão para gerenciar técnicos.</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center text-muted-foreground">
+                    <p>Esta área é restrita a administradores.</p>
+                </CardContent>
+            </Card>
+        </div>
+    )
+  }
 
   return (
     <>
@@ -63,15 +101,7 @@ export default function TecnicosPage() {
           </Button>
         </div>
         
-        {loading && (
-            <div className="space-y-4 pt-4">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-        )}
-
-        {!loading && <TecnicosTable tecnicos={tecnicos} />}
+        <TecnicosTable tecnicos={tecnicos} />
 
       </div>
       <TecnicoDialog 
@@ -82,4 +112,3 @@ export default function TecnicosPage() {
     </>
   );
 }
-
