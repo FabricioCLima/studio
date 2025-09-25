@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            const userPermissions = userData.permissões || [];
+            const userPermissions = userData.permissoes || [];
             
             if (userPermissions.includes('admin')) {
               setPermissions(['admin', ...ALL_PERMISSIONS]);
